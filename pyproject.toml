@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-recipes"
-version = "0.1.0"
+version = "0.0.1"
 description = "Real-world AI agent templates and recipes for PraisonAI"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [
-    {name = "Mervin Praison", email = "mervin@praison.com"}
+    {name = "praison"}
 ]
 keywords = ["ai", "agents", "templates", "recipes", "praisonai", "workflow"]
 classifiers = [
@@ -46,10 +46,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/MervinPraison/Agent-Recipes"
+Homepage = "https://github.com/MervinPraison/agent-recipes"
 Documentation = "https://docs.praison.ai/templates"
-Repository = "https://github.com/MervinPraison/Agent-Recipes"
-Issues = "https://github.com/MervinPraison/Agent-Recipes/issues"
+Repository = "https://github.com/MervinPraison/agent-recipes"
+Issues = "https://github.com/MervinPraison/agent-recipes/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
