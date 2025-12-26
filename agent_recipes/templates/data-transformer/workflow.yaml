@@ -1,0 +1,92 @@
+name: Data Transformer
+description: Transform data between formats with AI-assisted schema mapping
+
+workflow:
+  verbose: true
+  stream: true
+
+variables:
+  input: "{{input}}"
+  output: "{{output}}"
+  target_schema: "{{target_schema}}"
+  validation: "{{validation}}"
+  sample_size: "{{sample_size}}"
+
+agents:
+  schema_inferrer:
+    name: SchemaInferrer
+    role: Data Analyst
+    goal: Infer source data schema
+    instructions: |
+      Analyze the input file and infer its schema:
+      - Detect file format (CSV, JSON, XML, Excel)
+      - Sample {{sample_size}} rows for analysis
+      - Identify column names and data types
+      - Detect patterns (dates, emails, phones, etc.)
+      - Note any data quality issues
+      Return a structured schema definition.
+    tools: [csv_tool, json_tool, file_tool]
+
+  mapper:
+    name: SchemaMapper
+    role: Data Engineer
+    goal: Create field mappings between schemas
+    instructions: |
+      Map source fields to target schema:
+      - Match by name similarity
+      - Match by data type compatibility
+      - Match by sample value patterns
+      - Flag ambiguous mappings for review
+      - Suggest transformations needed
+      Return a mapping specification.
+
+  transformer:
+    name: DataTransformer
+    role: ETL Engineer
+    goal: Execute data transformation
+    instructions: |
+      Transform data according to mapping:
+      - Read source data
+      - Apply field mappings
+      - Execute transformations (type conversion, formatting)
+      - Handle null values and defaults
+      - Write to output format
+    tools: [csv_tool, json_tool, file_tool]
+
+  validator:
+    name: DataValidator
+    role: QA Engineer
+    goal: Validate transformed data
+    instructions: |
+      Validate the transformed data:
+      - Schema compliance check
+      - Data type correctness
+      - Required field presence
+      - Value range constraints
+      - Referential integrity (if applicable)
+      Return validation report.
+
+steps:
+  - name: infer_schema
+    agent: schema_inferrer
+    action: "Analyze source file and infer schema: {{input}}"
+    output_variable: source_schema
+    
+  - name: create_mapping
+    agent: mapper
+    action: "Create mapping to target: {{target_schema}}"
+    context_from: [infer_schema]
+    output_variable: field_mapping
+    
+  - name: transform
+    agent: transformer
+    action: "Transform data and write to: {{output}}"
+    context_from: [create_mapping]
+    output_variable: transform_result
+    
+  - name: validate
+    agent: validator
+    action: "Validate output against schema"
+    context_from: [transform]
+    condition: "{{validation}}"
+    output_variable: validation_report

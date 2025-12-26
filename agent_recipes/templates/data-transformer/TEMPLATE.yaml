@@ -1,0 +1,63 @@
+name: data-transformer
+version: "1.0.0"
+description: Transform data between formats with AI-assisted schema mapping
+author: praisonai
+license: Apache-2.0
+tags: [data, etl, transform, csv, json, xml, schema]
+
+requires:
+  tools: [csv_tool, json_tool, file_tool]
+  packages: [pandas]
+  env: [OPENAI_API_KEY]
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Input file (CSV, JSON, XML, Excel)
+  output:
+    type: string
+    required: true
+    description: Output file path
+  target_schema:
+    type: string
+    description: Target schema file or description
+  validation:
+    type: boolean
+    default: true
+    description: Validate output against schema
+  sample_size:
+    type: integer
+    default: 100
+    description: Rows to sample for schema inference
+
+defaults:
+  validation: true
+  sample_size: 100
+
+cli:
+  command: transform
+  args:
+    - name: input
+      positional: true
+      description: Input file (CSV, JSON, XML, Excel)
+    - name: --output
+      short: -o
+      required: true
+      description: Output file path
+    - name: --schema
+      short: -s
+      description: Target schema file or description
+    - name: --no-validate
+      flag: true
+      description: Skip validation step
+    - name: --sample
+      default: 100
+      description: Sample size for schema inference
+  examples:
+    - praisonai run data-transformer ./data.csv -o ./output.json
+    - praisonai run data-transformer ./legacy.xml -o ./modern.json --schema ./schema.json
+    - praisonai run data-transformer ./data.csv -o ./output.json --schema "Salesforce Contact format"

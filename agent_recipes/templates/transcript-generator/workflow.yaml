@@ -1,0 +1,82 @@
+name: Transcript Generator
+description: Generate transcripts from audio/video files
+
+workflow:
+  verbose: true
+  stream: true
+
+variables:
+  input: "{{input}}"
+  output_format: "{{output_format}}"
+  language: "{{language}}"
+  cleanup: "{{cleanup}}"
+
+agents:
+  ingester:
+    name: MediaIngester
+    role: Media Handler
+    goal: Download or load media files for processing
+    instructions: |
+      Handle media input:
+      - If YouTube URL, extract audio using youtube_tool
+      - If local file, verify it exists and is accessible
+      - Return the path to the audio file ready for transcription
+    tools: [youtube_tool]
+
+  transcriber:
+    name: Transcriber
+    role: Speech Recognition Specialist
+    goal: Convert audio to text using AI speech recognition
+    instructions: |
+      Transcribe the audio file:
+      - Use OpenAI Whisper API for transcription
+      - Detect language automatically if not specified
+      - Return raw transcript text with timestamps if available
+
+  editor:
+    name: TranscriptEditor
+    role: Content Editor
+    goal: Clean up and format the transcript for readability
+    instructions: |
+      Clean up the transcript:
+      - Fix punctuation and capitalization
+      - Add paragraph breaks at natural pauses
+      - Remove filler words (um, uh, like)
+      - Preserve speaker intent and meaning
+      - Do NOT change the actual content or meaning
+
+  exporter:
+    name: FormatExporter
+    role: Format Specialist
+    goal: Export transcript in the requested format
+    instructions: |
+      Export the transcript in {{output_format}} format:
+      - txt: Plain text with paragraphs
+      - srt: SubRip subtitle format with timestamps
+      - vtt: WebVTT format with timestamps
+      - json: Structured JSON with segments and metadata
+
+steps:
+  - name: ingest
+    agent: ingester
+    action: "Load or download media from: {{input}}"
+    output_variable: media_path
+    
+  - name: transcribe
+    agent: transcriber
+    action: "Transcribe audio file. Language: {{language}}"
+    context_from: [ingest]
+    output_variable: raw_transcript
+    
+  - name: cleanup
+    agent: editor
+    action: "Clean up transcript for readability"
+    context_from: [transcribe]
+    condition: "{{cleanup}}"
+    output_variable: clean_transcript
+    
+  - name: export
+    agent: exporter
+    action: "Export to {{output_format}} format"
+    context_from: [cleanup, transcribe]
+    output_variable: final_output

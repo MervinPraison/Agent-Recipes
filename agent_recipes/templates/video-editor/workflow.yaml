@@ -1,0 +1,92 @@
+name: Video Editor
+description: AI-powered video editing with natural language commands
+
+workflow:
+  verbose: true
+  stream: true
+
+variables:
+  input: "{{input}}"
+  output: "{{output}}"
+  instructions: "{{instructions}}"
+  preview: "{{preview}}"
+
+agents:
+  analyzer:
+    name: VideoAnalyzer
+    role: Video Analyst
+    goal: Analyze video properties and understand editing requirements
+    instructions: |
+      Analyze the input video:
+      - Get duration, resolution, codec, fps
+      - Identify key scenes and timestamps
+      - Parse editing instructions into specific operations
+      Return a structured edit plan.
+
+  planner:
+    name: EditPlanner
+    role: Edit Planner
+    goal: Create detailed editing plan from instructions
+    instructions: |
+      Create an editing plan from: {{instructions}}
+      Break down into specific operations:
+      - Trim/cut operations with timestamps
+      - Effects (fade, blur, color correction)
+      - Audio operations (volume, music, mute)
+      - Text overlays with position and timing
+      - Speed changes
+      Return ordered list of ffmpeg/moviepy operations.
+
+  renderer:
+    name: VideoRenderer
+    role: Video Renderer
+    goal: Execute video editing operations
+    instructions: |
+      Execute the editing plan:
+      - Use ffmpeg or moviepy for operations
+      - Maintain quality settings
+      - Handle audio/video sync
+      - Output to specified format
+    tools: [shell_tool]
+
+  qc_agent:
+    name: QualityChecker
+    role: QA Engineer
+    goal: Verify output video quality
+    instructions: |
+      Quality check the rendered video:
+      - Verify audio sync
+      - Check resolution matches expected
+      - Confirm no artifacts or glitches
+      - Validate file integrity
+
+steps:
+  - name: analyze
+    agent: analyzer
+    action: "Analyze video: {{input}}"
+    output_variable: video_info
+    
+  - name: plan
+    agent: planner
+    action: "Create edit plan from: {{instructions}}"
+    context_from: [analyze]
+    output_variable: edit_plan
+    
+  - name: preview
+    agent: renderer
+    action: "Generate low-res preview"
+    context_from: [plan]
+    condition: "{{preview}}"
+    output_variable: preview_path
+    
+  - name: render
+    agent: renderer
+    action: "Render final video to {{output}}"
+    context_from: [plan]
+    output_variable: output_path
+    
+  - name: qc
+    agent: qc_agent
+    action: "Quality check: verify audio sync, resolution, artifacts"
+    context_from: [render]
+    output_variable: qc_result

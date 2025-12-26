@@ -1,0 +1,57 @@
+name: transcript-generator
+version: "1.0.0"
+description: Generate transcripts from audio/video files using AI speech recognition
+author: praisonai
+license: Apache-2.0
+tags: [audio, video, transcript, speech-to-text, whisper]
+
+requires:
+  tools: [youtube_tool]
+  packages: [openai]
+  env: [OPENAI_API_KEY]
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Path to audio/video file or YouTube URL
+  output_format:
+    type: string
+    default: "txt"
+    enum: [txt, srt, vtt, json]
+  language:
+    type: string
+    default: "auto"
+    description: Language code (e.g., en, es, fr) or 'auto' for detection
+  cleanup:
+    type: boolean
+    default: true
+    description: Apply LLM cleanup for readability
+
+defaults:
+  output_format: txt
+  language: auto
+  cleanup: true
+
+cli:
+  command: transcript
+  args:
+    - name: input
+      positional: true
+      description: Audio/video file path or YouTube URL
+    - name: --format
+      default: txt
+      description: Output format (txt, srt, vtt, json)
+    - name: --language
+      default: auto
+      description: Language code or 'auto'
+    - name: --no-cleanup
+      flag: true
+      description: Skip LLM cleanup step
+  examples:
+    - praisonai run transcript-generator ./audio.mp3
+    - praisonai run transcript-generator ./video.mp4 --format srt
+    - praisonai run transcript-generator "https://youtube.com/watch?v=xxx" --language en

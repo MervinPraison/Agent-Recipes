@@ -1,0 +1,47 @@
+# Agent Recipes Manifest
+# This file indexes all available templates with checksums for security verification
+
+version: "1.0.0"
+repository: "github:MervinPraison/Agent-Recipes"
+updated: "2024-12-26"
+
+templates:
+  transcript-generator:
+    name: Transcript Generator
+    version: "1.0.0"
+    description: Generate transcripts from audio/video files using AI speech recognition
+    path: templates/transcript-generator
+    tags: [audio, video, transcript, speech-to-text, whisper]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [openai]
+    
+  shorts-generator:
+    name: Shorts Generator
+    version: "1.0.0"
+    description: Generate short-form video clips from long videos for social media
+    path: templates/shorts-generator
+    tags: [video, shorts, clips, social-media, tiktok, youtube-shorts]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [moviepy, pillow]
+    
+  video-editor:
+    name: Video Editor
+    version: "1.0.0"
+    description: AI-powered video editing with natural language commands
+    path: templates/video-editor
+    tags: [video, editing, effects, trim, render]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [moviepy, ffmpeg-python]
+    
+  data-transformer:
+    name: Data Transformer
+    version: "1.0.0"
+    description: Transform data between formats with AI-assisted schema mapping
+    path: templates/data-transformer
+    tags: [data, etl, transform, csv, json, xml, schema]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [pandas]

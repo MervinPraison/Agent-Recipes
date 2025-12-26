@@ -1,0 +1,86 @@
+name: Shorts Generator
+description: Generate short-form video clips from long videos
+
+workflow:
+  verbose: true
+  stream: true
+
+variables:
+  input: "{{input}}"
+  duration: "{{duration}}"
+  aspect_ratio: "{{aspect_ratio}}"
+  caption_style: "{{caption_style}}"
+  num_clips: "{{num_clips}}"
+
+agents:
+  analyzer:
+    name: ContentAnalyzer
+    role: Video Content Analyst
+    goal: Identify engaging moments for short clips
+    instructions: |
+      Analyze video transcript and identify:
+      1. Hook moments (first 3 seconds grabbers)
+      2. Key insights or memorable quotes
+      3. Emotional peaks and reactions
+      4. Call-to-action opportunities
+      5. Viral-worthy segments
+      Return timestamps and descriptions for {{num_clips}} best moments.
+    tools: [youtube_tool]
+
+  clipper:
+    name: VideoClipper
+    role: Video Editor
+    goal: Extract and format video clips
+    instructions: |
+      Extract clips from the video:
+      - Target duration: {{duration}} seconds
+      - Aspect ratio: {{aspect_ratio}}
+      - Include 1-2 second buffer at start/end
+      - Ensure clean cuts at natural breaks
+
+  captioner:
+    name: Captioner
+    role: Caption Designer
+    goal: Generate engaging captions for clips
+    instructions: |
+      Create captions for each clip:
+      - Style: {{caption_style}}
+      - Readable in 2-3 seconds per line
+      - Include relevant emoji where appropriate
+      - Hook viewers in first line
+      - End with engagement prompt
+
+  optimizer:
+    name: PlatformOptimizer
+    role: Social Media Specialist
+    goal: Optimize clips for platform requirements
+    instructions: |
+      Optimize each clip for social media:
+      - Add trending hashtags
+      - Suggest posting times
+      - Create thumbnail recommendations
+      - Write platform-specific descriptions
+
+steps:
+  - name: analyze
+    agent: analyzer
+    action: "Analyze video and identify {{num_clips}} best moments: {{input}}"
+    output_variable: moments
+    
+  - name: extract
+    agent: clipper
+    action: "Extract clips at identified timestamps"
+    context_from: [analyze]
+    output_variable: clips
+    
+  - name: caption
+    agent: captioner
+    action: "Generate captions for each clip"
+    context_from: [extract]
+    output_variable: captioned_clips
+    
+  - name: optimize
+    agent: optimizer
+    action: "Optimize clips for social media platforms"
+    context_from: [caption]
+    output_variable: final_clips

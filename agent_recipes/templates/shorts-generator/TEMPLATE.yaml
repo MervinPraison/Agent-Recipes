@@ -1,0 +1,65 @@
+name: shorts-generator
+version: "1.0.0"
+description: Generate short-form video clips from long videos for social media
+author: praisonai
+license: Apache-2.0
+tags: [video, shorts, clips, social-media, tiktok, youtube-shorts, reels]
+
+requires:
+  tools: [youtube_tool]
+  packages: [moviepy, pillow]
+  env: [OPENAI_API_KEY]
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Video file path or YouTube URL
+  duration:
+    type: integer
+    default: 60
+    description: Target clip duration in seconds (15-90)
+  aspect_ratio:
+    type: string
+    default: "9:16"
+    enum: ["9:16", "1:1", "16:9"]
+  caption_style:
+    type: string
+    default: "modern"
+    enum: [modern, classic, minimal, bold]
+  num_clips:
+    type: integer
+    default: 3
+    description: Number of clips to generate
+
+defaults:
+  duration: 60
+  aspect_ratio: "9:16"
+  caption_style: modern
+  num_clips: 3
+
+cli:
+  command: shorts
+  args:
+    - name: input
+      positional: true
+      description: Video file path or YouTube URL
+    - name: --duration
+      default: 60
+      description: Target clip duration in seconds
+    - name: --aspect
+      default: "9:16"
+      description: Aspect ratio (9:16, 1:1, 16:9)
+    - name: --style
+      default: modern
+      description: Caption style
+    - name: --clips
+      default: 3
+      description: Number of clips to generate
+  examples:
+    - praisonai run shorts-generator ./video.mp4
+    - praisonai run shorts-generator ./video.mp4 --duration 30 --clips 5
+    - praisonai run shorts-generator "https://youtube.com/watch?v=xxx" --aspect 1:1

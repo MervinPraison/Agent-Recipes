@@ -1,0 +1,55 @@
+name: video-editor
+version: "1.0.0"
+description: AI-powered video editing with natural language commands
+author: praisonai
+license: Apache-2.0
+tags: [video, editing, effects, trim, render]
+
+requires:
+  tools: [shell_tool, file_tool]
+  packages: [moviepy, ffmpeg-python]
+  env: [OPENAI_API_KEY]
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Input video file path
+  output:
+    type: string
+    description: Output video file path
+  instructions:
+    type: string
+    required: true
+    description: Natural language editing instructions
+  preview:
+    type: boolean
+    default: true
+    description: Generate preview before final render
+
+defaults:
+  preview: true
+
+cli:
+  command: video-edit
+  args:
+    - name: input
+      positional: true
+      description: Input video file
+    - name: --output
+      short: -o
+      description: Output video file
+    - name: --instructions
+      short: -i
+      required: true
+      description: Editing instructions in natural language
+    - name: --no-preview
+      flag: true
+      description: Skip preview generation
+  examples:
+    - praisonai run video-editor ./raw.mp4 -o ./final.mp4 -i "Trim first 10s, add fade in"
+    - praisonai run video-editor ./video.mp4 -i "Speed up 1.5x, add background music"
+    - praisonai run video-editor ./clip.mp4 -i "Add text overlay 'Hello World' at center"

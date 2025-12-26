@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-recipes"
+version = "0.1.0"
+description = "Real-world AI agent templates and recipes for PraisonAI"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Mervin Praison", email = "mervin@praison.com"}
+]
+keywords = ["ai", "agents", "templates", "recipes", "praisonai", "workflow"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+transcript = [
+    "openai-whisper>=20231117",
+    "yt-dlp>=2023.11.16",
+]
+video = [
+    "moviepy>=1.0.3",
+    "ffmpeg-python>=0.2.0",
+]
+all = [
+    "agent-recipes[transcript,video]",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MervinPraison/Agent-Recipes"
+Documentation = "https://docs.praison.ai/templates"
+Repository = "https://github.com/MervinPraison/Agent-Recipes"
+Issues = "https://github.com/MervinPraison/Agent-Recipes/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_recipes*"]
+
+[tool.setuptools.package-data]
+agent_recipes = ["templates/**/*"]
