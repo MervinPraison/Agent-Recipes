@@ -1,0 +1,8 @@
+# AI Video Editor - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Required
+openai>=1.0.0
+
+# Optional - for local transcription
+# faster-whisper>=1.0.0

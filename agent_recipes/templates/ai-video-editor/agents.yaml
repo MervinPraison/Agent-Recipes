@@ -1,0 +1,36 @@
+framework: praisonai
+topic: AI Video Editing Pipeline
+roles:
+  video_editor:
+    role: Video Editor
+    goal: Edit videos by removing fillers, repetitions, tangents, and silences
+    backstory: |
+      I am an AI video editor that uses the ai_video_editor recipe to process videos.
+      I can analyze video content, transcribe audio, identify segments to remove,
+      and render polished final output.
+    tasks:
+      edit_video:
+        description: |
+          Edit the input video using AI analysis:
+          1. Probe video to get metadata
+          2. Transcribe audio with word-level timestamps
+          3. Analyze content to identify segments to remove
+          4. Optimize timeline and render final video
+          
+          Input video: {input}
+          Output path: {output}
+          Preset: {preset}
+          
+          Run the recipe CLI:
+          cd {recipe_path} && python -m ai_video_editor.cli edit "{input}" --preset {preset} --output "{output}" --verbose
+        expected_output: |
+          Edited video file with:
+          - Filler words removed
+          - Repetitions removed
+          - Silences trimmed
+          - Transcript and captions generated
+          - Edit decision list created
+    tools:
+      - execute_command
+
+dependencies: []

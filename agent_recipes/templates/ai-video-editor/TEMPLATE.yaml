@@ -1,0 +1,137 @@
+name: ai-video-editor
+version: "1.0.0"
+description: |
+  End-to-end AI-powered video editor that automatically:
+  - Understands video content through transcription
+  - Removes filler words (um, uh, like, you know)
+  - Removes word repetitions and stutters
+  - Identifies and removes tangent/off-topic segments
+  - Removes long silences
+  - Generates transcripts, captions, and edit decision lists
+  - Produces polished final video output
+  
+  This is a SELF-CONTAINED recipe that runs independently.
+  No modifications to praisonai or praisonaiagents required.
+
+author: praisonai
+license: Apache-2.0
+tags: [video, editing, ai, transcription, filler-removal, podcast, meeting, course]
+
+requires:
+  tools: [shell_tool]
+  packages: []
+  env: [OPENAI_API_KEY]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+      install_hint: "brew install ffmpeg (macOS) or apt install ffmpeg (Linux)"
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Input video file path
+  output:
+    type: string
+    description: Output video file path (default: input_edited.mp4)
+  preset:
+    type: string
+    default: podcast
+    enum: [podcast, meeting, course, clean]
+    description: Edit preset determining removal aggressiveness
+  remove_fillers:
+    type: boolean
+    default: true
+    description: Remove filler words (um, uh, like, etc.)
+  remove_repetitions:
+    type: boolean
+    default: true
+    description: Remove repeated phrases and stutters
+  remove_tangents:
+    type: boolean
+    default: false
+    description: Remove off-topic content (LLM-based)
+  remove_silence:
+    type: boolean
+    default: true
+    description: Remove long silences
+  target_length:
+    type: string
+    description: Target output duration (e.g., 6m, 90s)
+  verbose:
+    type: boolean
+    default: false
+    description: Enable verbose output
+
+defaults:
+  preset: podcast
+  remove_fillers: true
+  remove_repetitions: true
+  remove_tangents: false
+  remove_silence: true
+  verbose: false
+
+cli:
+  command: ai-video-editor
+  args:
+    - name: input
+      positional: true
+      required: true
+      description: Input video file
+    - name: --output
+      short: -o
+      description: Output video file
+    - name: --preset
+      short: -p
+      default: podcast
+      description: Edit preset (podcast, meeting, course, clean)
+    - name: --remove-fillers
+      flag: true
+      description: Remove filler words
+    - name: --remove-repetitions
+      flag: true
+      description: Remove repeated phrases
+    - name: --remove-tangents
+      flag: true
+      description: Remove off-topic content
+    - name: --target-length
+      description: Target duration (e.g., 6m, 90s)
+    - name: --verbose
+      short: -v
+      flag: true
+      description: Enable verbose output
+  examples:
+    - "python -m ai_video_editor.cli edit input.mp4 --preset podcast --output out.mp4"
+    - "python -m ai_video_editor.cli edit input.mp4 --remove-fillers --remove-tangents"
+    - "python -m ai_video_editor.cli probe input.mp4"
+    - "python -m ai_video_editor.cli transcript input.mp4 --output transcript.srt"
+    - "praisonai templates run ai-video-editor input.mp4 --output edited.mp4"
+
+outputs:
+  - name: output_video
+    type: file
+    description: Final edited video file
+  - name: transcript
+    type: file
+    description: Plain text transcript
+  - name: captions
+    type: file
+    description: SRT caption file
+  - name: edit_plan
+    type: file
+    description: JSON edit plan with segments
+  - name: edl
+    type: file
+    description: Edit Decision List file
+  - name: report
+    type: file
+    description: Full JSON report with all metadata
+
+# Self-contained execution
+# This recipe can be run via:
+# 1. praisonai templates run ai-video-editor <input> --output <output>
+# 2. python -m ai_video_editor.cli edit <input> --output <output>
+# 3. ./scripts/run.sh <input> --output <output>

@@ -1,0 +1,55 @@
+name: AI Video Editor Workflow
+description: |
+  End-to-end AI video editing pipeline using the self-contained recipe.
+  This workflow uses shell_tool to invoke the recipe's CLI.
+
+process: sequential
+
+variables:
+  input: ""
+  output: ""
+  preset: "podcast"
+  verbose: "true"
+
+agents:
+  video_editor:
+    name: VideoEditor
+    role: Video Editor
+    goal: Edit videos using AI analysis
+    instructions: |
+      You are an AI video editor. Use the ai_video_editor CLI to process videos.
+      The CLI is located in the src directory of this template.
+      
+      Available commands:
+      - edit: Edit video with AI analysis
+      - probe: Extract video metadata
+      - transcript: Generate transcript
+      - doctor: Check dependencies
+    tools: [shell_tool]
+
+tasks:
+  - name: check_dependencies
+    agent: video_editor
+    description: |
+      Check that all dependencies are available.
+      Run: cd {template_path}/src && python -m ai_video_editor.cli doctor
+    expected_output: Dependency check results
+
+  - name: probe_video
+    agent: video_editor
+    description: |
+      Probe the input video to get metadata.
+      Run: cd {template_path}/src && python -m ai_video_editor.cli probe "{input}"
+    expected_output: Video metadata (duration, resolution, fps, codec)
+
+  - name: edit_video
+    agent: video_editor
+    description: |
+      Edit the video using AI analysis.
+      Run: cd {template_path}/src && python -m ai_video_editor.cli edit "{input}" --preset {preset} --output "{output}" --verbose
+    expected_output: |
+      Edited video with:
+      - Filler words removed
+      - Repetitions removed
+      - Silences trimmed
+      - Transcript and captions generated

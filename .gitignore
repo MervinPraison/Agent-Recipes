@@ -167,3 +167,9 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+*.chainlit
+*.files
+*.mov
+*.mp4
+*.praison
