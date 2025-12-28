@@ -19,8 +19,10 @@ tags: [video, editing, ai, transcription, filler-removal, podcast, meeting, cour
 
 requires:
   tools: [shell_tool]
-  packages: []
+  packages: [praisonai-tools]
   env: [OPENAI_API_KEY]
+  tools_sources:
+    - praisonai_tools.video
   external:
     - name: ffmpeg
       check: "ffmpeg -version"

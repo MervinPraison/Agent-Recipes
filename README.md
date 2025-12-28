@@ -18,12 +18,30 @@ pip install -e .
 
 ## Available Templates
 
-| Template | Description |
-|----------|-------------|
-| `transcript-generator` | Generate transcripts from audio/video files |
-| `shorts-generator` | Create short-form video clips for social media |
-| `video-editor` | AI-powered video editing with natural language |
-| `data-transformer` | Transform data between formats with AI mapping |
+| Template | Description | Example | Docs |
+|----------|-------------|---------|------|
+| `transcript-generator` | Generate transcripts from audio/video files | [examples/](agent_recipes/templates/transcript-generator/examples/) | - |
+| `shorts-generator` | Create short-form video clips for social media | [examples/](agent_recipes/templates/shorts-generator/examples/) | - |
+| `ai-video-editor` | AI-powered video editing with filler/silence removal | [examples/](agent_recipes/templates/ai-video-editor/examples/) | [README](agent_recipes/templates/ai-video-editor/README.md) |
+| `data-transformer` | Transform data between formats with AI mapping | [examples/](agent_recipes/templates/data-transformer/examples/) | - |
+
+## ai-video-editor
+
+```bash
+praisonai templates run ai-video-editor --input video.mp4 --output edited.mp4
+```
+
+```bash
+praisonai templates run ai-video-editor --input video.mp4 --output edited.mp4 --preset podcast
+```
+
+```bash
+praisonai templates run ai-video-editor --input video.mp4 --tools ./my_tools.py
+```
+
+```bash
+praisonai templates run ai-video-editor --input video.mp4 --tools-source praisonai_tools.video
+```
 
 ## Usage
 
