@@ -1,0 +1,28 @@
+name: ai-image-tagger
+version: "1.0.0"
+description: Auto-tag images with keywords/categories
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - tagging
+  - classification
+
+requires:
+  tools:
+    - vision_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-image-tagger
+  examples:
+    - praison recipes run ai-image-tagger <input>
+    - praison recipes run ai-image-tagger <input> --output ./output/
+    - praison recipes run ai-image-tagger <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

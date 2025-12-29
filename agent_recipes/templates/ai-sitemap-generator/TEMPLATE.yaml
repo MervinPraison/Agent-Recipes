@@ -1,0 +1,26 @@
+name: ai-sitemap-generator
+version: "1.0.0"
+description: Generate XML sitemaps from URLs
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - sitemap
+  - seo
+
+requires:
+  tools:
+    - web_tool
+  packages:
+    - requests
+
+cli:
+  command: praison recipes run ai-sitemap-generator
+  examples:
+    - praison recipes run ai-sitemap-generator <input>
+    - praison recipes run ai-sitemap-generator <input> --output ./output/
+    - praison recipes run ai-sitemap-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

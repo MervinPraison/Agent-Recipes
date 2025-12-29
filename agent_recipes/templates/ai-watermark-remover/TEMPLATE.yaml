@@ -1,0 +1,32 @@
+name: ai-watermark-remover
+version: "1.0.0"
+description: Remove watermarks from images (COPYRIGHT WARNING)
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - watermark
+  - removal
+
+requires:
+  tools:
+    - vision_tool
+    - image_tool
+  packages:
+    - openai
+    - pillow
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-watermark-remover
+  examples:
+    - praison recipes run ai-watermark-remover <input>
+    - praison recipes run ai-watermark-remover <input> --output ./output/
+    - praison recipes run ai-watermark-remover <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true
+  requires_consent: true
+  consent_message: "Only use on images you have rights to modify."

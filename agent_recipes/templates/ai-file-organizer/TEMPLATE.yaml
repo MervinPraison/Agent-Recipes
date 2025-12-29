@@ -1,0 +1,29 @@
+name: ai-file-organizer
+version: "1.0.0"
+description: Auto-organize files into folders by content
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - files
+  - organization
+
+requires:
+  tools:
+    - llm_tool
+    - vision_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-file-organizer
+  examples:
+    - praison recipes run ai-file-organizer <input>
+    - praison recipes run ai-file-organizer <input> --output ./output/
+    - praison recipes run ai-file-organizer <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

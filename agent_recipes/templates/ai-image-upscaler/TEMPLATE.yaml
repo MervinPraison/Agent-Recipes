@@ -1,0 +1,27 @@
+name: ai-image-upscaler
+version: "1.0.0"
+description: AI upscale images 2x-8x with quality preservation
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - upscale
+  - enhancement
+
+requires:
+  tools:
+    - image_tool
+  packages:
+    - realesrgan
+    - pillow
+
+cli:
+  command: praison recipes run ai-image-upscaler
+  examples:
+    - praison recipes run ai-image-upscaler <input>
+    - praison recipes run ai-image-upscaler <input> --output ./output/
+    - praison recipes run ai-image-upscaler <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

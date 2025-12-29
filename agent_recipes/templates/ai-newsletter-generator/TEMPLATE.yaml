@@ -1,0 +1,28 @@
+name: ai-newsletter-generator
+version: "1.0.0"
+description: Generate email newsletters from content
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - newsletter
+  - email
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-newsletter-generator
+  examples:
+    - praison recipes run ai-newsletter-generator <input>
+    - praison recipes run ai-newsletter-generator <input> --output ./output/
+    - praison recipes run ai-newsletter-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

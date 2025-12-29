@@ -1,0 +1,32 @@
+name: ai-meeting-summarizer
+version: "1.0.0"
+description: Summarize meeting transcripts with action items
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - meeting
+  - summary
+  - action-items
+
+requires:
+  tools:
+    - whisper_tool
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-meeting-summarizer
+  examples:
+    - praison recipes run ai-meeting-summarizer <input>
+    - praison recipes run ai-meeting-summarizer <input> --output ./output/
+    - praison recipes run ai-meeting-summarizer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

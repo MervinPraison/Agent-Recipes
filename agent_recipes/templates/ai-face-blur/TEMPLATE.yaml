@@ -1,0 +1,28 @@
+name: ai-face-blur
+version: "1.0.0"
+description: Detect and blur faces for privacy protection
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - privacy
+  - face
+  - blur
+
+requires:
+  tools:
+    - image_tool
+  packages:
+    - opencv-python
+    - pillow
+
+cli:
+  command: praison recipes run ai-face-blur
+  examples:
+    - praison recipes run ai-face-blur <input>
+    - praison recipes run ai-face-blur <input> --output ./output/
+    - praison recipes run ai-face-blur <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

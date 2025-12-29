@@ -1,0 +1,29 @@
+name: ai-api-doc-generator
+version: "1.0.0"
+description: Generate OpenAPI/Swagger docs from code
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - api
+  - documentation
+  - openapi
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-api-doc-generator
+  examples:
+    - praison recipes run ai-api-doc-generator <input>
+    - praison recipes run ai-api-doc-generator <input> --output ./output/
+    - praison recipes run ai-api-doc-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

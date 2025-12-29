@@ -1,0 +1,33 @@
+name: ai-video-highlight-extractor
+version: "1.0.0"
+description: Auto-detect and extract key moments/highlights from long videos
+author: praison
+license: Apache-2.0
+tags:
+  - video
+  - highlights
+  - extraction
+
+requires:
+  tools:
+    - media_tool
+    - whisper_tool
+    - llm_tool
+  packages:
+    - ffmpeg-python
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-video-highlight-extractor
+  examples:
+    - praison recipes run ai-video-highlight-extractor <input>
+    - praison recipes run ai-video-highlight-extractor <input> --output ./output/
+    - praison recipes run ai-video-highlight-extractor <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

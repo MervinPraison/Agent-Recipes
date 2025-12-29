@@ -1,0 +1,33 @@
+name: ai-resume-parser
+version: "1.0.0"
+description: Parse CVs/resumes into structured JSON format
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - resume
+  - cv
+  - parsing
+
+requires:
+  tools:
+    - doc_tool
+    - llm_tool
+  packages:
+    - openai
+    - pdftotext
+  env:
+    - OPENAI_API_KEY
+  external:
+    - poppler
+
+cli:
+  command: praison recipes run ai-resume-parser
+  examples:
+    - praison recipes run ai-resume-parser <input>
+    - praison recipes run ai-resume-parser <input> --output ./output/
+    - praison recipes run ai-resume-parser <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

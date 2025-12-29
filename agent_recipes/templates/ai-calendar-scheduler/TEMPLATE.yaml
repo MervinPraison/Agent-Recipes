@@ -1,0 +1,29 @@
+name: ai-calendar-scheduler
+version: "1.0.0"
+description: Parse and schedule events from text to iCal
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - calendar
+  - scheduling
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+    - icalendar
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-calendar-scheduler
+  examples:
+    - praison recipes run ai-calendar-scheduler <input>
+    - praison recipes run ai-calendar-scheduler <input> --output ./output/
+    - praison recipes run ai-calendar-scheduler <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

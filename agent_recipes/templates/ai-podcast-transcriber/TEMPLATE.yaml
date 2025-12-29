@@ -1,0 +1,32 @@
+name: ai-podcast-transcriber
+version: "1.0.0"
+description: Full podcast transcription with speaker diarization
+author: praison
+license: Apache-2.0
+tags:
+  - audio
+  - podcast
+  - transcription
+  - diarization
+
+requires:
+  tools:
+    - whisper_tool
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-podcast-transcriber
+  examples:
+    - praison recipes run ai-podcast-transcriber <input>
+    - praison recipes run ai-podcast-transcriber <input> --output ./output/
+    - praison recipes run ai-podcast-transcriber <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

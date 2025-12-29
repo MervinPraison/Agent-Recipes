@@ -1,0 +1,30 @@
+name: ai-form-filler
+version: "1.0.0"
+description: Auto-fill PDF forms from data sources
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - pdf
+  - forms
+
+requires:
+  tools:
+    - doc_tool
+    - llm_tool
+  packages:
+    - pypdf
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-form-filler
+  examples:
+    - praison recipes run ai-form-filler <input>
+    - praison recipes run ai-form-filler <input> --output ./output/
+    - praison recipes run ai-form-filler <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

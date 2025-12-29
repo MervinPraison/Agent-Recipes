@@ -1,0 +1,27 @@
+name: ai-background-remover
+version: "1.0.0"
+description: Batch remove backgrounds from images
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - background
+  - removal
+
+requires:
+  tools:
+    - image_tool
+  packages:
+    - rembg
+    - pillow
+
+cli:
+  command: praison recipes run ai-background-remover
+  examples:
+    - praison recipes run ai-background-remover <input>
+    - praison recipes run ai-background-remover <input> --output ./output/
+    - praison recipes run ai-background-remover <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

@@ -1,0 +1,29 @@
+name: ai-slide-generator
+version: "1.0.0"
+description: Generate presentation slides from text/outline
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - presentation
+  - slides
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+    - python-pptx
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-slide-generator
+  examples:
+    - praison recipes run ai-slide-generator <input>
+    - praison recipes run ai-slide-generator <input> --output ./output/
+    - praison recipes run ai-slide-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

@@ -1,0 +1,28 @@
+name: ai-code-refactorer
+version: "1.0.0"
+description: Refactor code with AI suggestions (patch-based, tests-first option)
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - refactoring
+  - improvement
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-code-refactorer
+  examples:
+    - praison recipes run ai-code-refactorer <input>
+    - praison recipes run ai-code-refactorer <input> --output ./output/
+    - praison recipes run ai-code-refactorer <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

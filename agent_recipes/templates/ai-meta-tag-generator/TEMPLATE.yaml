@@ -1,0 +1,28 @@
+name: ai-meta-tag-generator
+version: "1.0.0"
+description: Generate SEO meta tags for pages
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - seo
+  - meta-tags
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-meta-tag-generator
+  examples:
+    - praison recipes run ai-meta-tag-generator <input>
+    - praison recipes run ai-meta-tag-generator <input> --output ./output/
+    - praison recipes run ai-meta-tag-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

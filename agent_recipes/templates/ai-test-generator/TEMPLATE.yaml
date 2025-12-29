@@ -1,0 +1,28 @@
+name: ai-test-generator
+version: "1.0.0"
+description: Generate unit/integration tests from code
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - testing
+  - generation
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-test-generator
+  examples:
+    - praison recipes run ai-test-generator <input>
+    - praison recipes run ai-test-generator <input> --output ./output/
+    - praison recipes run ai-test-generator <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

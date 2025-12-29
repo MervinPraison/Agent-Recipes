@@ -1,0 +1,26 @@
+name: ai-barcode-scanner
+version: "1.0.0"
+description: Extract data from barcodes/QR codes
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - barcode
+  - scanning
+
+requires:
+  tools:
+  packages:
+    - pyzbar
+    - pillow
+
+cli:
+  command: praison recipes run ai-barcode-scanner
+  examples:
+    - praison recipes run ai-barcode-scanner <input>
+    - praison recipes run ai-barcode-scanner <input> --output ./output/
+    - praison recipes run ai-barcode-scanner <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

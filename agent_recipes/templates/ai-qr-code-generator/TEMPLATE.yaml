@@ -1,0 +1,26 @@
+name: ai-qr-code-generator
+version: "1.0.0"
+description: Generate QR codes from data
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - qr-code
+  - generation
+
+requires:
+  tools:
+  packages:
+    - qrcode
+    - pillow
+
+cli:
+  command: praison recipes run ai-qr-code-generator
+  examples:
+    - praison recipes run ai-qr-code-generator <input>
+    - praison recipes run ai-qr-code-generator <input> --output ./output/
+    - praison recipes run ai-qr-code-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

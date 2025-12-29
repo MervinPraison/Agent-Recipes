@@ -1,0 +1,31 @@
+name: ai-data-anonymizer
+version: "1.0.0"
+description: Anonymize PII in datasets (GDPR/CCPA-oriented)
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - privacy
+  - anonymization
+  - gdpr
+
+requires:
+  tools:
+    - data_tool
+    - llm_tool
+  packages:
+    - openai
+    - pandas
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-data-anonymizer
+  examples:
+    - praison recipes run ai-data-anonymizer <input>
+    - praison recipes run ai-data-anonymizer <input> --output ./output/
+    - praison recipes run ai-data-anonymizer <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

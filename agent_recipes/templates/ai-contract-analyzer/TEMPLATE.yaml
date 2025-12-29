@@ -1,0 +1,34 @@
+name: ai-contract-analyzer
+version: "1.0.0"
+description: Extract key terms, dates, obligations from contracts (LEGAL DISCLAIMER)
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - contract
+  - legal
+  - analysis
+
+requires:
+  tools:
+    - doc_tool
+    - llm_tool
+  packages:
+    - openai
+    - pdftotext
+  env:
+    - OPENAI_API_KEY
+  external:
+    - poppler
+
+cli:
+  command: praison recipes run ai-contract-analyzer
+  examples:
+    - praison recipes run ai-contract-analyzer <input>
+    - praison recipes run ai-contract-analyzer <input> --output ./output/
+    - praison recipes run ai-contract-analyzer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true
+  legal_disclaimer: "This tool provides extraction only, not legal advice."

@@ -1,0 +1,30 @@
+name: ai-etl-pipeline
+version: "1.0.0"
+description: Transform data between formats with mapping
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - etl
+  - transformation
+
+requires:
+  tools:
+    - data_tool
+    - llm_tool
+  packages:
+    - pandas
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-etl-pipeline
+  examples:
+    - praison recipes run ai-etl-pipeline <input>
+    - praison recipes run ai-etl-pipeline <input> --output ./output/
+    - praison recipes run ai-etl-pipeline <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

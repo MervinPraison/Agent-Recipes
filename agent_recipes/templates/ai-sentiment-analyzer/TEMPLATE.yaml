@@ -1,0 +1,28 @@
+name: ai-sentiment-analyzer
+version: "1.0.0"
+description: Analyze sentiment in text data
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - sentiment
+  - nlp
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-sentiment-analyzer
+  examples:
+    - praison recipes run ai-sentiment-analyzer <input>
+    - praison recipes run ai-sentiment-analyzer <input> --output ./output/
+    - praison recipes run ai-sentiment-analyzer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

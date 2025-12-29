@@ -1,0 +1,28 @@
+name: ai-translation-batch
+version: "1.0.0"
+description: Batch translate documents to multiple languages
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - translation
+  - localization
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-translation-batch
+  examples:
+    - praison recipes run ai-translation-batch <input>
+    - praison recipes run ai-translation-batch <input> --output ./output/
+    - praison recipes run ai-translation-batch <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

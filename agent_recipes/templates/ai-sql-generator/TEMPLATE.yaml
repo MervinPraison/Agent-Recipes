@@ -1,0 +1,28 @@
+name: ai-sql-generator
+version: "1.0.0"
+description: Natural language to SQL queries
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - sql
+  - database
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-sql-generator
+  examples:
+    - praison recipes run ai-sql-generator <input>
+    - praison recipes run ai-sql-generator <input> --output ./output/
+    - praison recipes run ai-sql-generator <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

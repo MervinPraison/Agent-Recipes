@@ -1,0 +1,28 @@
+name: ai-video-compressor
+version: "1.0.0"
+description: AI-optimized video compression maintaining quality with presets
+author: praison
+license: Apache-2.0
+tags:
+  - video
+  - compression
+  - optimization
+
+requires:
+  tools:
+    - media_tool
+  packages:
+    - ffmpeg-python
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-video-compressor
+  examples:
+    - praison recipes run ai-video-compressor <input>
+    - praison recipes run ai-video-compressor <input> --output ./output/
+    - praison recipes run ai-video-compressor <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

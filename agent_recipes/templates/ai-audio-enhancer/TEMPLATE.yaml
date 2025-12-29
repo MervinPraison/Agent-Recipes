@@ -1,0 +1,28 @@
+name: ai-audio-enhancer
+version: "1.0.0"
+description: Noise removal, EQ, and loudness normalization for audio
+author: praison
+license: Apache-2.0
+tags:
+  - audio
+  - enhancement
+  - noise-removal
+
+requires:
+  tools:
+    - media_tool
+  packages:
+    - ffmpeg-python
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-audio-enhancer
+  examples:
+    - praison recipes run ai-audio-enhancer <input>
+    - praison recipes run ai-audio-enhancer <input> --output ./output/
+    - praison recipes run ai-audio-enhancer <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

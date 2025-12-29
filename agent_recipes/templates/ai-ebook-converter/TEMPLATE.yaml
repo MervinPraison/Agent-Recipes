@@ -1,0 +1,27 @@
+name: ai-ebook-converter
+version: "1.0.0"
+description: Convert documents to EPUB/MOBI with formatting
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - ebook
+  - conversion
+
+requires:
+  tools:
+    - doc_tool
+  external:
+    - pandoc
+    - calibre
+
+cli:
+  command: praison recipes run ai-ebook-converter
+  examples:
+    - praison recipes run ai-ebook-converter <input>
+    - praison recipes run ai-ebook-converter <input> --output ./output/
+    - praison recipes run ai-ebook-converter <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

@@ -1,0 +1,26 @@
+name: ai-watermark-adder
+version: "1.0.0"
+description: Batch add watermarks/logos to images
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - watermark
+  - branding
+
+requires:
+  tools:
+    - image_tool
+  packages:
+    - pillow
+
+cli:
+  command: praison recipes run ai-watermark-adder
+  examples:
+    - praison recipes run ai-watermark-adder <input>
+    - praison recipes run ai-watermark-adder <input> --output ./output/
+    - praison recipes run ai-watermark-adder <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

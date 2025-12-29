@@ -1,0 +1,28 @@
+name: ai-faq-generator
+version: "1.0.0"
+description: Generate FAQ from documentation/knowledge base
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - faq
+  - generation
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-faq-generator
+  examples:
+    - praison recipes run ai-faq-generator <input>
+    - praison recipes run ai-faq-generator <input> --output ./output/
+    - praison recipes run ai-faq-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

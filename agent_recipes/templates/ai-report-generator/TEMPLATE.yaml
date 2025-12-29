@@ -1,0 +1,32 @@
+name: ai-report-generator
+version: "1.0.0"
+description: Generate business reports from data
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - report
+  - analytics
+
+requires:
+  tools:
+    - data_tool
+    - llm_tool
+    - chart_tool
+  packages:
+    - openai
+    - pandas
+    - matplotlib
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-report-generator
+  examples:
+    - praison recipes run ai-report-generator <input>
+    - praison recipes run ai-report-generator <input> --output ./output/
+    - praison recipes run ai-report-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

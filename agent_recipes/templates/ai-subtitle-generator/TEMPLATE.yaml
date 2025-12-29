@@ -1,0 +1,31 @@
+name: ai-subtitle-generator
+version: "1.0.0"
+description: Auto-generate SRT/VTT subtitles in 60+ languages with timestamps
+author: praison
+license: Apache-2.0
+tags:
+  - video
+  - audio
+  - subtitles
+  - transcription
+
+requires:
+  tools:
+    - whisper_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - ffmpeg
+
+cli:
+  command: praison recipes run ai-subtitle-generator
+  examples:
+    - praison recipes run ai-subtitle-generator <input>
+    - praison recipes run ai-subtitle-generator <input> --output ./output/
+    - praison recipes run ai-subtitle-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

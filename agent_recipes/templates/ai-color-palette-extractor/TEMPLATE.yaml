@@ -1,0 +1,27 @@
+name: ai-color-palette-extractor
+version: "1.0.0"
+description: Extract dominant colors from images
+author: praison
+license: Apache-2.0
+tags:
+  - image
+  - color
+  - palette
+
+requires:
+  tools:
+    - image_tool
+  packages:
+    - pillow
+    - colorthief
+
+cli:
+  command: praison recipes run ai-color-palette-extractor
+  examples:
+    - praison recipes run ai-color-palette-extractor <input>
+    - praison recipes run ai-color-palette-extractor <input> --output ./output/
+    - praison recipes run ai-color-palette-extractor <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

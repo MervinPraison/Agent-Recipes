@@ -1,0 +1,28 @@
+name: ai-duplicate-finder
+version: "1.0.0"
+description: Find and deduplicate similar files
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - deduplication
+  - files
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-duplicate-finder
+  examples:
+    - praison recipes run ai-duplicate-finder <input>
+    - praison recipes run ai-duplicate-finder <input> --output ./output/
+    - praison recipes run ai-duplicate-finder <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

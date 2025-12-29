@@ -1,0 +1,31 @@
+name: ai-code-reviewer
+version: "1.0.0"
+description: Automated code review with suggestions
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - review
+  - quality
+
+requires:
+  tools:
+    - repo_tool
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - git
+
+cli:
+  command: praison recipes run ai-code-reviewer
+  examples:
+    - praison recipes run ai-code-reviewer <input>
+    - praison recipes run ai-code-reviewer <input> --output ./output/
+    - praison recipes run ai-code-reviewer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

@@ -1,0 +1,31 @@
+name: ai-voice-cloner
+version: "1.0.0"
+description: Clone voice from sample for TTS narration (CONSENT REQUIRED)
+author: praison
+license: Apache-2.0
+tags:
+  - audio
+  - voice
+  - tts
+  - cloning
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-voice-cloner
+  examples:
+    - praison recipes run ai-voice-cloner <input>
+    - praison recipes run ai-voice-cloner <input> --output ./output/
+    - praison recipes run ai-voice-cloner <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true
+  requires_consent: true
+  consent_message: "Voice cloning requires explicit consent from the voice owner."

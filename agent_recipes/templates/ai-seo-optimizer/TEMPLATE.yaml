@@ -1,0 +1,28 @@
+name: ai-seo-optimizer
+version: "1.0.0"
+description: Optimize content for SEO with keywords
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - seo
+  - optimization
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-seo-optimizer
+  examples:
+    - praison recipes run ai-seo-optimizer <input>
+    - praison recipes run ai-seo-optimizer <input> --output ./output/
+    - praison recipes run ai-seo-optimizer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

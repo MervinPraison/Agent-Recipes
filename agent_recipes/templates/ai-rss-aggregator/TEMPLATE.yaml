@@ -1,0 +1,30 @@
+name: ai-rss-aggregator
+version: "1.0.0"
+description: Aggregate and summarize RSS feeds
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - rss
+  - aggregation
+
+requires:
+  tools:
+    - web_tool
+    - llm_tool
+  packages:
+    - openai
+    - feedparser
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-rss-aggregator
+  examples:
+    - praison recipes run ai-rss-aggregator <input>
+    - praison recipes run ai-rss-aggregator <input> --output ./output/
+    - praison recipes run ai-rss-aggregator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

@@ -1,0 +1,28 @@
+name: ai-blog-generator
+version: "1.0.0"
+description: Generate SEO-optimized blog posts
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - blog
+  - content
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-blog-generator
+  examples:
+    - praison recipes run ai-blog-generator <input>
+    - praison recipes run ai-blog-generator <input> --output ./output/
+    - praison recipes run ai-blog-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

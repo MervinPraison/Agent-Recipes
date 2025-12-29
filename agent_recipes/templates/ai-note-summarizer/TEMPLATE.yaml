@@ -1,0 +1,28 @@
+name: ai-note-summarizer
+version: "1.0.0"
+description: Summarize notes and documents
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - notes
+  - summary
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-note-summarizer
+  examples:
+    - praison recipes run ai-note-summarizer <input>
+    - praison recipes run ai-note-summarizer <input> --output ./output/
+    - praison recipes run ai-note-summarizer <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

@@ -1,0 +1,28 @@
+name: ai-excel-formula-generator
+version: "1.0.0"
+description: Generate Excel formulas from descriptions
+author: praison
+license: Apache-2.0
+tags:
+  - data
+  - excel
+  - formulas
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-excel-formula-generator
+  examples:
+    - praison recipes run ai-excel-formula-generator <input>
+    - praison recipes run ai-excel-formula-generator <input> --output ./output/
+    - praison recipes run ai-excel-formula-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

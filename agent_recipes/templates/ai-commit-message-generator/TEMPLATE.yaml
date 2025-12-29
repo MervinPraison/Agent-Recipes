@@ -1,0 +1,31 @@
+name: ai-commit-message-generator
+version: "1.0.0"
+description: Generate git commit messages from diffs
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - git
+  - commit
+
+requires:
+  tools:
+    - repo_tool
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+  external:
+    - git
+
+cli:
+  command: praison recipes run ai-commit-message-generator
+  examples:
+    - praison recipes run ai-commit-message-generator <input>
+    - praison recipes run ai-commit-message-generator <input> --output ./output/
+    - praison recipes run ai-commit-message-generator <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

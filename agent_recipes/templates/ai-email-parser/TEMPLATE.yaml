@@ -1,0 +1,29 @@
+name: ai-email-parser
+version: "1.0.0"
+description: Extract structured data from emails
+author: praison
+license: Apache-2.0
+tags:
+  - productivity
+  - email
+  - extraction
+
+requires:
+  tools:
+    - email_tool
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-email-parser
+  examples:
+    - praison recipes run ai-email-parser <input>
+    - praison recipes run ai-email-parser <input> --output ./output/
+    - praison recipes run ai-email-parser <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

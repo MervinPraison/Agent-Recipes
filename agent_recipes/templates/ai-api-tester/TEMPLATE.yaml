@@ -1,0 +1,29 @@
+name: ai-api-tester
+version: "1.0.0"
+description: Auto-generate and run API endpoint tests
+author: praison
+license: Apache-2.0
+tags:
+  - code
+  - api
+  - testing
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+    - requests
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-api-tester
+  examples:
+    - praison recipes run ai-api-tester <input>
+    - praison recipes run ai-api-tester <input> --output ./output/
+    - praison recipes run ai-api-tester <input> --dry-run
+
+safety:
+  dry_run_default: true
+  overwrites_files: true

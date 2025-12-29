@@ -1,0 +1,34 @@
+name: ai-invoice-processor
+version: "1.0.0"
+description: Extract data from invoices/receipts with OCR and structured output
+author: praison
+license: Apache-2.0
+tags:
+  - document
+  - invoice
+  - ocr
+  - extraction
+
+requires:
+  tools:
+    - doc_tool
+    - llm_tool
+    - vision_tool
+  packages:
+    - openai
+    - pytesseract
+  env:
+    - OPENAI_API_KEY
+  external:
+    - tesseract
+
+cli:
+  command: praison recipes run ai-invoice-processor
+  examples:
+    - praison recipes run ai-invoice-processor <input>
+    - praison recipes run ai-invoice-processor <input> --output ./output/
+    - praison recipes run ai-invoice-processor <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true

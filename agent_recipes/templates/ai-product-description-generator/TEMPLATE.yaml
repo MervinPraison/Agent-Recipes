@@ -1,0 +1,28 @@
+name: ai-product-description-generator
+version: "1.0.0"
+description: Generate e-commerce product descriptions
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - ecommerce
+  - product
+
+requires:
+  tools:
+    - llm_tool
+  packages:
+    - openai
+  env:
+    - OPENAI_API_KEY
+
+cli:
+  command: praison recipes run ai-product-description-generator
+  examples:
+    - praison recipes run ai-product-description-generator <input>
+    - praison recipes run ai-product-description-generator <input> --output ./output/
+    - praison recipes run ai-product-description-generator <input> --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: true
