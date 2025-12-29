@@ -1,0 +1,50 @@
+name: ai-hook-generator
+version: 1.0.0
+description: Generate attention-grabbing hooks for the first 2 seconds of videos with multiple variants
+author: PraisonAI
+tags:
+  - hooks
+  - content
+  - video
+  - engagement
+
+config:
+  num_variants: 5
+  hook_styles:
+    - question
+    - bold_statement
+    - statistic
+    - story_tease
+    - controversy
+  max_length_seconds: 3
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    num_variants:
+      type: integer
+    style:
+      type: string
+
+output:
+  type: object
+  properties:
+    hooks:
+      type: array
+    best_hook:
+      type: string
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: hook_generator
+      role: Hook Specialist
+      goal: Create irresistible video hooks
+      tools:
+        - generate_hooks
+        - rank_hooks

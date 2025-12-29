@@ -1,0 +1,44 @@
+name: ai-publisher-pack
+version: 1.0.0
+description: Generate cross-platform publisher packs with ready-to-upload files and metadata
+author: PraisonAI
+tags:
+  - publishing
+  - distribution
+  - multi-platform
+
+config:
+  platforms:
+    - youtube
+    - x
+    - linkedin
+    - instagram
+    - tiktok
+  include_metadata: true
+  include_thumbnails: true
+
+input:
+  type: object
+  properties:
+    content:
+      type: object
+    platforms:
+      type: array
+
+output:
+  type: object
+  properties:
+    packs:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: publisher
+      role: Content Publisher
+      tools:
+        - create_publisher_pack
+        - generate_platform_assets

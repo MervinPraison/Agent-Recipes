@@ -1,0 +1,42 @@
+name: ai-news-capture-pack
+version: 1.0.0
+description: Bundle screenshots, recordings, and assets per news story
+author: PraisonAI
+tags:
+  - capture
+  - bundle
+  - news
+  - assets
+
+config:
+  include_screenshots: true
+  include_metadata: true
+  output_format: zip
+
+input:
+  type: object
+  properties:
+    urls:
+      type: array
+    story_id:
+      type: string
+
+output:
+  type: object
+  properties:
+    bundle_path:
+      type: string
+    assets:
+      type: array
+
+requires:
+  packages:
+    - playwright
+
+workflow:
+  agents:
+    - name: capture_bundler
+      role: Asset Bundler
+      tools:
+        - capture_story_assets
+        - create_bundle

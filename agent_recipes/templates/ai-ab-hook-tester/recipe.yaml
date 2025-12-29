@@ -1,0 +1,45 @@
+name: ai-ab-hook-tester
+version: 1.0.0
+description: Generate A/B test variants for hooks with tracking plan
+author: PraisonAI
+tags:
+  - testing
+  - ab-test
+  - hooks
+  - optimization
+
+config:
+  num_variants: 3
+  test_duration_days: 7
+  metrics_to_track:
+    - ctr
+    - watch_time
+    - engagement
+
+input:
+  type: object
+  properties:
+    original_hook:
+      type: string
+    topic:
+      type: string
+
+output:
+  type: object
+  properties:
+    variants:
+      type: array
+    tracking_plan:
+      type: object
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: ab_tester
+      role: A/B Test Specialist
+      tools:
+        - generate_test_variants
+        - create_tracking_plan

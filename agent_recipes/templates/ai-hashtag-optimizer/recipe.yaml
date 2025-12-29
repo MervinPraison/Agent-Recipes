@@ -1,0 +1,45 @@
+name: ai-hashtag-optimizer
+version: 1.0.0
+description: Optimize hashtags and keywords for maximum reach
+author: PraisonAI
+tags:
+  - hashtags
+  - keywords
+  - seo
+  - optimization
+
+config:
+  max_hashtags: 30
+  platforms:
+    - instagram
+    - x
+    - linkedin
+    - tiktok
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    platform:
+      type: string
+
+output:
+  type: object
+  properties:
+    hashtags:
+      type: array
+    keywords:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: optimizer
+      role: Hashtag Optimizer
+      tools:
+        - generate_hashtags
+        - optimize_keywords

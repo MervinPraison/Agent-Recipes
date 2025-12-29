@@ -1,0 +1,45 @@
+name: ai-screenshot-capture
+version: 1.0.0
+description: Capture high-resolution screenshots from URLs with auto-scroll and highlight support
+author: PraisonAI
+tags:
+  - screenshot
+  - capture
+  - browser
+  - automation
+
+config:
+  resolution: high
+  quality: 95
+  format: png
+  full_page: true
+  highlight_selectors: []
+
+input:
+  type: object
+  properties:
+    url:
+      type: string
+    selectors:
+      type: array
+
+output:
+  type: object
+  properties:
+    screenshots:
+      type: array
+    metadata:
+      type: object
+
+requires:
+  packages:
+    - playwright
+
+workflow:
+  agents:
+    - name: screenshot_agent
+      role: Screenshot Capture Specialist
+      tools:
+        - capture_screenshot
+        - capture_full_page
+        - highlight_and_capture

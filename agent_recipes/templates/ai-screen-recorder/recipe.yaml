@@ -1,0 +1,43 @@
+name: ai-screen-recorder
+version: 1.0.0
+description: Record screen navigation with configurable FPS and duration
+author: PraisonAI
+tags:
+  - recording
+  - video
+  - browser
+  - automation
+
+config:
+  fps: 30
+  duration: 60
+  format: mp4
+  resolution: 1920x1080
+
+input:
+  type: object
+  properties:
+    url:
+      type: string
+    actions:
+      type: array
+
+output:
+  type: object
+  properties:
+    video_path:
+      type: string
+
+requires:
+  packages:
+    - playwright
+  external:
+    - ffmpeg
+
+workflow:
+  agents:
+    - name: recorder
+      role: Screen Recording Specialist
+      tools:
+        - record_navigation
+        - record_actions

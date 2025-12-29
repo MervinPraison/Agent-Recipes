@@ -1,0 +1,45 @@
+name: ai-performance-analyzer
+version: 1.0.0
+description: Analyze content performance metrics from platform JSON exports
+author: PraisonAI
+tags:
+  - analytics
+  - performance
+  - metrics
+  - insights
+
+config:
+  metrics:
+    - views
+    - engagement
+    - retention
+    - growth
+  comparison_period: 30
+
+input:
+  type: object
+  properties:
+    metrics_json:
+      type: object
+    platform:
+      type: string
+
+output:
+  type: object
+  properties:
+    analysis:
+      type: object
+    recommendations:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: analyzer
+      role: Performance Analyst
+      tools:
+        - analyze_metrics
+        - generate_insights

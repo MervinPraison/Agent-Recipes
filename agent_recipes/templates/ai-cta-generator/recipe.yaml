@@ -1,0 +1,54 @@
+name: ai-cta-generator
+version: 1.0.0
+description: Generate platform-specific CTAs and titles for YouTube, X, LinkedIn, and more
+author: PraisonAI
+tags:
+  - cta
+  - titles
+  - content
+  - optimization
+
+config:
+  platforms:
+    - youtube
+    - x
+    - linkedin
+    - instagram
+    - tiktok
+  cta_types:
+    - subscribe
+    - comment
+    - share
+    - click
+    - follow
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    platform:
+      type: string
+    cta_type:
+      type: string
+
+output:
+  type: object
+  properties:
+    ctas:
+      type: array
+    titles:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: cta_generator
+      role: CTA Specialist
+      goal: Create compelling CTAs and titles
+      tools:
+        - generate_ctas
+        - generate_titles

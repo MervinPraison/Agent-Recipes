@@ -1,0 +1,41 @@
+name: ai-post-copy-generator
+version: 1.0.0
+description: Generate platform-specific post copy for X, LinkedIn, YouTube descriptions
+author: PraisonAI
+tags:
+  - copy
+  - social-media
+  - content
+
+config:
+  platforms:
+    - x
+    - linkedin
+    - youtube
+  tone: professional
+  include_hashtags: true
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    platform:
+      type: string
+
+output:
+  type: object
+  properties:
+    copy:
+      type: string
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: copywriter
+      role: Social Media Copywriter
+      tools:
+        - generate_post_copy

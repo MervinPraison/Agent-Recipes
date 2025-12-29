@@ -1,0 +1,40 @@
+name: ai-comment-miner
+version: 1.0.0
+description: Mine comments for content ideas and audience insights
+author: PraisonAI
+tags:
+  - comments
+  - ideas
+  - audience
+  - mining
+
+config:
+  extract_ideas: true
+  sentiment_analysis: true
+  max_comments: 100
+
+input:
+  type: object
+  properties:
+    comments:
+      type: array
+
+output:
+  type: object
+  properties:
+    ideas:
+      type: array
+    insights:
+      type: object
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: miner
+      role: Comment Miner
+      tools:
+        - extract_ideas
+        - analyze_sentiment

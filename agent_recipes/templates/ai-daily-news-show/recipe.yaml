@@ -1,0 +1,103 @@
+name: ai-daily-news-show
+version: 1.0.0
+description: End-to-end pipeline orchestrator for daily AI news show production
+author: PraisonAI
+tags:
+  - orchestrator
+  - pipeline
+  - news
+  - video
+  - automation
+
+config:
+  human_approval: false
+  approval_stages:
+    - script_review
+    - final_review
+  max_stories: 3
+  output_formats:
+    - youtube_long
+    - youtube_short
+  auto_publish: false
+
+input:
+  type: object
+  properties:
+    date:
+      type: string
+    sources:
+      type: array
+    max_stories:
+      type: integer
+
+output:
+  type: object
+  properties:
+    bundle_path:
+      type: string
+    videos:
+      type: array
+    scripts:
+      type: array
+    logs:
+      type: string
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  optional_env:
+    - TAVILY_API_KEY
+  external:
+    - ffmpeg
+
+workflow:
+  pipeline:
+    - stage: crawl
+      recipe: ai-news-crawler
+      description: Crawl AI news from multiple sources
+    - stage: dedupe
+      recipe: ai-news-deduper
+      description: Remove duplicates and cluster topics
+    - stage: rank
+      recipe: ai-signal-ranker
+      description: Rank by novelty, velocity, relevance
+    - stage: enrich
+      recipe: ai-context-enricher
+      description: Add background and context
+    - stage: select
+      description: Select top stories for the show
+      human_approval: true
+    - stage: script
+      recipe: ai-script-writer
+      description: Generate scripts for each story
+    - stage: capture
+      recipe: ai-screenshot-capture
+      description: Capture visuals from source pages
+    - stage: voiceover
+      recipe: ai-voiceover-generator
+      description: Generate voice overs
+    - stage: video
+      recipe: ai-broll-builder
+      description: Build B-roll from captures
+    - stage: merge
+      recipe: ai-video-merger
+      description: Merge voice and video
+    - stage: shorts
+      recipe: shorts-generator
+      description: Generate short-form clips
+    - stage: bundle
+      recipe: ai-publisher-pack
+      description: Create publisher packs
+    - stage: log
+      description: Log outputs and metrics
+
+  agents:
+    - name: orchestrator
+      role: Pipeline Orchestrator
+      goal: Coordinate the daily news show production pipeline
+      backstory: Expert at managing complex content production workflows
+      tools:
+        - run_pipeline
+        - check_stage_status
+        - request_approval
+        - bundle_outputs

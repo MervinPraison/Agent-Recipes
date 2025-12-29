@@ -1092,3 +1092,311 @@ templates:
       packages:
       - pyzbar
       - pillow
+  # Creator Automation Suite - News Intelligence Layer
+  ai-news-crawler:
+    name: AI News Crawler
+    version: 1.0.0
+    description: Crawl AI news from HackerNews, Reddit, arXiv, GitHub trending
+    path: templates/ai-news-crawler
+    tags:
+    - news
+    - crawler
+    - ai
+    - aggregation
+    requires:
+      env:
+      - OPENAI_API_KEY
+      optional_env:
+      - TAVILY_API_KEY
+      packages:
+      - requests
+      - feedparser
+      - beautifulsoup4
+  ai-news-deduper:
+    name: AI News Deduper
+    version: 1.0.0
+    description: Deduplicate and cluster news articles by topic
+    path: templates/ai-news-deduper
+    tags:
+    - news
+    - deduplication
+    - clustering
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-signal-ranker:
+    name: AI Signal Ranker
+    version: 1.0.0
+    description: Rank news by novelty, velocity, and relevance signals
+    path: templates/ai-signal-ranker
+    tags:
+    - news
+    - ranking
+    - signals
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-context-enricher:
+    name: AI Context Enricher
+    version: 1.0.0
+    description: Enrich articles with background, prior art, and hype detection
+    path: templates/ai-context-enricher
+    tags:
+    - news
+    - enrichment
+    - context
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-brief-generator:
+    name: AI Brief Generator
+    version: 1.0.0
+    description: Generate daily/weekly AI news briefs
+    path: templates/ai-brief-generator
+    tags:
+    - news
+    - brief
+    - summary
+    requires:
+      env:
+      - OPENAI_API_KEY
+  # Creator Automation Suite - Script & Story Layer
+  ai-script-writer:
+    name: AI Script Writer
+    version: 1.0.0
+    description: Multi-format script writer for YouTube, X threads, LinkedIn
+    path: templates/ai-script-writer
+    tags:
+    - script
+    - content
+    - youtube
+    - social-media
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-angle-generator:
+    name: AI Angle Generator
+    version: 1.0.0
+    description: Generate content angles - controversial, educational, business
+    path: templates/ai-angle-generator
+    tags:
+    - content
+    - angles
+    - strategy
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-hook-generator:
+    name: AI Hook Generator
+    version: 1.0.0
+    description: Generate attention-grabbing hooks with multiple variants
+    path: templates/ai-hook-generator
+    tags:
+    - hooks
+    - content
+    - engagement
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-cta-generator:
+    name: AI CTA Generator
+    version: 1.0.0
+    description: Generate platform-specific CTAs and titles
+    path: templates/ai-cta-generator
+    tags:
+    - cta
+    - titles
+    - optimization
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-fact-checker:
+    name: AI Fact Checker
+    version: 1.0.0
+    description: Fact-check content with citations and claim flags
+    path: templates/ai-fact-checker
+    tags:
+    - fact-check
+    - verification
+    - citations
+    requires:
+      env:
+      - OPENAI_API_KEY
+  # Creator Automation Suite - Capture & Screen Automation Layer
+  ai-screenshot-capture:
+    name: AI Screenshot Capture
+    version: 1.0.0
+    description: Capture high-resolution screenshots with highlighting
+    path: templates/ai-screenshot-capture
+    tags:
+    - screenshot
+    - capture
+    - browser
+    requires:
+      packages:
+      - playwright
+  ai-screen-recorder:
+    name: AI Screen Recorder
+    version: 1.0.0
+    description: Record screen navigation with configurable FPS
+    path: templates/ai-screen-recorder
+    tags:
+    - recording
+    - video
+    - browser
+    requires:
+      packages:
+      - playwright
+      external:
+      - ffmpeg
+  ai-news-capture-pack:
+    name: AI News Capture Pack
+    version: 1.0.0
+    description: Bundle screenshots and assets per news story
+    path: templates/ai-news-capture-pack
+    tags:
+    - capture
+    - bundle
+    - assets
+    requires:
+      packages:
+      - playwright
+  # Creator Automation Suite - Video Generation Layer
+  ai-broll-builder:
+    name: AI B-roll Builder
+    version: 1.0.0
+    description: Build B-roll from screenshots with Ken Burns effects
+    path: templates/ai-broll-builder
+    tags:
+    - video
+    - broll
+    - effects
+    requires:
+      external:
+      - ffmpeg
+  ai-voiceover-generator:
+    name: AI Voiceover Generator
+    version: 1.0.0
+    description: Generate voice overs using TTS APIs
+    path: templates/ai-voiceover-generator
+    tags:
+    - audio
+    - voice
+    - tts
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-video-merger:
+    name: AI Video Merger
+    version: 1.0.0
+    description: Merge voice audio with video and sync tracks
+    path: templates/ai-video-merger
+    tags:
+    - video
+    - audio
+    - merge
+    requires:
+      external:
+      - ffmpeg
+  # Creator Automation Suite - Publishing & Distribution Layer
+  ai-publisher-pack:
+    name: AI Publisher Pack
+    version: 1.0.0
+    description: Generate cross-platform publisher packs
+    path: templates/ai-publisher-pack
+    tags:
+    - publishing
+    - distribution
+    - multi-platform
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-content-calendar:
+    name: AI Content Calendar
+    version: 1.0.0
+    description: Generate content calendars with scheduling
+    path: templates/ai-content-calendar
+    tags:
+    - calendar
+    - scheduling
+    - planning
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-post-copy-generator:
+    name: AI Post Copy Generator
+    version: 1.0.0
+    description: Generate platform-specific post copy
+    path: templates/ai-post-copy-generator
+    tags:
+    - copy
+    - social-media
+    - content
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-hashtag-optimizer:
+    name: AI Hashtag Optimizer
+    version: 1.0.0
+    description: Optimize hashtags and keywords for reach
+    path: templates/ai-hashtag-optimizer
+    tags:
+    - hashtags
+    - keywords
+    - seo
+    requires:
+      env:
+      - OPENAI_API_KEY
+  # Creator Automation Suite - Feedback & Learning Layer
+  ai-performance-analyzer:
+    name: AI Performance Analyzer
+    version: 1.0.0
+    description: Analyze content performance metrics
+    path: templates/ai-performance-analyzer
+    tags:
+    - analytics
+    - performance
+    - metrics
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-comment-miner:
+    name: AI Comment Miner
+    version: 1.0.0
+    description: Mine comments for content ideas
+    path: templates/ai-comment-miner
+    tags:
+    - comments
+    - ideas
+    - audience
+    requires:
+      env:
+      - OPENAI_API_KEY
+  ai-ab-hook-tester:
+    name: AI A/B Hook Tester
+    version: 1.0.0
+    description: Generate A/B test variants for hooks
+    path: templates/ai-ab-hook-tester
+    tags:
+    - testing
+    - ab-test
+    - optimization
+    requires:
+      env:
+      - OPENAI_API_KEY
+  # Creator Automation Suite - Orchestrator
+  ai-daily-news-show:
+    name: AI Daily News Show
+    version: 1.0.0
+    description: End-to-end pipeline for daily AI news show production
+    path: templates/ai-daily-news-show
+    tags:
+    - orchestrator
+    - pipeline
+    - news
+    - video
+    requires:
+      env:
+      - OPENAI_API_KEY
+      external:
+      - ffmpeg

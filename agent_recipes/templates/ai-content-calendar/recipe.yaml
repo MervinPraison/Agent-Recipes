@@ -1,0 +1,43 @@
+name: ai-content-calendar
+version: 1.0.0
+description: Generate content calendars with what/when/where scheduling
+author: PraisonAI
+tags:
+  - calendar
+  - scheduling
+  - planning
+  - content
+
+config:
+  schedule_frequency: daily
+  platforms:
+    - youtube
+    - x
+    - linkedin
+  timezone: UTC
+
+input:
+  type: object
+  properties:
+    topics:
+      type: array
+    duration_days:
+      type: integer
+
+output:
+  type: object
+  properties:
+    calendar:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: calendar_planner
+      role: Content Calendar Planner
+      tools:
+        - generate_calendar
+        - optimize_schedule

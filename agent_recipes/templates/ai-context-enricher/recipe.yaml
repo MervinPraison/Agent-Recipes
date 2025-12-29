@@ -1,0 +1,48 @@
+name: ai-context-enricher
+version: 1.0.0
+description: Enrich news articles with background context, prior art, stakeholder analysis, and hype detection
+author: PraisonAI
+tags:
+  - news
+  - enrichment
+  - context
+  - analysis
+
+config:
+  enrichment_types:
+    - background
+    - prior_art
+    - stakeholders
+    - hype_detection
+  max_context_length: 500
+  output_format: json
+
+input:
+  type: object
+  properties:
+    articles:
+      type: array
+      description: Articles to enrich
+
+output:
+  type: object
+  properties:
+    enriched_articles:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  optional_env:
+    - TAVILY_API_KEY
+
+workflow:
+  agents:
+    - name: enricher
+      role: Context Analyst
+      goal: Add rich context to news articles
+      tools:
+        - add_background
+        - find_prior_art
+        - analyze_stakeholders
+        - detect_hype

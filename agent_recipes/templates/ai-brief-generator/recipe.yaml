@@ -1,0 +1,52 @@
+name: ai-brief-generator
+version: 1.0.0
+description: Generate daily or weekly AI news briefs with executive summaries
+author: PraisonAI
+tags:
+  - news
+  - brief
+  - summary
+  - newsletter
+
+config:
+  formats:
+    - daily
+    - weekly
+    - executive
+  max_articles: 10
+  include_analysis: true
+  output_format: markdown
+
+input:
+  type: object
+  properties:
+    articles:
+      type: array
+      description: Ranked and enriched articles
+    format:
+      type: string
+      enum: [daily, weekly, executive]
+
+output:
+  type: object
+  properties:
+    brief:
+      type: string
+    summary:
+      type: string
+    highlights:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: brief_writer
+      role: AI News Editor
+      goal: Create compelling news briefs
+      tools:
+        - generate_brief
+        - create_highlights
+        - format_newsletter

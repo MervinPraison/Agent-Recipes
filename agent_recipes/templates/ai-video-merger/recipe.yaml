@@ -1,0 +1,40 @@
+name: ai-video-merger
+version: 1.0.0
+description: Merge voice audio with video, sync audio and video tracks
+author: PraisonAI
+tags:
+  - video
+  - audio
+  - merge
+  - sync
+
+config:
+  output_format: mp4
+  audio_sync: true
+  normalize_audio: true
+
+input:
+  type: object
+  properties:
+    video_path:
+      type: string
+    audio_path:
+      type: string
+
+output:
+  type: object
+  properties:
+    merged_path:
+      type: string
+
+requires:
+  external:
+    - ffmpeg
+
+workflow:
+  agents:
+    - name: merger
+      role: Video Audio Merger
+      tools:
+        - merge_audio_video
+        - sync_tracks

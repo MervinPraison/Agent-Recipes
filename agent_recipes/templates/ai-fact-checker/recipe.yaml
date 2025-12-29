@@ -1,0 +1,52 @@
+name: ai-fact-checker
+version: 1.0.0
+description: Fact-check content with citation links and claim flags
+author: PraisonAI
+tags:
+  - fact-check
+  - verification
+  - citations
+  - accuracy
+
+config:
+  check_types:
+    - claims
+    - statistics
+    - quotes
+    - dates
+  citation_required: true
+  confidence_threshold: 0.7
+
+input:
+  type: object
+  properties:
+    content:
+      type: string
+    check_types:
+      type: array
+
+output:
+  type: object
+  properties:
+    claims:
+      type: array
+    citations:
+      type: array
+    flags:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  optional_env:
+    - TAVILY_API_KEY
+
+workflow:
+  agents:
+    - name: fact_checker
+      role: Fact Verification Specialist
+      goal: Verify claims and provide citations
+      tools:
+        - extract_claims
+        - verify_claims
+        - find_citations

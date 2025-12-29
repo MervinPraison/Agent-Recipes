@@ -1,0 +1,54 @@
+name: ai-signal-ranker
+version: 1.0.0
+description: Rank news articles by novelty, velocity, and relevance signals
+author: PraisonAI
+tags:
+  - news
+  - ranking
+  - signals
+  - relevance
+
+config:
+  ranking_criteria:
+    - novelty
+    - velocity
+    - relevance
+    - engagement
+  weights:
+    novelty: 0.3
+    velocity: 0.25
+    relevance: 0.25
+    engagement: 0.2
+  output_format: json
+
+input:
+  type: object
+  properties:
+    articles:
+      type: array
+    context:
+      type: string
+      description: Context for relevance scoring
+
+output:
+  type: object
+  properties:
+    ranked_articles:
+      type: array
+    signals:
+      type: object
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: ranker
+      role: Signal Analyst
+      goal: Rank articles by importance signals
+      tools:
+        - calculate_novelty
+        - calculate_velocity
+        - calculate_relevance
+        - rank_articles

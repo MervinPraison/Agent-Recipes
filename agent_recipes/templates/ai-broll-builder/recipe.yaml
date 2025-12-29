@@ -1,0 +1,47 @@
+name: ai-broll-builder
+version: 1.0.0
+description: Build B-roll video from screenshots with Ken Burns effects, pans, and zooms
+author: PraisonAI
+tags:
+  - video
+  - broll
+  - effects
+  - ken-burns
+
+config:
+  effects:
+    - ken_burns
+    - pan
+    - zoom
+  duration_per_image: 5
+  transition: crossfade
+  output_format: mp4
+
+input:
+  type: object
+  properties:
+    images:
+      type: array
+    duration:
+      type: integer
+
+output:
+  type: object
+  properties:
+    video_path:
+      type: string
+
+requires:
+  external:
+    - ffmpeg
+  packages:
+    - moviepy
+
+workflow:
+  agents:
+    - name: broll_builder
+      role: B-roll Video Creator
+      tools:
+        - create_ken_burns
+        - apply_pan_zoom
+        - build_broll

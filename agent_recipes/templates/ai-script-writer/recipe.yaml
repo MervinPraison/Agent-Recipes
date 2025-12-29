@@ -1,0 +1,58 @@
+name: ai-script-writer
+version: 1.0.0
+description: Multi-format script writer for YouTube long/short, X threads, LinkedIn posts, and image captions
+author: PraisonAI
+tags:
+  - script
+  - content
+  - youtube
+  - social-media
+
+config:
+  formats:
+    - youtube_long
+    - youtube_short
+    - x_thread
+    - linkedin
+    - image_caption
+    - hook_30s
+  default_tone: educational
+  include_timestamps: true
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    format:
+      type: string
+      enum: [youtube_long, youtube_short, x_thread, linkedin, image_caption, hook_30s]
+    target_length:
+      type: integer
+    tone:
+      type: string
+    key_points:
+      type: array
+
+output:
+  type: object
+  properties:
+    script:
+      type: string
+    metadata:
+      type: object
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: script_writer
+      role: Content Script Writer
+      goal: Create engaging scripts for multiple platforms
+      tools:
+        - write_youtube_script
+        - write_short_script
+        - write_thread
+        - write_linkedin_post

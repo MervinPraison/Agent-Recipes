@@ -1,0 +1,99 @@
+name: ai-news-crawler
+version: 1.0.0
+description: Crawl AI news from multiple sources including AI labs blogs, arXiv, GitHub trending, HackerNews, Reddit, and X lists
+author: PraisonAI
+tags:
+  - news
+  - crawler
+  - ai
+  - research
+  - aggregation
+
+config:
+  sources:
+    - hackernews
+    - reddit
+    - arxiv
+    - github_trending
+    - ai_blogs
+  max_articles: 50
+  time_window_hours: 24
+  include_content: true
+  output_format: json
+
+input:
+  type: object
+  properties:
+    sources:
+      type: array
+      description: List of sources to crawl
+      items:
+        type: string
+        enum: [hackernews, reddit, arxiv, github_trending, ai_blogs, x_lists]
+    max_articles:
+      type: integer
+      description: Maximum number of articles to fetch
+      default: 50
+    time_window_hours:
+      type: integer
+      description: Only fetch articles from the last N hours
+      default: 24
+
+output:
+  type: object
+  properties:
+    articles:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+          url:
+            type: string
+          source:
+            type: string
+          published:
+            type: string
+          content:
+            type: string
+          score:
+            type: number
+    crawl_metadata:
+      type: object
+      properties:
+        total_fetched:
+          type: integer
+        sources_crawled:
+          type: array
+        crawl_time:
+          type: string
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  optional_env:
+    - TAVILY_API_KEY
+    - REDDIT_CLIENT_ID
+    - REDDIT_CLIENT_SECRET
+  packages:
+    - requests
+    - feedparser
+    - beautifulsoup4
+
+workflow:
+  agents:
+    - name: news_crawler
+      role: AI News Aggregator
+      goal: Crawl and collect AI-related news from multiple sources
+      backstory: Expert at finding and aggregating AI news from various platforms
+      tools:
+        - crawl_hackernews
+        - crawl_reddit
+        - crawl_arxiv
+        - crawl_github_trending
+        - search_web
+      tasks:
+        - name: crawl_sources
+          description: Crawl all configured sources for AI news
+          expected_output: List of articles with metadata

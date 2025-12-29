@@ -1,0 +1,47 @@
+name: ai-news-deduper
+version: 1.0.0
+description: Deduplicate news articles and cluster them by topic using semantic similarity
+author: PraisonAI
+tags:
+  - news
+  - deduplication
+  - clustering
+  - nlp
+
+config:
+  similarity_threshold: 0.85
+  min_cluster_size: 2
+  clustering_method: semantic
+  output_format: json
+
+input:
+  type: object
+  properties:
+    articles:
+      type: array
+      description: List of articles to deduplicate and cluster
+
+output:
+  type: object
+  properties:
+    deduplicated_articles:
+      type: array
+    clusters:
+      type: array
+    stats:
+      type: object
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  packages:
+    - numpy
+
+workflow:
+  agents:
+    - name: deduper
+      role: Content Deduplicator
+      goal: Remove duplicate articles and group similar content
+      tools:
+        - deduplicate_articles
+        - cluster_by_topic

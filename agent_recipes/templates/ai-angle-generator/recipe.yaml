@@ -1,0 +1,49 @@
+name: ai-angle-generator
+version: 1.0.0
+description: Generate multiple content angles for a topic - controversial, educational, business, risk, future prediction
+author: PraisonAI
+tags:
+  - content
+  - angles
+  - strategy
+  - ideation
+
+config:
+  angle_types:
+    - controversial
+    - educational
+    - business
+    - risk
+    - future_prediction
+    - personal_story
+    - comparison
+  num_angles: 5
+
+input:
+  type: object
+  properties:
+    topic:
+      type: string
+    angle_types:
+      type: array
+    num_angles:
+      type: integer
+
+output:
+  type: object
+  properties:
+    angles:
+      type: array
+
+requires:
+  env:
+    - OPENAI_API_KEY
+
+workflow:
+  agents:
+    - name: angle_generator
+      role: Content Strategist
+      goal: Generate diverse content angles
+      tools:
+        - generate_angles
+        - evaluate_angles
