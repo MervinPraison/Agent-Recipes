@@ -1,0 +1,42 @@
+name: ai-repo-readme
+version: "1.0.0"
+description: Generate or update README.md for a git repository.
+author: praisonai
+license: Apache-2.0
+tags: [git, readme, documentation, repository]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: git
+      check: "git --version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-repo-readme
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --update
+      flag: true
+  examples:
+    - "praison run ai-repo-readme ./my-project"
+
+outputs:
+  - name: README.md
+    type: file
+  - name: structure.json
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,43 @@
+name: ai-image-optimizer
+version: "1.0.0"
+description: Optimize images for web with compression and format conversion.
+author: praisonai
+license: Apache-2.0
+tags: [image, optimization, compression, web]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, Pillow]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  quality:
+    type: integer
+    default: 85
+  max_width:
+    type: integer
+
+cli:
+  command: ai-image-optimizer
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --quality
+      default: "85"
+  examples:
+    - "praison run ai-image-optimizer ./images/"
+
+outputs:
+  - name: optimized/
+    type: directory
+  - name: size-report.json
+    type: file
+  - name: run.json
+    type: file

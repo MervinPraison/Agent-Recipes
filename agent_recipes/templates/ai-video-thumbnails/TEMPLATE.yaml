@@ -1,0 +1,53 @@
+name: ai-video-thumbnails
+version: "1.0.0"
+description: Extract thumbnails from video with AI-selected best frame.
+author: praisonai
+license: Apache-2.0
+tags: [video, thumbnails, frames, extraction]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  interval:
+    type: number
+    default: 10
+  count:
+    type: integer
+
+cli:
+  command: ai-video-thumbnails
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --interval
+      default: "10"
+    - name: --count
+  examples:
+    - "praison run ai-video-thumbnails video.mp4"
+    - "praison run ai-video-thumbnails video.mp4 --count 10"
+
+outputs:
+  - name: thumbnails/
+    type: directory
+  - name: best-frame.jpg
+    type: file
+  - name: grid.jpg
+    type: file
+  - name: frames.json
+    type: file
+  - name: run.json
+    type: file

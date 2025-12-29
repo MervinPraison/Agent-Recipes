@@ -1,0 +1,36 @@
+name: ai-json-to-csv
+version: "1.0.0"
+description: Convert JSON files to CSV format with schema inference.
+author: praisonai
+license: Apache-2.0
+tags: [json, csv, conversion, data]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, pandas]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-json-to-csv
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-json-to-csv data.json"
+
+outputs:
+  - name: output.csv
+    type: file
+  - name: schema.json
+    type: file
+  - name: run.json
+    type: file

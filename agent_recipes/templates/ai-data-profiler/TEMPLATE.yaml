@@ -1,0 +1,42 @@
+name: ai-data-profiler
+version: "1.0.0"
+description: Profile data files with statistics and quality metrics.
+author: praisonai
+license: Apache-2.0
+tags: [data, profiling, statistics, quality]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, pandas]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  sample:
+    type: integer
+
+cli:
+  command: ai-data-profiler
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --sample
+  examples:
+    - "praison run ai-data-profiler data.csv"
+
+outputs:
+  - name: profile-report.html
+    type: file
+  - name: stats.json
+    type: file
+  - name: quality.json
+    type: file
+  - name: run.json
+    type: file

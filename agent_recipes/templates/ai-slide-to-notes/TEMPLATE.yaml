@@ -1,0 +1,37 @@
+name: ai-slide-to-notes
+version: "1.0.0"
+description: Convert presentation slides to structured notes.
+author: praisonai
+license: Apache-2.0
+tags: [slides, notes, presentation, extraction]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-slide-to-notes
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-slide-to-notes presentation.pdf"
+
+outputs:
+  - name: notes.md
+    type: file
+  - name: outline.json
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,45 @@
+name: ai-csv-cleaner
+version: "1.0.0"
+description: Clean CSV files by removing duplicates, fixing nulls, and standardizing formats.
+author: praisonai
+license: Apache-2.0
+tags: [csv, data, cleaning, etl]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, pandas]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  drop_duplicates:
+    type: boolean
+    default: true
+  fill_nulls:
+    type: string
+
+cli:
+  command: ai-csv-cleaner
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --drop-duplicates
+      flag: true
+    - name: --fill-nulls
+  examples:
+    - "praison run ai-csv-cleaner data.csv"
+
+outputs:
+  - name: cleaned.csv
+    type: file
+  - name: cleaning-report.json
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,48 @@
+name: ai-folder-packager
+version: "1.0.0"
+description: Package folder into distributable archive with manifest and checksums.
+author: praisonai
+license: Apache-2.0
+tags: [archive, packaging, distribution, checksums]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  format:
+    type: string
+    default: "zip"
+    enum: [zip, tar.gz, tar.bz2]
+
+cli:
+  command: ai-folder-packager
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --format
+      default: "zip"
+  examples:
+    - "praison run ai-folder-packager ./my-project"
+    - "praison run ai-folder-packager ./my-project --format tar.gz"
+
+outputs:
+  - name: package.zip
+    type: file
+  - name: manifest.json
+    type: file
+  - name: checksums.txt
+    type: file
+  - name: README.txt
+    type: file
+  - name: run.json
+    type: file

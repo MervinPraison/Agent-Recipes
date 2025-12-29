@@ -1,0 +1,39 @@
+name: ai-image-cataloger
+version: "1.0.0"
+description: Catalog images with AI-generated captions and tags.
+author: praisonai
+license: Apache-2.0
+tags: [image, catalog, captions, tags, vision]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, Pillow]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-image-cataloger
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-image-cataloger ./photos/"
+
+outputs:
+  - name: catalog.json
+    type: file
+  - name: contact-sheet.pdf
+    type: file
+  - name: thumbnails/
+    type: directory
+  - name: run.json
+    type: file

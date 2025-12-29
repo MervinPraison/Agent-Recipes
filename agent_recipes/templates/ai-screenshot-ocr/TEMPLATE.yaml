@@ -1,0 +1,37 @@
+name: ai-screenshot-ocr
+version: "1.0.0"
+description: Extract text from screenshots using OCR.
+author: praisonai
+license: Apache-2.0
+tags: [screenshot, ocr, text-extraction]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-screenshot-ocr
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-screenshot-ocr screenshot.png"
+
+outputs:
+  - name: extracted-text.md
+    type: file
+  - name: structured.json
+    type: file
+  - name: run.json
+    type: file

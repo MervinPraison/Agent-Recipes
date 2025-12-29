@@ -1,0 +1,117 @@
+name: ai-podcast-cleaner
+version: "1.0.0"
+description: |
+  Clean podcast audio by removing noise, normalizing volume, 
+  trimming silences, and generating transcripts with chapter markers.
+  
+  Input: Audio file (wav, mp3, m4a, flac)
+  Output: Cleaned audio + transcript + chapters.json
+
+author: praisonai
+license: Apache-2.0
+tags: [audio, podcast, cleanup, transcript, noise-reduction, normalization]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+      install_hint: "brew install ffmpeg (macOS) or apt install ffmpeg (Linux)"
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  input:
+    type: string
+    required: true
+    description: Input audio file path
+  output:
+    type: string
+    description: Output directory (default: ./outputs/ai-podcast-cleaner/<timestamp>/)
+  preset:
+    type: string
+    default: default
+    enum: [default, aggressive, gentle]
+    description: Cleanup preset
+  remove_silence:
+    type: boolean
+    default: true
+    description: Remove long silences
+  normalize:
+    type: boolean
+    default: true
+    description: Normalize audio levels
+  transcribe:
+    type: boolean
+    default: true
+    description: Generate transcript
+  chapters:
+    type: boolean
+    default: true
+    description: Generate chapter markers
+
+defaults:
+  preset: default
+  remove_silence: true
+  normalize: true
+  transcribe: true
+  chapters: true
+
+cli:
+  command: ai-podcast-cleaner
+  args:
+    - name: input
+      positional: true
+      required: true
+      description: Input audio file
+    - name: --output
+      short: -o
+      description: Output directory
+    - name: --preset
+      short: -p
+      default: default
+      description: Cleanup preset (default, aggressive, gentle)
+    - name: --no-silence-removal
+      flag: true
+      description: Skip silence removal
+    - name: --no-normalize
+      flag: true
+      description: Skip normalization
+    - name: --no-transcribe
+      flag: true
+      description: Skip transcription
+    - name: --dry-run
+      flag: true
+      description: Show plan without executing
+    - name: --force
+      flag: true
+      description: Overwrite existing output
+    - name: --verbose
+      short: -v
+      flag: true
+      description: Enable verbose output
+  examples:
+    - "praison run ai-podcast-cleaner recording.wav"
+    - "praison run ai-podcast-cleaner recording.mp3 --preset aggressive"
+    - "praison run ai-podcast-cleaner recording.wav --output ./cleaned/ --no-transcribe"
+    - "praison run ai-podcast-cleaner recording.wav --dry-run"
+
+outputs:
+  - name: cleaned.mp3
+    type: file
+    description: Cleaned audio file
+  - name: transcript.txt
+    type: file
+    description: Plain text transcript
+  - name: transcript.srt
+    type: file
+    description: SRT caption file
+  - name: chapters.json
+    type: file
+    description: Chapter markers with timestamps
+  - name: run.json
+    type: file
+    description: Execution metadata

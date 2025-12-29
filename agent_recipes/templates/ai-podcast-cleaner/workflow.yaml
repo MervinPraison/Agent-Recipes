@@ -1,0 +1,77 @@
+name: AI Podcast Cleaner Workflow
+description: |
+  End-to-end podcast audio cleaning pipeline.
+  Cleans audio, normalizes levels, removes silence, and generates transcripts.
+
+process: sequential
+
+variables:
+  input: ""
+  output: ""
+  preset: "default"
+  remove_silence: "true"
+  normalize: "true"
+  transcribe: "true"
+  chapters: "true"
+
+agents:
+  audio_processor:
+    name: AudioProcessor
+    role: Audio Engineer
+    goal: Clean and enhance podcast audio
+    instructions: |
+      You are an AI audio engineer. Process the input audio file using ffmpeg.
+      
+      Steps:
+      1. Probe the audio file to get metadata
+      2. Normalize audio to -16 LUFS using loudnorm filter
+      3. Remove silences longer than 0.5 seconds
+      4. Export as high-quality MP3
+      
+      Use these ffmpeg commands:
+      - Probe: ffprobe -v quiet -print_format json -show_format -show_streams "{input}"
+      - Normalize: ffmpeg -y -i "{input}" -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 48000 "{output}/cleaned.mp3"
+      - Remove silence: ffmpeg -y -i "{input}" -af silenceremove=start_periods=1:stop_periods=-1:stop_duration=0.5:stop_threshold=-50dB "{output}/cleaned.mp3"
+    tools: [shell_tool]
+
+  transcriber:
+    name: Transcriber
+    role: Transcription Specialist
+    goal: Generate transcripts with timestamps
+    instructions: |
+      You are a transcription specialist. Use the Whisper API to transcribe audio.
+      
+      Generate:
+      1. transcript.txt - Plain text transcript
+      2. transcript.srt - SRT caption file
+      3. chapters.json - Chapter markers based on content analysis
+    tools: [shell_tool]
+
+tasks:
+  - name: probe_audio
+    agent: audio_processor
+    description: |
+      Probe the input audio file to get metadata.
+      Run: ffprobe -v quiet -print_format json -show_format -show_streams "{input}"
+    expected_output: Audio metadata (duration, format, sample rate, channels)
+
+  - name: normalize_audio
+    agent: audio_processor
+    description: |
+      Normalize audio levels to -16 LUFS.
+      Run: ffmpeg -y -i "{input}" -af "loudnorm=I=-16:TP=-1.5:LRA=11" -ar 48000 "{output}/normalized.mp3"
+    expected_output: Normalized audio file
+
+  - name: remove_silence
+    agent: audio_processor
+    description: |
+      Remove long silences from the audio.
+      Run: ffmpeg -y -i "{output}/normalized.mp3" -af "silenceremove=start_periods=1:stop_periods=-1:stop_duration=0.5:stop_threshold=-50dB" "{output}/cleaned.mp3"
+    expected_output: Cleaned audio with silences removed
+
+  - name: transcribe
+    agent: transcriber
+    description: |
+      Transcribe the cleaned audio using Whisper API.
+      Generate transcript.txt, transcript.srt, and chapters.json.
+    expected_output: Transcript files and chapter markers

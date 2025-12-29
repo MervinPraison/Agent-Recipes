@@ -1,0 +1,46 @@
+name: ai-changelog-generator
+version: "1.0.0"
+description: Generate CHANGELOG.md from git commit history.
+author: praisonai
+license: Apache-2.0
+tags: [git, changelog, release-notes, documentation]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: git
+      check: "git --version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  since:
+    type: string
+
+cli:
+  command: ai-changelog-generator
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --since
+  examples:
+    - "praison run ai-changelog-generator ./my-repo"
+    - "praison run ai-changelog-generator ./my-repo --since v1.0.0"
+
+outputs:
+  - name: CHANGELOG.md
+    type: file
+  - name: release-notes.md
+    type: file
+  - name: commits.json
+    type: file
+  - name: run.json
+    type: file

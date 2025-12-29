@@ -1,0 +1,41 @@
+name: ai-sitemap-scraper
+version: "1.0.0"
+description: Scrape content from sitemap URLs and save as structured data.
+author: praisonai
+license: Apache-2.0
+tags: [web, sitemap, scraping, extraction]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, requests, beautifulsoup4]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  limit:
+    type: integer
+    default: 100
+
+cli:
+  command: ai-sitemap-scraper
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --limit
+      default: "100"
+  examples:
+    - "praison run ai-sitemap-scraper https://example.com/sitemap.xml"
+
+outputs:
+  - name: pages.json
+    type: file
+  - name: content/
+    type: directory
+  - name: run.json
+    type: file

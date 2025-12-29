@@ -1,0 +1,41 @@
+name: ai-doc-translator
+version: "1.0.0"
+description: Translate documents to different languages.
+author: praisonai
+license: Apache-2.0
+tags: [translation, document, language]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  target_language:
+    type: string
+    default: "en"
+
+cli:
+  command: ai-doc-translator
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --language
+      short: -l
+      default: "en"
+  examples:
+    - "praison run ai-doc-translator document.md --language es"
+
+outputs:
+  - name: translated.md
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,64 @@
+name: ai-video-to-gif
+version: "1.0.0"
+description: |
+  Convert video to optimized GIF with AI-selected best frames.
+  Creates high-quality GIFs with palette optimization.
+
+author: praisonai
+license: Apache-2.0
+tags: [video, gif, conversion, optimization]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+      install_hint: "brew install ffmpeg"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  start:
+    type: number
+    default: 0
+  duration:
+    type: number
+    default: 5
+  fps:
+    type: integer
+    default: 10
+  width:
+    type: integer
+    default: 480
+
+cli:
+  command: ai-video-to-gif
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --start
+      default: "0"
+    - name: --duration
+      default: "5"
+    - name: --fps
+      default: "10"
+    - name: --width
+      default: "480"
+  examples:
+    - "praison run ai-video-to-gif video.mp4"
+    - "praison run ai-video-to-gif video.mp4 --start 10 --duration 3"
+
+outputs:
+  - name: output.gif
+    type: file
+  - name: thumbnail.jpg
+    type: file
+  - name: run.json
+    type: file

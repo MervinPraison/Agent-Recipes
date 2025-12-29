@@ -1,0 +1,34 @@
+name: ai-schema-generator
+version: "1.0.0"
+description: Generate JSON Schema from data files.
+author: praisonai
+license: Apache-2.0
+tags: [schema, json-schema, data, inference]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, pandas]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-schema-generator
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-schema-generator data.json"
+
+outputs:
+  - name: schema.json
+    type: file
+  - name: run.json
+    type: file

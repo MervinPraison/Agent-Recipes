@@ -1,11 +1,59 @@
 # Agent Recipes Manifest
 # This file indexes all available templates with checksums for security verification
 
-version: "1.0.0"
+version: "2.0.0"
 repository: "github:MervinPraison/Agent-Recipes"
-updated: "2024-12-26"
+updated: "2024-12-29"
 
 templates:
+  # === VIDEO/AUDIO CLUSTER ===
+  ai-podcast-cleaner:
+    name: AI Podcast Cleaner
+    version: "1.0.0"
+    description: Clean podcast audio - noise reduction, normalization, silence removal, transcription
+    path: templates/ai-podcast-cleaner
+    tags: [audio, podcast, cleanup, transcript, noise-reduction]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [ffmpeg]
+
+  ai-video-to-gif:
+    name: AI Video to GIF
+    version: "1.0.0"
+    description: Convert video to optimized GIF with palette optimization
+    path: templates/ai-video-to-gif
+    tags: [video, gif, conversion]
+    requires:
+      external: [ffmpeg]
+
+  ai-audio-splitter:
+    name: AI Audio Splitter
+    version: "1.0.0"
+    description: Split long audio files by silence detection
+    path: templates/ai-audio-splitter
+    tags: [audio, split, chapters]
+    requires:
+      external: [ffmpeg]
+
+  ai-video-thumbnails:
+    name: AI Video Thumbnails
+    version: "1.0.0"
+    description: Extract thumbnails from video with AI-selected best frame
+    path: templates/ai-video-thumbnails
+    tags: [video, thumbnails, frames]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [ffmpeg]
+
+  ai-audio-normalizer:
+    name: AI Audio Normalizer
+    version: "1.0.0"
+    description: Normalize audio loudness using EBU R128 standard
+    path: templates/ai-audio-normalizer
+    tags: [audio, normalization, loudness]
+    requires:
+      external: [ffmpeg]
+
   transcript-generator:
     name: Transcript Generator
     version: "1.0.0"
@@ -15,17 +63,17 @@ templates:
     requires:
       env: [OPENAI_API_KEY]
       packages: [openai]
-    
+
   shorts-generator:
     name: Shorts Generator
     version: "1.0.0"
     description: Generate short-form video clips from long videos for social media
     path: templates/shorts-generator
-    tags: [video, shorts, clips, social-media, tiktok, youtube-shorts]
+    tags: [video, shorts, clips, social-media]
     requires:
       env: [OPENAI_API_KEY]
       packages: [moviepy, pillow]
-    
+
   video-editor:
     name: Video Editor
     version: "1.0.0"
@@ -35,7 +83,181 @@ templates:
     requires:
       env: [OPENAI_API_KEY]
       packages: [moviepy, ffmpeg-python]
-    
+
+  ai-video-editor:
+    name: AI Video Editor
+    version: "1.0.0"
+    description: AI-powered video editing pipeline
+    path: templates/ai-video-editor
+    tags: [video, editing, ai]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [ffmpeg]
+
+  # === DOCUMENTS CLUSTER ===
+  ai-pdf-to-markdown:
+    name: AI PDF to Markdown
+    version: "1.0.0"
+    description: Convert PDF documents to clean Markdown with image extraction
+    path: templates/ai-pdf-to-markdown
+    tags: [pdf, markdown, conversion, document]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [pdftotext]
+
+  ai-markdown-to-pdf:
+    name: AI Markdown to PDF
+    version: "1.0.0"
+    description: Convert Markdown to styled PDF using pandoc
+    path: templates/ai-markdown-to-pdf
+    tags: [markdown, pdf, conversion]
+    requires:
+      external: [pandoc]
+
+  ai-pdf-summarizer:
+    name: AI PDF Summarizer
+    version: "1.0.0"
+    description: Summarize PDF documents with key points extraction
+    path: templates/ai-pdf-summarizer
+    tags: [pdf, summary, extraction]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [pdftotext]
+
+  ai-slide-to-notes:
+    name: AI Slide to Notes
+    version: "1.0.0"
+    description: Convert presentation slides to structured notes
+    path: templates/ai-slide-to-notes
+    tags: [slides, notes, presentation]
+    requires:
+      env: [OPENAI_API_KEY]
+
+  ai-doc-translator:
+    name: AI Doc Translator
+    version: "1.0.0"
+    description: Translate documents to different languages
+    path: templates/ai-doc-translator
+    tags: [translation, document, language]
+    requires:
+      env: [OPENAI_API_KEY]
+
+  # === IMAGES CLUSTER ===
+  ai-image-optimizer:
+    name: AI Image Optimizer
+    version: "1.0.0"
+    description: Optimize images for web with compression
+    path: templates/ai-image-optimizer
+    tags: [image, optimization, compression]
+    requires:
+      packages: [Pillow]
+
+  ai-image-cataloger:
+    name: AI Image Cataloger
+    version: "1.0.0"
+    description: Catalog images with AI-generated captions and tags
+    path: templates/ai-image-cataloger
+    tags: [image, catalog, captions, vision]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [Pillow]
+
+  ai-screenshot-ocr:
+    name: AI Screenshot OCR
+    version: "1.0.0"
+    description: Extract text from screenshots using OCR
+    path: templates/ai-screenshot-ocr
+    tags: [screenshot, ocr, text-extraction]
+    requires:
+      env: [OPENAI_API_KEY]
+
+  ai-image-resizer:
+    name: AI Image Resizer
+    version: "1.0.0"
+    description: Batch resize images to multiple sizes
+    path: templates/ai-image-resizer
+    tags: [image, resize, batch]
+    requires:
+      packages: [Pillow]
+
+  # === CODE/REPO CLUSTER ===
+  ai-repo-readme:
+    name: AI Repo README
+    version: "1.0.0"
+    description: Generate or update README.md for a git repository
+    path: templates/ai-repo-readme
+    tags: [git, readme, documentation]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [git]
+
+  ai-changelog-generator:
+    name: AI Changelog Generator
+    version: "1.0.0"
+    description: Generate CHANGELOG.md from git commit history
+    path: templates/ai-changelog-generator
+    tags: [git, changelog, release-notes]
+    requires:
+      env: [OPENAI_API_KEY]
+      external: [git]
+
+  ai-code-documenter:
+    name: AI Code Documenter
+    version: "1.0.0"
+    description: Generate documentation from source code
+    path: templates/ai-code-documenter
+    tags: [code, documentation, api-docs]
+    requires:
+      env: [OPENAI_API_KEY]
+
+  ai-dependency-auditor:
+    name: AI Dependency Auditor
+    version: "1.0.0"
+    description: Audit project dependencies for updates and vulnerabilities
+    path: templates/ai-dependency-auditor
+    tags: [dependencies, security, audit]
+    requires:
+      env: [OPENAI_API_KEY]
+
+  # === DATA CLUSTER ===
+  ai-csv-cleaner:
+    name: AI CSV Cleaner
+    version: "1.0.0"
+    description: Clean CSV files - remove duplicates, fix nulls, standardize formats
+    path: templates/ai-csv-cleaner
+    tags: [csv, data, cleaning]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [pandas]
+
+  ai-json-to-csv:
+    name: AI JSON to CSV
+    version: "1.0.0"
+    description: Convert JSON files to CSV format with schema inference
+    path: templates/ai-json-to-csv
+    tags: [json, csv, conversion]
+    requires:
+      packages: [pandas]
+
+  ai-data-profiler:
+    name: AI Data Profiler
+    version: "1.0.0"
+    description: Profile data files with statistics and quality metrics
+    path: templates/ai-data-profiler
+    tags: [data, profiling, statistics]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [pandas]
+
+  ai-schema-generator:
+    name: AI Schema Generator
+    version: "1.0.0"
+    description: Generate JSON Schema from data files
+    path: templates/ai-schema-generator
+    tags: [schema, json-schema, inference]
+    requires:
+      packages: [pandas]
+
   data-transformer:
     name: Data Transformer
     version: "1.0.0"
@@ -45,3 +267,33 @@ templates:
     requires:
       env: [OPENAI_API_KEY]
       packages: [pandas]
+
+  # === WEB CLUSTER ===
+  ai-url-to-markdown:
+    name: AI URL to Markdown
+    version: "1.0.0"
+    description: Extract article content from URL and convert to clean Markdown
+    path: templates/ai-url-to-markdown
+    tags: [web, url, markdown, extraction]
+    requires:
+      env: [OPENAI_API_KEY]
+      packages: [requests, beautifulsoup4]
+
+  ai-sitemap-scraper:
+    name: AI Sitemap Scraper
+    version: "1.0.0"
+    description: Scrape content from sitemap URLs
+    path: templates/ai-sitemap-scraper
+    tags: [web, sitemap, scraping]
+    requires:
+      packages: [requests, beautifulsoup4]
+
+  # === PACKAGING CLUSTER ===
+  ai-folder-packager:
+    name: AI Folder Packager
+    version: "1.0.0"
+    description: Package folder into distributable archive with manifest and checksums
+    path: templates/ai-folder-packager
+    tags: [archive, packaging, distribution]
+    requires:
+      env: [OPENAI_API_KEY]

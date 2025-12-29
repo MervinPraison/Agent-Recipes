@@ -1,0 +1,40 @@
+name: ai-markdown-to-pdf
+version: "1.0.0"
+description: Convert Markdown to styled PDF using pandoc.
+author: praisonai
+license: Apache-2.0
+tags: [markdown, pdf, conversion, document]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  external:
+    - name: pandoc
+      check: "pandoc --version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  template:
+    type: string
+
+cli:
+  command: ai-markdown-to-pdf
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --template
+  examples:
+    - "praison run ai-markdown-to-pdf document.md"
+
+outputs:
+  - name: document.pdf
+    type: file
+  - name: run.json
+    type: file

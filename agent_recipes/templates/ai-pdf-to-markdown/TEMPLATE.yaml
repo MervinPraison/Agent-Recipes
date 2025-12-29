@@ -1,0 +1,63 @@
+name: ai-pdf-to-markdown
+version: "1.0.0"
+description: |
+  Convert PDF documents to clean Markdown format with extracted images.
+  Uses AI to clean up OCR artifacts and structure content properly.
+
+author: praisonai
+license: Apache-2.0
+tags: [pdf, markdown, conversion, document, ocr]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: pdftotext
+      check: "pdftotext -v"
+      install_hint: "brew install poppler (macOS) or apt install poppler-utils (Linux)"
+
+config:
+  input:
+    type: string
+    required: true
+    description: Input PDF file path
+  output:
+    type: string
+    description: Output directory
+  extract_images:
+    type: boolean
+    default: true
+  use_ocr:
+    type: boolean
+    default: false
+
+cli:
+  command: ai-pdf-to-markdown
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --no-images
+      flag: true
+    - name: --ocr
+      flag: true
+    - name: --dry-run
+      flag: true
+    - name: --force
+      flag: true
+  examples:
+    - "praison run ai-pdf-to-markdown document.pdf"
+    - "praison run ai-pdf-to-markdown document.pdf --output ./docs/"
+
+outputs:
+  - name: document.md
+    type: file
+  - name: images/
+    type: directory
+  - name: metadata.json
+    type: file
+  - name: run.json
+    type: file

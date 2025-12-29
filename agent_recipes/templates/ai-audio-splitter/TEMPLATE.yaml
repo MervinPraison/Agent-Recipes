@@ -1,0 +1,47 @@
+name: ai-audio-splitter
+version: "1.0.0"
+description: Split long audio files by silence detection or chapter markers.
+author: praisonai
+license: Apache-2.0
+tags: [audio, split, chapters, silence-detection]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  min_silence_duration:
+    type: number
+    default: 1.0
+  silence_threshold:
+    type: string
+    default: "-40dB"
+
+cli:
+  command: ai-audio-splitter
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --min-silence
+      default: "1.0"
+  examples:
+    - "praison run ai-audio-splitter long_audio.mp3"
+
+outputs:
+  - name: tracks/
+    type: directory
+  - name: manifest.json
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,59 @@
+framework: praisonai
+topic: AI Podcast Cleaner Pipeline
+
+roles:
+  audio_processor:
+    role: Audio Engineer
+    goal: Clean and enhance podcast audio
+    backstory: |
+      I am an AI audio engineer specializing in podcast production.
+      I use ffmpeg and audio processing tools to clean recordings,
+      remove noise, normalize levels, and trim silences.
+    tasks:
+      process_audio:
+        description: |
+          Process the input audio file:
+          1. Probe audio to get metadata (duration, format, sample rate)
+          2. Apply noise reduction if needed
+          3. Normalize audio levels to -16 LUFS
+          4. Remove long silences (>0.5s)
+          5. Export cleaned audio as MP3
+          
+          Input: {input}
+          Output directory: {output}
+          Preset: {preset}
+        expected_output: |
+          Cleaned audio file with:
+          - Normalized volume levels
+          - Reduced background noise
+          - Trimmed silences
+    tools:
+      - shell_tool
+
+  transcriber:
+    role: Transcription Specialist
+    goal: Generate accurate transcripts with timestamps
+    backstory: |
+      I am an AI transcription specialist using OpenAI Whisper.
+      I generate accurate transcripts with word-level timestamps
+      and can identify natural chapter breaks in content.
+    tasks:
+      transcribe_audio:
+        description: |
+          Transcribe the cleaned audio:
+          1. Use Whisper API to transcribe with word timestamps
+          2. Generate plain text transcript
+          3. Generate SRT caption file
+          4. Identify chapter breaks based on content
+          5. Create chapters.json with timestamps and titles
+          
+          Audio file: {output}/cleaned.mp3
+        expected_output: |
+          - transcript.txt: Full text transcript
+          - transcript.srt: Timestamped captions
+          - chapters.json: Chapter markers
+    tools:
+      - shell_tool
+
+dependencies:
+  - transcribe_audio depends on process_audio

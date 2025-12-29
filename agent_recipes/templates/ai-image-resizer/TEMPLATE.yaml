@@ -1,0 +1,39 @@
+name: ai-image-resizer
+version: "1.0.0"
+description: Batch resize images to multiple sizes for web/mobile.
+author: praisonai
+license: Apache-2.0
+tags: [image, resize, batch, responsive]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, Pillow]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  sizes:
+    type: string
+    default: "1920,1280,640,320"
+
+cli:
+  command: ai-image-resizer
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --sizes
+      default: "1920,1280,640,320"
+  examples:
+    - "praison run ai-image-resizer ./images/"
+
+outputs:
+  - name: resized/
+    type: directory
+  - name: run.json
+    type: file

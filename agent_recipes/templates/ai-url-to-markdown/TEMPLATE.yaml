@@ -1,0 +1,44 @@
+name: ai-url-to-markdown
+version: "1.0.0"
+description: Extract article content from URL and convert to clean Markdown.
+author: praisonai
+license: Apache-2.0
+tags: [web, url, markdown, extraction, scraping]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools, requests, beautifulsoup4]
+  env: [OPENAI_API_KEY]
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  include_images:
+    type: boolean
+    default: true
+
+cli:
+  command: ai-url-to-markdown
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --no-images
+      flag: true
+  examples:
+    - "praison run ai-url-to-markdown https://example.com/article"
+
+outputs:
+  - name: article.md
+    type: file
+  - name: images/
+    type: directory
+  - name: metadata.json
+    type: file
+  - name: run.json
+    type: file

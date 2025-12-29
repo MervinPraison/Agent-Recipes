@@ -1,0 +1,40 @@
+name: ai-pdf-summarizer
+version: "1.0.0"
+description: Summarize PDF documents with key points extraction.
+author: praisonai
+license: Apache-2.0
+tags: [pdf, summary, extraction, analysis]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: pdftotext
+      check: "pdftotext -v"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+
+cli:
+  command: ai-pdf-summarizer
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+  examples:
+    - "praison run ai-pdf-summarizer document.pdf"
+
+outputs:
+  - name: summary.md
+    type: file
+  - name: key-points.json
+    type: file
+  - name: run.json
+    type: file

@@ -1,0 +1,44 @@
+name: ai-audio-normalizer
+version: "1.0.0"
+description: Normalize audio loudness using EBU R128 standard.
+author: praisonai
+license: Apache-2.0
+tags: [audio, normalization, loudness, ebu-r128]
+
+requires:
+  tools: [shell_tool]
+  packages: [praisonai-tools]
+  external:
+    - name: ffmpeg
+      check: "ffmpeg -version"
+
+config:
+  input:
+    type: string
+    required: true
+  output:
+    type: string
+  target_lufs:
+    type: number
+    default: -16.0
+
+cli:
+  command: ai-audio-normalizer
+  args:
+    - name: input
+      positional: true
+      required: true
+    - name: --output
+      short: -o
+    - name: --target-lufs
+      default: "-16"
+  examples:
+    - "praison run ai-audio-normalizer audio.mp3"
+
+outputs:
+  - name: normalized.mp3
+    type: file
+  - name: loudness-report.json
+    type: file
+  - name: run.json
+    type: file
