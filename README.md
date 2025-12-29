@@ -1,5 +1,18 @@
 # Agent Recipes
 
+Pre-built, distributable AI agent workflows with dependency management.
+
+## Templates vs Project Config
+
+| Concept | What It Is | When to Use |
+|---------|------------|-------------|
+| **Project Config** (`agents.yaml` + `tools.py`) | Local, ad-hoc agent definition in your working directory | Rapid prototyping, local development, quick iteration |
+| **Templates/Recipes** (this repo) | Distributable, versioned agent bundles with dependency checking | Sharing workflows, reproducible pipelines, production use |
+
+**Key Differences:**
+- **Project Config**: No dependency management, no versioning, not portable
+- **Templates**: Explicit `requires` (packages, env vars, external tools), versioned, discoverable via CLI
+
 ## Installation
 
 | Command | Description |
