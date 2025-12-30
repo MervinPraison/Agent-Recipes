@@ -1,0 +1,98 @@
+name: FCP AutoEdit Workflow
+description: AI-powered video editing automation for Final Cut Pro
+
+workflow:
+  verbose: true
+  stream: true
+
+variables:
+  instruction: "{{instruction}}"
+  media_paths: "{{media_paths}}"
+  project_name: "{{project_name}}"
+  format: "{{format}}"
+  watch_folder: "{{watch_folder}}"
+  dry_run: "{{dry_run}}"
+
+agents:
+  environment_checker:
+    name: EnvironmentChecker
+    role: System Validator
+    goal: Verify the environment is ready for FCP automation
+    instructions: |
+      Check the environment using fcp_doctor_tool.
+      Return status of: macOS, Final Cut Pro, CommandPost, watch folder, API key.
+    tools: [fcp_doctor_tool]
+
+  intent_generator:
+    name: IntentGenerator
+    role: Edit Intent Specialist
+    goal: Convert natural language instructions to structured EditIntent
+    instructions: |
+      Generate EditIntent from instruction: {{instruction}}
+      Media files: {{media_paths}}
+      Project name: {{project_name}}
+      Format: {{format}}
+      
+      Use fcp_autoedit_tool with action="generate_intent".
+    tools: [fcp_autoedit_tool]
+
+  fcpxml_generator:
+    name: FCPXMLGenerator
+    role: FCPXML Specialist
+    goal: Generate valid FCPXML from EditIntent
+    instructions: |
+      Generate FCPXML from the EditIntent.
+      Use fcp_autoedit_tool with action="generate_fcpxml".
+    tools: [fcp_autoedit_tool]
+
+  injector:
+    name: FCPInjector
+    role: FCP Integration Specialist
+    goal: Inject FCPXML into Final Cut Pro
+    instructions: |
+      Inject FCPXML into Final Cut Pro via CommandPost.
+      Watch folder: {{watch_folder}}
+      Dry run: {{dry_run}}
+      Use fcp_autoedit_tool with action="inject".
+    tools: [fcp_autoedit_tool]
+
+  reporter:
+    name: ResultReporter
+    role: Summary Specialist
+    goal: Provide a clear summary of the operation
+    instructions: |
+      Compile results from all previous steps.
+      Include: assets used, timeline structure, warnings, job ID, file paths.
+      Suggest next steps if there were any issues.
+
+steps:
+  - name: check_environment
+    agent: environment_checker
+    action: "Run health checks for FCP integration"
+    output_variable: env_status
+
+  - name: generate_intent
+    agent: intent_generator
+    action: "Generate EditIntent from instruction: {{instruction}}"
+    context_from: [check_environment]
+    output_variable: edit_intent
+    condition: "{{env_status.all_passed}}"
+
+  - name: generate_fcpxml
+    agent: fcpxml_generator
+    action: "Generate FCPXML from EditIntent"
+    context_from: [generate_intent]
+    output_variable: fcpxml_result
+
+  - name: inject_fcpxml
+    agent: injector
+    action: "Inject FCPXML into Final Cut Pro"
+    context_from: [generate_fcpxml]
+    condition: "not {{dry_run}}"
+    output_variable: injection_result
+
+  - name: report
+    agent: reporter
+    action: "Generate summary report"
+    context_from: [check_environment, generate_intent, generate_fcpxml, inject_fcpxml]
+    output_variable: final_report

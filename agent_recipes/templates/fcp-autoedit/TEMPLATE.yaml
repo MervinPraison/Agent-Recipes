@@ -1,0 +1,80 @@
+name: fcp-autoedit
+version: "1.0.0"
+description: AI → FCPXML → auto-import into Final Cut Pro. Converts natural language editing instructions to FCPXML and automatically imports into FCP via CommandPost.
+author: praisonai
+license: Apache-2.0
+tags: [video, editing, final-cut-pro, fcpxml, automation, macos]
+
+requires:
+  tools: [fcp_autoedit_tool, fcp_doctor_tool]
+  packages: [praisonai-tools, openai, pydantic]
+  env: [OPENAI_API_KEY]
+  external:
+    - name: CommandPost
+      description: macOS automation tool for Final Cut Pro
+      url: https://commandpost.io
+      required: true
+      check_command: "which cmdpost || test -d /Applications/CommandPost.app"
+    - name: Final Cut Pro
+      description: Apple's professional video editing software
+      required: true
+      check_command: "test -d '/Applications/Final Cut Pro.app'"
+
+workflow: workflow.yaml
+agents: agents.yaml
+
+config:
+  instruction:
+    type: string
+    required: true
+    description: Natural language editing instruction (e.g., "Create a 30-second highlight reel")
+  media_paths:
+    type: list
+    required: true
+    description: List of absolute paths to media files
+  project_name:
+    type: string
+    default: "AI Generated Project"
+    description: Name for the Final Cut Pro project
+  format:
+    type: string
+    default: "1080p25"
+    enum: [1080p25, 1080p30, 1080p24, 1080p50, 1080p60, 4k25, 4k30, 4k24, 4k50, 4k60, 720p25, 720p30]
+    description: Video format preset
+  watch_folder:
+    type: string
+    default: "~/.praison/fcp/watch/fcpxml"
+    description: Watch folder path for CommandPost auto-import
+  dry_run:
+    type: boolean
+    default: false
+    description: Generate intent and FCPXML without injecting
+
+defaults:
+  format: "1080p25"
+  project_name: "AI Generated Project"
+  dry_run: false
+
+cli:
+  command: fcp-autoedit
+  args:
+    - name: instruction
+      positional: true
+      description: Natural language editing instruction
+    - name: --media
+      required: true
+      multiple: true
+      description: Media file paths (can be repeated)
+    - name: --project-name
+      default: "AI Generated Project"
+      description: Project name
+    - name: --format
+      default: "1080p25"
+      description: Format preset
+    - name: --dry-run
+      flag: true
+      description: Do not inject into FCP
+  examples:
+    - praisonai run fcp-autoedit "Create a highlight reel" --media /path/to/clip1.mov --media /path/to/clip2.mov
+    - praisonai run fcp-autoedit "Concatenate all clips with crossfades" --media /videos/*.mov --project-name "My Project"
+    - praisonai run fcp-autoedit "Add background music" --media /path/to/video.mov --media /path/to/music.mp3 --dry-run
