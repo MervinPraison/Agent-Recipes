@@ -1,0 +1,210 @@
+framework: praisonai
+topic: "AI developments {{today}}"
+
+# =============================================================================
+# AI BLOG POST GENERATOR - 5 STAGE PIPELINE
+# =============================================================================
+# 
+# Stage 1: topic_gatherer - Find AI news topics
+# Stage 2: duplicate_checker - Check WordPress for duplicates
+# Stage 3: deep_researcher - Crawl URLs and gather facts
+# Stage 4: content_writer - Write Gutenberg-formatted post
+# Stage 5: publisher - Publish to WordPress
+# =============================================================================
+
+roles:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 1: TOPIC GATHERING
+  # ═══════════════════════════════════════════════════════════════════════════
+  topic_gatherer:
+    role: AI News Researcher
+    goal: Find current AI news topics from this week
+    backstory: You search for the latest AI developments. You focus on news from the current week only.
+    tools:
+      - tavily_search
+    tasks:
+      gather_topics:
+        description: |
+          Current date: {{today}}
+          
+          Search for AI news from January 2026 using tavily_search.
+          Find 5-10 specific AI developments from this week.
+          
+          Focus on: product launches, company announcements, research papers.
+          Avoid: politics, controversies, layoffs.
+          
+          For each topic found, include the URL where you found it.
+        expected_output: |
+          A list of 5-10 AI topics with URLs
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 2: DUPLICATE CHECK
+  # ═══════════════════════════════════════════════════════════════════════════
+  duplicate_checker:
+    role: Content Deduplication Agent
+    goal: Filter out topics that already exist in WordPress
+    backstory: You check for duplicate content before publishing.
+    tools:
+      - check_duplicate
+    tasks:
+      check_duplicates:
+        description: |
+          {{previous_output}}
+          
+          For each topic from the list above:
+          1. Call check_duplicate with the topic title
+          2. Remove any that are duplicates
+          3. Keep ALL unique topics
+          
+          Output all unique topics that should be written about.
+        expected_output: |
+          List of unique topics with URLs
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 3: DEEP RESEARCH
+  # ═══════════════════════════════════════════════════════════════════════════
+  deep_researcher:
+    role: Content Researcher
+    goal: Gather comprehensive facts by crawling URLs
+    backstory: You crawl URLs to extract facts, statistics, and quotes.
+    tools:
+      - tavily_search
+      - crawl_url
+    tasks:
+      research_topic:
+        description: |
+          {{previous_output}}
+          
+          For each unique topic above:
+          1. Use tavily_search to find relevant URLs about each topic
+          2. Call crawl_url on URLs to get detailed content
+          3. Extract: key facts, statistics, company names, dates, quotes
+          
+          Compile comprehensive research for each topic.
+        expected_output: |
+          Research summary with facts, statistics, and source URLs
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 4: CONTENT WRITING
+  # ═══════════════════════════════════════════════════════════════════════════
+  content_writer:
+    role: In-Depth Technology Journalist
+    goal: Write a comprehensive, well-researched blog post
+    backstory: |
+      You are an expert technology journalist who writes in-depth articles.
+      You adapt your writing length to match the topic's complexity.
+      You use British English (colour, centre, organisation).
+    tasks:
+      write_post:
+        description: |
+          {{previous_output}}
+          
+          Write a COMPREHENSIVE blog post using the research above.
+          
+          ═══════════════════════════════════════════════════════════════════════
+          GUTENBERG BLOCKS (use wp: comments)
+          ═══════════════════════════════════════════════════════════════════════
+          
+          TEXT BLOCKS:
+          wp:paragraph, wp:heading, wp:list, wp:quote, wp:code, wp:preformatted,
+          wp:pullquote, wp:table, wp:verse, wp:details
+          
+          MEDIA BLOCKS:
+          wp:image, wp:gallery, wp:audio, wp:cover, wp:file, wp:media-text, wp:video
+          
+          DESIGN BLOCKS:
+          wp:buttons, wp:columns, wp:group, wp:separator, wp:spacer, wp:row, wp:stack
+          
+          EMBED BLOCKS:
+          wp:embed, wp:html (for custom HTML like tables)
+          
+          EXAMPLE FORMAT:
+          <!-- wp:paragraph -->
+          <p>Your paragraph text here.</p>
+          <!-- /wp:paragraph -->
+          
+          For tables use wp:html:
+          <!-- wp:html -->
+          <table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Data</td></tr></tbody></table>
+          <!-- /wp:html -->
+          
+          ═══════════════════════════════════════════════════════════════════════
+          TITLE GUIDELINES (SEO-FRIENDLY)
+          ═══════════════════════════════════════════════════════════════════════
+          
+          - 6-10 words maximum
+          - NO colons or double sections (avoid "Title: Subtitle" format)
+          - Front-load the main keyword
+          - Make it scannable and searchable
+          - Use action words when appropriate
+          
+          GOOD: "Nvidia Launches Alpamayo Autonomous Vehicle Platform"
+          GOOD: "LG Unveils CLOi Robot at CES 2026"
+          GOOD: "OpenAI Releases GPT-5 with Enhanced Reasoning"
+          
+          BAD: "Revolutionising Autonomous Vehicles: Nvidia's Alpamayo Launch" (too long, has colon)
+          BAD: "The Future of AI: What It Means" (vague, has colon)
+          
+          ═══════════════════════════════════════════════════════════════════════
+          WRITING GUIDELINES
+          ═══════════════════════════════════════════════════════════════════════
+          
+          LENGTH: Adapt to the topic (500-5000+ words as needed)
+          
+          COVERAGE:
+          - What happened
+          - Who is involved
+          - Why it matters
+          - Technical details if relevant
+          - Future outlook
+          
+          QUALITY:
+          - British English (colour, centre, analyse)
+          - Short paragraphs (2-4 sentences)
+          - Subheadings every 2-3 paragraphs
+          - Sources section at the end
+          
+          ═══════════════════════════════════════════════════════════════════════
+          
+          OUTPUT FORMAT:
+          ARTICLE_TITLE: [SEO-friendly title, 6-10 words, no colons]
+          ARTICLE_CONTENT:
+          [Gutenberg blocks]
+          
+        expected_output: |
+          ARTICLE_TITLE: followed by SEO-friendly title
+          ARTICLE_CONTENT: followed by Gutenberg-formatted content
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 5: QUALITY CHECK & PUBLISH
+  # ═══════════════════════════════════════════════════════════════════════════
+  publisher:
+    role: WordPress Publisher
+    goal: Validate and publish the blog post
+    backstory: You validate content quality and publish to WordPress.
+    tools:
+      - create_wp_post
+    tasks:
+      validate_and_publish:
+        description: |
+          {{previous_output}}
+          
+          From the content above:
+          1. Find ARTICLE_TITLE: and extract the title text after it
+          2. Find ARTICLE_CONTENT: and extract all the Gutenberg blocks after it
+          
+          VALIDATION CHECKS:
+          - Title must be descriptive (not generic)
+          - Content must have <!-- wp: blocks
+          - Content must have at least one heading and one paragraph
+          
+          If validation passes, call create_wp_post:
+          - title: the text after ARTICLE_TITLE:
+          - content: everything after ARTICLE_CONTENT:
+          - status: publish
+          - category: News
+          - author: praison
+          
+          Report the result.
+        expected_output: |
+          Published post with ID and URL

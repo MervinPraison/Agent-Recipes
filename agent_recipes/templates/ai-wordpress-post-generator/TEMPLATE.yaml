@@ -1,0 +1,36 @@
+name: ai-wordpress-post-generator
+version: "1.0.0"
+description: Research AI news and publish Gutenberg-formatted posts to WordPress
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - wordpress
+  - content
+  - news
+  - gutenberg
+
+requires:
+  tools:
+    - tavily_search
+    - crawl_url
+    - check_duplicate
+    - create_wp_post
+  packages:
+    - praisonai
+    - praisonai-tools
+    - praisonaiwp
+    - tavily-python
+  env:
+    - OPENAI_API_KEY
+    - TAVILY_API_KEY
+
+cli:
+  command: praisonai templates run ai-wordpress-post-generator
+  examples:
+    - praisonai templates run ai-wordpress-post-generator "AI news"
+    - praisonai templates run ai-wordpress-post-generator "AI news" --dry-run
+
+safety:
+  dry_run_default: false
+  overwrites_files: false
