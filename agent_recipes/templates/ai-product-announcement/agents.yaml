@@ -1,0 +1,83 @@
+framework: praisonai
+topic: "Product announcement post"
+
+# =============================================================================
+# AI PRODUCT ANNOUNCEMENT - MARKETING POST GENERATOR
+# =============================================================================
+# 
+# Stage 1: product_researcher - Research and gather product details
+# Stage 2: announcement_writer - Write engaging announcement post
+# Stage 3: includes: wordpress-publisher (MODULAR - reuses standalone recipe)
+# =============================================================================
+
+roles:
+  product_researcher:
+    role: Product Researcher
+    goal: Gather comprehensive product information
+    backstory: |
+      You are a thorough product researcher who gathers key details
+      about products, features, benefits, and market positioning.
+    tools:
+      - tavily_search
+    tasks:
+      research_product:
+        description: |
+          Product: {{input}}
+          
+          Research this product thoroughly:
+          1. Key features and specifications
+          2. Unique selling points
+          3. Target audience
+          4. Pricing (if available)
+          5. Competitor comparison
+          6. Launch date or availability
+          
+          Provide structured findings.
+        expected_output: |
+          Comprehensive product research summary
+
+  announcement_writer:
+    role: Marketing Copywriter
+    goal: Write an engaging product announcement
+    backstory: |
+      You are a skilled marketing copywriter who creates compelling
+      product announcements that drive engagement and interest.
+    tasks:
+      write_announcement:
+        description: |
+          {{previous_output}}
+          
+          Write a COMPELLING product announcement blog post:
+          
+          1. Start with an attention-grabbing headline
+          2. Hook readers with an exciting opening
+          3. Highlight key features and benefits
+          4. Include a call-to-action
+          
+          Use GUTENBERG BLOCK FORMAT:
+          
+          <!-- wp:paragraph -->
+          <p>Your paragraph text here.</p>
+          <!-- /wp:paragraph -->
+          
+          <!-- wp:heading {"level":2} -->
+          <h2>Your heading here</h2>
+          <!-- /wp:heading -->
+          
+          <!-- wp:list -->
+          <ul>
+            <li>Feature 1</li>
+            <li>Feature 2</li>
+          </ul>
+          <!-- /wp:list -->
+          
+          Output format:
+          ARTICLE_TITLE: [exciting announcement title]
+          ARTICLE_CONTENT: [Gutenberg blocks]
+        expected_output: |
+          ARTICLE_TITLE: compelling announcement headline
+          ARTICLE_CONTENT: Gutenberg blocks with engaging marketing content
+
+# Include the modular wordpress-publisher recipe
+includes:
+  - wordpress-publisher

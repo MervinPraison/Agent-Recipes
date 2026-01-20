@@ -1,0 +1,49 @@
+framework: praisonai
+topic: "Quick AI news summary"
+
+# =============================================================================
+# AI QUICK NEWS - SIMPLE 2 STAGE PIPELINE
+# =============================================================================
+# 
+# Stage 1: news_writer - Write quick news article from a topic
+# Stage 2: includes: wordpress-publisher (MODULAR - reuses standalone recipe)
+# =============================================================================
+
+roles:
+  news_writer:
+    role: News Writer
+    goal: Write a quick news article about the given topic
+    backstory: |
+      You are a fast-working news writer who creates concise, 
+      engaging articles in Gutenberg block format.
+    tools:
+      - tavily_search
+    tasks:
+      write_article:
+        description: |
+          Topic: {{input}}
+          
+          1. Search for the latest news on this topic
+          2. Write a SHORT article (3-5 paragraphs)
+          3. Focus on key facts and developments
+          
+          Use GUTENBERG BLOCK FORMAT:
+          
+          <!-- wp:paragraph -->
+          <p>Your paragraph text here.</p>
+          <!-- /wp:paragraph -->
+          
+          <!-- wp:heading {"level":2} -->
+          <h2>Your heading here</h2>
+          <!-- /wp:heading -->
+          
+          Output format:
+          ARTICLE_TITLE: [catchy title, 6-10 words]
+          ARTICLE_CONTENT: [Gutenberg blocks]
+        expected_output: |
+          ARTICLE_TITLE: concise news title
+          ARTICLE_CONTENT: Gutenberg blocks with content inside HTML tags
+
+# Include the modular wordpress-publisher recipe
+includes:
+  - wordpress-publisher

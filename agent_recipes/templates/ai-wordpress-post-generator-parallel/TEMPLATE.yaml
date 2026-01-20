@@ -1,0 +1,40 @@
+name: ai-wordpress-post-generator-parallel
+version: "1.0.0"
+description: Research AI news and publish multiple Gutenberg-formatted posts to WordPress in parallel
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - wordpress
+  - content
+  - news
+  - gutenberg
+  - parallel
+
+requires:
+  tools:
+    - tavily_search
+    - crawl_url
+    - check_duplicate
+    - check_duplicates_batch
+    - create_wp_post
+  packages:
+    - praisonai
+    - praisonai-tools
+    - praisonaiwp
+    - tavily-python
+  env:
+    - OPENAI_API_KEY
+    - TAVILY_API_KEY
+
+cli:
+  command: praisonai recipe run ai-wordpress-post-generator-parallel
+  examples:
+    - praisonai recipe run ai-wordpress-post-generator-parallel
+    - praisonai recipe run ai-wordpress-post-generator-parallel --dry-run
+
+agents: agents.yaml
+
+safety:
+  dry_run_default: false
+  overwrites_files: false

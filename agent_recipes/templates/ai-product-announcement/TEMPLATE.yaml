@@ -1,0 +1,7 @@
+name: ai-product-announcement
+version: 1.0.0
+description: Product announcement post generator with modular publishing
+category: marketing
+author: PraisonAI
+includes:
+  - wordpress-publisher

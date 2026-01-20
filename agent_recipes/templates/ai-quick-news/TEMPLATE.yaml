@@ -1,0 +1,7 @@
+name: ai-quick-news
+version: 1.0.0
+description: Quick news article writer with modular publishing
+category: content
+author: PraisonAI
+includes:
+  - wordpress-publisher

@@ -1,0 +1,48 @@
+framework: praisonai
+topic: "Publish article to WordPress"
+
+# =============================================================================
+# WORDPRESS PUBLISHER - Modular Recipe
+# =============================================================================
+# 
+# This is a REUSABLE recipe that publishes content to WordPress.
+# It expects input in the format:
+#   ARTICLE_TITLE: [title text]
+#   ARTICLE_CONTENT: [Gutenberg blocks]
+#
+# Can be used standalone or included from other recipes.
+# =============================================================================
+
+roles:
+  publisher:
+    role: WordPress Publisher
+    goal: Validate and publish blog post to WordPress
+    backstory: |
+      You extract title and content from structured input and publish to WordPress.
+      You validate that content is in Gutenberg block format.
+    tools:
+      - create_wp_post
+    tasks:
+      validate_and_publish:
+        description: |
+          {{previous_output}}
+          
+          EXTRACT FROM INPUT:
+          1. Find ARTICLE_TITLE: and extract the title text after it
+          2. Find ARTICLE_CONTENT: and extract all the Gutenberg blocks after it
+          
+          VALIDATION CHECKS:
+          - Title must be descriptive (not generic placeholders)
+          - Content must have <!-- wp: blocks
+          - Content must have proper HTML tags (<p>, <h2>, etc.)
+          
+          If validation passes, call create_wp_post:
+          - title: the text after ARTICLE_TITLE:
+          - content: everything after ARTICLE_CONTENT:
+          - status: publish
+          - category: News
+          - author: praison
+          
+          Report the result with post ID.
+        expected_output: |
+          Published post with ID and confirmation

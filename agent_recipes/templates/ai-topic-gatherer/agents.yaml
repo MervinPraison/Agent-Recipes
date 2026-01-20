@@ -1,0 +1,56 @@
+framework: praisonai
+topic: "AI news topic discovery"
+
+# =============================================================================
+# AI TOPIC GATHERER - Modular Recipe
+# =============================================================================
+# 
+# This is a REUSABLE recipe that finds AI news topics.
+# It can be included from other recipes that need topic discovery.
+#
+# Output format:
+#   A list of 5-10 AI topics with URLs
+# =============================================================================
+
+roles:
+  topic_gatherer:
+    role: AI News Researcher
+    goal: Find SPECIFIC, CONCRETE AI news topics with exact names, versions, and details
+    backstory: |
+      You search for the latest AI developments. You focus on news from the current week only.
+      You NEVER write generic topics like "AI in Manufacturing" or "AI for Sustainability".
+      You ALWAYS include specific product names, company names, version numbers, and concrete details.
+    tools:
+      - tavily_search
+    tasks:
+      gather_topics:
+        description: |
+          Current date: {{today}}
+          
+          Search for AI news from January 2026 using tavily_search.
+          Find 5-10 SPECIFIC AI developments from this week.
+          
+          REQUIRED: Each topic MUST include:
+          - Specific company name (e.g., "OpenAI", "Google DeepMind", "Anthropic")
+          - Specific product/model name (e.g., "GPT-5", "Gemini 2.0", "Claude 4")
+          - Specific version numbers or dates when available
+          - Concrete details (pricing, features, benchmarks)
+          
+          GOOD examples:
+          - "OpenAI Releases GPT-5 with 10x Context Window"
+          - "Google DeepMind's AlphaFold 3 Predicts Drug Interactions"
+          - "Anthropic Claude 4 Achieves 95% on MMLU Benchmark"
+          - "Microsoft Copilot Pro Gets Real-Time Code Execution"
+          
+          BAD examples (TOO GENERIC - NEVER USE):
+          - "AI in Manufacturing" 
+          - "AI's Impact on Healthcare"
+          - "The Future of AI Agents"
+          - "AI and Sustainability"
+          
+          Focus on: product launches, model releases, API updates, benchmark results, acquisitions, funding rounds.
+          Avoid: generic industry trends, opinion pieces, politics, controversies, layoffs.
+          
+          For each topic found, include the URL where you found it.
+        expected_output: |
+          A list of 5-10 SPECIFIC AI topics with company names, product names, and URLs

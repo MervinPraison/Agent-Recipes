@@ -51,6 +51,7 @@ def get_tool(name: str) -> Optional[Callable]:
 
 _wp_client = None
 _ssh_manager = None
+_detector = None  # Singleton detector for efficiency
 
 
 @recipe_tool("get_current_date")
@@ -209,13 +210,33 @@ def _ensure_index_sync(wp_client, detector) -> int:
     return embeddings_count
 
 
+def _get_detector():
+    """Get singleton DuplicateDetector instance for efficiency."""
+    global _detector
+    if _detector is None:
+        from praisonaiwp.ai.duplicate_detector import DuplicateDetector
+        wp = _get_wp_client()
+        _detector = DuplicateDetector(
+            wp_client=wp,
+            threshold=0.7,
+            duplicate_threshold=0.7,
+            verbose=0
+        )
+        # CRITICAL: Ensure embeddings are in sync with WordPress
+        indexed = _ensure_index_sync(wp, _detector)
+        if indexed == 0:
+            indexed = _detector.index_posts()
+        logger.info(f"Indexed {indexed} posts for duplicate check (singleton)")
+    return _detector
+
+
 @recipe_tool("check_duplicate")
 def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
     """
     Check for duplicate content in WordPress using semantic similarity.
     
-    ROBUST VERSION: Automatically verifies embeddings are in sync with WordPress
-    before checking. Forces re-index if embeddings are stale.
+    Uses embedding-based comparison with persistent caching.
+    Uses singleton detector for efficiency in parallel workflows.
     
     Args:
         title: Article title to check
@@ -231,24 +252,7 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
         }
     """
     try:
-        from praisonaiwp.ai.duplicate_detector import DuplicateDetector
-        
-        wp = _get_wp_client()
-        detector = DuplicateDetector(
-            wp_client=wp,
-            threshold=0.7,
-            duplicate_threshold=0.7,
-            verbose=0
-        )
-        
-        # CRITICAL: Ensure embeddings are in sync with WordPress
-        indexed = _ensure_index_sync(wp, detector)
-        
-        # If still not indexed, do a regular index
-        if indexed == 0:
-            indexed = detector.index_posts()
-        
-        logger.info(f"Duplicate check with {indexed} indexed posts")
+        detector = _get_detector()
         
         # Check for duplicates
         result = detector.check_duplicate(content=content, title=title)
@@ -277,7 +281,6 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
             "status": status,
             "matches": matches,
             "total_checked": result.total_posts_checked,
-            "indexed_count": indexed,
             "recommendation": recommendation
         }
         
@@ -294,6 +297,85 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
             "status": "ERROR",
             "has_duplicates": False
         }
+
+
+@recipe_tool("check_duplicates_batch")
+def check_duplicates_batch(items: List[str]) -> Dict[str, Any]:
+    """
+    Check multiple items (sentences, paragraphs, titles) for duplicates.
+    
+    More robust than single-string checking - checks each item independently
+    and aggregates results. Use this when you have multiple pieces of content
+    to verify against existing posts.
+    
+    Args:
+        items: List of strings to check (sentences, paragraphs, titles)
+        
+    Returns:
+        {
+            "has_duplicates": bool,
+            "status": "UNIQUE" | "DUPLICATE",
+            "matches": [...],
+            "total_checked": int,
+            "items_checked": int,
+            "recommendation": str
+        }
+    
+    Example:
+        check_duplicates_batch([
+            "OpenAI launches new model",
+            "GPT-5 announced at conference",
+            "AI breakthrough in 2026"
+        ])
+    """
+    try:
+        detector = _get_detector()
+        
+        # Use batch checking
+        result = detector.check_duplicates_batch(items=items, any_match=True)
+        
+        # Build response
+        status = "DUPLICATE" if result.has_duplicates else "UNIQUE"
+        matches = [
+            {
+                "post_id": m.post_id,
+                "title": m.title,
+                "similarity": round(m.similarity_score, 3),
+                "status": m.status
+            }
+            for m in result.matches
+        ]
+        
+        recommendation = ""
+        if result.has_duplicates:
+            top = result.matches[0]
+            recommendation = f"Similar to existing post '{top.title}' (ID: {top.post_id}). Consider updating instead."
+        else:
+            recommendation = "All content appears unique. Safe to publish."
+        
+        return {
+            "has_duplicates": result.has_duplicates,
+            "status": status,
+            "matches": matches,
+            "total_checked": result.total_posts_checked,
+            "items_checked": len(items),
+            "recommendation": recommendation
+        }
+        
+    except ImportError:
+        return {
+            "error": "Install with: pip install praisonaiwp[ai]",
+            "status": "ERROR",
+            "has_duplicates": False
+        }
+    except Exception as e:
+        logger.error(f"Batch duplicate check failed: {e}")
+        return {
+            "error": str(e),
+            "status": "ERROR",
+            "has_duplicates": False
+        }
+
 
 @recipe_tool("create_wp_post")
 def create_wp_post(
@@ -404,17 +486,6 @@ def create_wp_post(
         logger.info(f"Duplicate check passed for: {title}")
     except Exception as e:
         logger.warning(f"Duplicate check failed, proceeding with caution: {e}")
-    
-    # Check if this title was already created in this session (re-check after dup check)
-    if normalized_title in create_wp_post._created_titles:
-        logger.info(f"SESSION DUPLICATE - Skipping: {title}")
-        return {
-            "post_id": None,
-            "status": "skipped",
-            "message": f"SKIPPED: '{title}' already created in this session",
-            "success": True,
-            "duplicate": True
-        }
     
     # Add to session immediately to prevent race conditions
     create_wp_post._created_titles.add(normalized_title)

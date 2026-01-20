@@ -1,0 +1,37 @@
+name: wordpress-publisher
+version: 1.0.0
+description: Modular WordPress publishing recipe - accepts ARTICLE_TITLE and ARTICLE_CONTENT
+author: praison
+license: Apache-2.0
+
+tags:
+  - wordpress
+  - publishing
+  - modular
+  - reusable
+
+requires:
+  packages:
+    - praisonai
+    - praisonaiwp
+  env:
+    - OPENAI_API_KEY
+
+input:
+  format: |
+    ARTICLE_TITLE: [Title text]
+    ARTICLE_CONTENT: [Gutenberg blocks]
+  description: Expects ARTICLE_TITLE and ARTICLE_CONTENT markers in input
+
+output:
+  format: |
+    {
+      "post_id": int,
+      "status": "published",
+      "url": "https://..."
+    }
+
+cli:
+  command: praisonai workflow run agents.yaml
+  examples:
+    - praisonai workflow run agents.yaml --input "ARTICLE_TITLE: Test\nARTICLE_CONTENT: ..."
