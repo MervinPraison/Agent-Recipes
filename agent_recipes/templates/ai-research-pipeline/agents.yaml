@@ -158,3 +158,5 @@ steps:
       Compile ALL findings into a comprehensive research document.
     expected_output: |
       Comprehensive research with all facts, quotes, statistics, code examples, and sources
+
+context: true

@@ -156,3 +156,5 @@ steps:
   # STEP 6: Publish to WordPress
   # ─────────────────────────────────────────────────────────────────────────────
   - include: wordpress-publisher
+
+context: true

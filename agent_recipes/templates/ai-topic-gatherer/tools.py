@@ -103,23 +103,24 @@ def get_current_date() -> str:
 # =============================================================================
 
 @recipe_tool("tavily_search")
-def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
+def tavily_search(query: str, max_results: int = 3) -> Dict[str, Any]:
     """
-    AI-powered web search using Tavily with full page content.
+    AI-powered web search using Tavily.
     
     Args:
         query: Search query
-        max_results: Maximum results (default: 10)
+        max_results: Maximum results (default: 3)
         
     Returns:
-        Search results with answer, sources, and full page content (raw_content)
+        Search results with answer and sources
     """
     info_print(f"🔍 Searching: '{query}' (max {max_results} results)")
     
     try:
         from praisonai_tools import TavilyTool
         tool = TavilyTool(search_depth="advanced", include_answer=True)
-        result = tool.search(query=query, max_results=max_results, include_raw_content=True)
+        # Disable raw_content for topic-gatherer to avoid context overflow
+        result = tool.search(query=query, max_results=max_results, include_raw_content=False)
         
         num_results = len(result.get("results", []))
         success_print(f"Found {num_results} results for: '{query[:50]}...'")

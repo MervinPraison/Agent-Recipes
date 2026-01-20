@@ -1,24 +1,32 @@
 framework: praisonai
-topic: "AI news topic discovery"
+topic: "{{topic}}"
 
 # =============================================================================
 # AI TOPIC GATHERER - Modular Recipe (2-Agent Approach)
 # =============================================================================
 # 
-# This is a REUSABLE recipe that finds AI news topics using 2 agents:
+# This is a REUSABLE recipe that finds topics using 2 agents:
 #   Agent 1: keyword_generator - Searches once, reads info, generates keywords
 #   Agent 2: topic_searcher - Searches all keywords, collects all information
 #
+# Variables (passed from parent recipe or defaults):
+#   - topic: The topic to search for (e.g., "AI news", "AI tools")
+#   - today: Current date
+#
 # Output format:
-#   JSON array of 5-10 AI topics with URLs and content
+#   JSON array of 5-10 topics with URLs and content
 # =============================================================================
+
+variables:
+  topic: "AI news"  # Default, can be overridden by parent recipe
+  today: "{{today}}"
 
 roles:
   keyword_generator:
-    role: AI Keyword Researcher
-    goal: Generate comprehensive search keywords for AI news discovery
+    role: Keyword Research Specialist
+    goal: Generate comprehensive search keywords for topic discovery
     backstory: |
-      You perform initial research to understand what's trending in AI, 
+      You perform initial research to understand what's trending, 
       then generate targeted keywords for deeper searches.
     tools:
       - tavily_search
@@ -26,28 +34,29 @@ roles:
       generate_keywords:
         description: |
           Current date: {{today}}
+          TOPIC TO RESEARCH: {{topic}}
           
-          1. FIRST, search for "latest AI news January 2026" to get an overview
+          1. FIRST, search for the topic above to get an overview
           2. READ the full content from the search results carefully
-          3. Based on what you find, generate 10-15 specific search keywords
+          3. Based on what you find, generate 5-7 specific search keywords
           
           Keywords should target:
-          - Specific company announcements (e.g., "OpenAI GPT-5 release")
-          - Product launches (e.g., "Google Gemini 2.0 features")
-          - Model releases (e.g., "Anthropic Claude 4 benchmark")
-          - API updates (e.g., "Microsoft Copilot API update")
-          - Research papers (e.g., "DeepMind AlphaFold 3")
+          - Specific company announcements
+          - Product launches and updates
+          - New releases and versions
+          - Technical details and features
+          - Research and developments
           
-          Generate keywords that will find SPECIFIC, CONCRETE news.
+          Generate keywords that will find SPECIFIC, CONCRETE information.
         expected_output: |
           {"keywords": ["keyword1", "keyword2", ...]}
 
   topic_searcher:
-    role: AI Topic Collector
-    goal: Search all keywords and collect comprehensive AI news topics
+    role: Topic Collector
+    goal: Search all keywords and collect comprehensive topics
     backstory: |
       You search exhaustively using provided keywords and compile 
-      a complete list of AI topics with full details.
+      a complete list of topics with full details.
     tools:
       - tavily_search
     tasks:
@@ -59,11 +68,10 @@ roles:
           For EACH keyword in the list above:
           1. Call tavily_search with the keyword
           2. Read the FULL content from each result
-          3. Extract specific AI topics with details
+          3. Extract specific topics with details
           
           REQUIRED for each topic:
-          - Specific company name (e.g., "OpenAI", "Google DeepMind")
-          - Specific product/model name (e.g., "GPT-5", "Gemini 2.0")
+          - Specific company/product name
           - Version numbers or dates when available
           - Concrete details (features, benchmarks, pricing)
           - Source URL
@@ -84,6 +92,22 @@ roles:
 steps:
   - name: generate_keywords
     agent: keyword_generator
+    action: |
+      Current date: {{today}}
+      TOPIC TO RESEARCH: {{topic}}
+      
+      1. FIRST, search for the topic above to get an overview
+      2. READ the full content from the search results carefully
+      3. Based on what you find, generate 3-5 specific search keywords
+      
+      Keywords should target:
+      - Specific company announcements
+      - Product launches and updates
+      - New releases and versions
+      - Technical details and features
+      - Research and developments
+      
+      Generate keywords that will find SPECIFIC, CONCRETE information.
     output_variable: search_keywords
     output_json:
       type: object
@@ -92,10 +116,35 @@ steps:
           type: array
           items:
             type: string
-          description: List of 10-15 specific search keywords
+          description: List of 3-5 specific search keywords
 
   - name: search_topics
     agent: topic_searcher
+    action: |
+      KEYWORDS TO SEARCH:
+      {{previous_output}}
+      
+      For EACH keyword in the list above:
+      1. Call tavily_search with the keyword
+      2. Read the FULL content from each result
+      3. Extract specific topics with details
+      
+      REQUIRED for each topic:
+      - Specific company/product name
+      - Version numbers or dates when available
+      - Concrete details (features, benchmarks, pricing)
+      - Source URL
+      - Content summary (what the topic is about, key details)
+      
+      Return 5-10 UNIQUE topics (no duplicates).
+      
+      GOOD topics:
+      - "OpenAI Releases GPT-5 with 10x Context Window"
+      - "Google DeepMind's AlphaFold 3 Predicts Drug Interactions"
+      
+      BAD topics (TOO GENERIC - NEVER USE):
+      - "AI in Manufacturing" 
+      - "The Future of AI Agents"
     output_json:
       type: array
       items:
@@ -110,3 +159,5 @@ steps:
           content:
             type: string
             description: Detailed description of the topic
+
+context: true

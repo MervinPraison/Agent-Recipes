@@ -1,0 +1,32 @@
+name: ai-research-pipeline
+version: 1.0.0
+description: Modular research pipeline - filters duplicates, generates keywords, deep research
+author: praison
+license: Apache-2.0
+
+tags:
+  - research
+  - modular
+  - reusable
+  - parallel
+
+requires:
+  packages:
+    - praisonai
+    - praisonai-tools
+  env:
+    - OPENAI_API_KEY
+    - TAVILY_API_KEY
+
+input:
+  format: |
+    Topics from previous step (ai-topic-gatherer output)
+  description: Expects topic list with title, url, content from previous recipe
+
+output:
+  format: |
+    research_results - comprehensive research for each topic
+  description: Stores results in 'research_results' variable for next step
+
+cli:
+  command: praisonai workflow run agents.yaml
