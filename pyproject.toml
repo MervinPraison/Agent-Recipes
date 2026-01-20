@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-recipes"
-version = "0.0.10"
+version = "0.0.11"
 description = "Real-world AI agent templates and recipes for PraisonAI"
 readme = "README.md"
 license = {text = "Apache-2.0"}

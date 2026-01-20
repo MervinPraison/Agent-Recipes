@@ -1,5 +1,5 @@
 """
-Tools for Research-Post-To-WP Recipe
+Tools for AI Code WordPress Generator Recipe
 
 Provides:
 - tavily_search: AI-powered web search
@@ -8,22 +8,72 @@ Provides:
 - get_current_date: Dynamic date provider
 
 Uses praisonaiwp SDK directly (not subprocess) for better performance.
-
-Note: Uses local TOOLS dict for recipe-level tool registry.
-The praisonaiagents.tools.registry pattern is for SDK-level tools.
+Enhanced with Rich console output for debugging visibility.
 """
 
 import logging
 from datetime import date
 from typing import Any, Callable, Dict, List, Optional
 
+# Rich imports for beautiful console output
+try:
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich import print as rprint
+    console = Console()
+    HAS_RICH = True
+except ImportError:
+    HAS_RICH = False
+    console = None
+
 logger = logging.getLogger(__name__)
+
+
+def debug_print(message: str, style: str = "dim"):
+    """Print debug message with optional rich styling."""
+    if HAS_RICH:
+        console.print(f"[{style}]{message}[/{style}]")
+    else:
+        print(message)
+
+
+def success_print(message: str):
+    """Print success message."""
+    if HAS_RICH:
+        console.print(f"[bold green]✅ {message}[/bold green]")
+    else:
+        print(f"✅ {message}")
+
+
+def warning_print(message: str):
+    """Print warning message."""
+    if HAS_RICH:
+        console.print(f"[bold yellow]⚠️  {message}[/bold yellow]")
+    else:
+        print(f"⚠️  {message}")
+
+
+def error_print(message: str):
+    """Print error message."""
+    if HAS_RICH:
+        console.print(f"[bold red]❌ {message}[/bold red]")
+    else:
+        print(f"❌ {message}")
+
+
+def info_print(message: str):
+    """Print info message."""
+    if HAS_RICH:
+        console.print(f"[cyan]ℹ️  {message}[/cyan]")
+    else:
+        print(f"ℹ️  {message}")
+
 
 # =============================================================================
 # Recipe-Level Tool Registry
 # =============================================================================
 
-# Local tools registry for this recipe
 TOOLS: Dict[str, Callable] = {}
 
 
@@ -51,13 +101,15 @@ def get_tool(name: str) -> Optional[Callable]:
 
 _wp_client = None
 _ssh_manager = None
-_detector = None  # Singleton detector for efficiency
+_detector = None
 
 
 @recipe_tool("get_current_date")
 def get_current_date() -> str:
     """Get current date formatted for news queries."""
-    return date.today().strftime("%B %d, %Y")
+    today = date.today().strftime("%B %d, %Y")
+    debug_print(f"📅 Current date: {today}")
+    return today
 
 
 @recipe_tool("tavily_search")
@@ -72,6 +124,8 @@ def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
     Returns:
         Search results with answer, sources, and full page content (raw_content)
     """
+    info_print(f"🔍 Searching: '{query}' (max {max_results} results)")
+    
     try:
         from tavily import TavilyClient
         import os
@@ -80,14 +134,20 @@ def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
             query=query,
             max_results=max_results,
             search_depth="advanced",
-            include_raw_content=True,  # Get full page content in markdown
+            include_raw_content=True,
             include_answer=True,
             topic="news"
         )
+        
+        num_results = len(result.get("results", []))
+        success_print(f"Found {num_results} results for: '{query[:50]}...'")
+        
         return result
     except ImportError:
+        error_print("Tavily not installed. Run: pip install tavily-python")
         return {"error": "Install with: pip install tavily-python"}
     except Exception as e:
+        error_print(f"Tavily search failed: {e}")
         logger.error(f"Tavily search failed: {e}")
         return {"error": str(e)}
 
@@ -96,23 +156,16 @@ def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
 def crawl_url(url: str, extract_main_content: bool = True) -> Dict[str, Any]:
     """
     Crawl a URL and extract its content for deep research.
-    
-    Args:
-        url: The URL to crawl
-        extract_main_content: Focus on main article content (default: True)
-        
-    Returns:
-        {
-            "url": str,
-            "title": str,
-            "content": str,
-            "success": bool
-        }
     """
+    info_print(f"🌐 Crawling: {url[:60]}...")
+    
     try:
         from praisonai_tools import Crawl4AITool
         tool = Crawl4AITool()
         result = tool.crawl(url=url)
+        
+        content_len = len(result.get("content", ""))
+        success_print(f"Crawled {content_len} chars from: {url[:40]}...")
         
         return {
             "url": url,
@@ -121,20 +174,23 @@ def crawl_url(url: str, extract_main_content: bool = True) -> Dict[str, Any]:
             "success": True
         }
     except ImportError:
-        # Fallback to jina reader
+        debug_print("Crawl4AI not available, using Jina fallback...")
         try:
             import requests
             jina_url = f"https://r.jina.ai/{url}"
             resp = requests.get(jina_url, timeout=30)
+            success_print(f"Jina crawled {len(resp.text)} chars")
             return {
                 "url": url,
                 "title": "",
-                "content": resp.text[:10000],  # Limit content
+                "content": resp.text[:10000],
                 "success": True
             }
         except Exception as e:
+            error_print(f"Crawl failed: {e}")
             return {"url": url, "content": "", "success": False, "error": str(e)}
     except Exception as e:
+        error_print(f"Crawl failed for {url}: {e}")
         logger.error(f"Crawl failed for {url}: {e}")
         return {"url": url, "content": "", "success": False, "error": str(e)}
 
@@ -146,6 +202,8 @@ def _get_wp_client():
     if _wp_client is not None:
         return _wp_client
     
+    info_print("🔌 Connecting to WordPress via SSH...")
+    
     try:
         from praisonaiwp.core.config import Config
         from praisonaiwp.core.ssh_manager import SSHManager
@@ -153,6 +211,8 @@ def _get_wp_client():
         
         config = Config()
         server_config = config.get_server()
+        
+        debug_print(f"   Host: {server_config['hostname']}")
         
         _ssh_manager = SSHManager(
             server_config['hostname'],
@@ -170,43 +230,38 @@ def _get_wp_client():
             verify_installation=False
         )
         
-        logger.info(f"Connected to WordPress at {server_config['hostname']}")
+        success_print(f"Connected to WordPress at {server_config['hostname']}")
         return _wp_client
         
     except ImportError:
+        error_print("praisonaiwp not installed. Run: pip install praisonaiwp")
         raise ImportError("Install with: pip install praisonaiwp")
     except Exception as e:
+        error_print(f"Failed to connect to WordPress: {e}")
         logger.error(f"Failed to connect to WordPress: {e}")
         raise
 
+
 def _ensure_index_sync(wp_client, detector) -> int:
-    """
-    Ensure embeddings index is in sync with WordPress posts.
+    """Ensure embeddings index is in sync with WordPress posts."""
+    debug_print("🔄 Syncing embeddings index with WordPress...")
     
-    Compares WordPress post count with embeddings count.
-    If there are new posts, indexes only the new ones (incremental).
-    
-    Returns:
-        Number of indexed posts after sync
-    """
-    # Get WordPress post count
     all_posts = wp_client.list_posts(post_type='post', post_status='publish', per_page=2000)
     wp_count = len(all_posts)
     
-    # Get embeddings count
     embeddings_count = detector.cache.count() if detector.cache else 0
     
-    logger.info(f"Sync check: WordPress={wp_count} posts, Embeddings={embeddings_count} indexed")
+    debug_print(f"   WordPress posts: {wp_count}")
+    debug_print(f"   Indexed embeddings: {embeddings_count}")
     
-    # If there are new posts, do incremental indexing (don't clear cache)
     if embeddings_count < wp_count:
         missing = wp_count - embeddings_count
-        logger.info(f"Found {missing} new posts to index (incremental)")
-        # index_posts will only index posts not already in cache
+        info_print(f"📥 Indexing {missing} new posts...")
         indexed = detector.index_posts()
-        logger.info(f"Total indexed: {indexed} posts")
+        success_print(f"Indexed {indexed} total posts")
         return indexed
     
+    debug_print("   ✓ Index is in sync")
     return embeddings_count
 
 
@@ -214,6 +269,8 @@ def _get_detector():
     """Get singleton DuplicateDetector instance for efficiency."""
     global _detector
     if _detector is None:
+        info_print("🤖 Initializing duplicate detector...")
+        
         from praisonaiwp.ai.duplicate_detector import DuplicateDetector
         wp = _get_wp_client()
         _detector = DuplicateDetector(
@@ -222,11 +279,10 @@ def _get_detector():
             duplicate_threshold=0.7,
             verbose=0
         )
-        # CRITICAL: Ensure embeddings are in sync with WordPress
         indexed = _ensure_index_sync(wp, _detector)
         if indexed == 0:
             indexed = _detector.index_posts()
-        logger.info(f"Indexed {indexed} posts for duplicate check (singleton)")
+        success_print(f"Detector ready with {indexed} posts indexed")
     return _detector
 
 
@@ -234,30 +290,13 @@ def _get_detector():
 def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
     """
     Check for duplicate content in WordPress using semantic similarity.
-    
-    Uses embedding-based comparison with persistent caching.
-    Uses singleton detector for efficiency in parallel workflows.
-    
-    Args:
-        title: Article title to check
-        content: Article content (optional, improves accuracy)
-        
-    Returns:
-        {
-            "has_duplicates": bool,
-            "status": "UNIQUE" | "DUPLICATE",
-            "matches": [...],
-            "total_checked": int,
-            "recommendation": str
-        }
     """
+    debug_print(f"🔎 Checking: '{title[:50]}...'")
+    
     try:
         detector = _get_detector()
-        
-        # Check for duplicates
         result = detector.check_duplicate(content=content, title=title)
         
-        # Build response
         status = "DUPLICATE" if result.has_duplicates else "UNIQUE"
         matches = [
             {
@@ -273,8 +312,26 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
         if result.has_duplicates:
             top = result.matches[0]
             recommendation = f"Similar to existing post '{top.title}' (ID: {top.post_id}). Consider updating instead."
+            
+            # Rich output for duplicate
+            if HAS_RICH:
+                console.print(Panel(
+                    f"[bold]{title[:60]}...[/bold]\n"
+                    f"[dim]Similar to:[/dim] {top.title[:50]}...\n"
+                    f"[dim]Similarity:[/dim] [red]{top.similarity_score:.1%}[/red]",
+                    title="🔴 DUPLICATE DETECTED",
+                    border_style="red"
+                ))
+            else:
+                print(f"🔴 DUPLICATE: '{title}' → similar to '{top.title}' ({top.similarity_score:.1%})")
         else:
             recommendation = "Content appears unique. Safe to publish."
+            
+            # Rich output for unique
+            if HAS_RICH:
+                console.print(f"[bold green]🟢 UNIQUE:[/bold green] [white]{title[:70]}...[/white]")
+            else:
+                print(f"🟢 UNIQUE: '{title}'")
         
         return {
             "has_duplicates": result.has_duplicates,
@@ -285,12 +342,14 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
         }
         
     except ImportError:
+        error_print("praisonaiwp[ai] not installed")
         return {
             "error": "Install with: pip install praisonaiwp[ai]",
             "status": "ERROR",
             "has_duplicates": False
         }
     except Exception as e:
+        error_print(f"Duplicate check failed: {e}")
         logger.error(f"Duplicate check failed: {e}")
         return {
             "error": str(e),
@@ -301,40 +360,13 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
 
 @recipe_tool("check_duplicates_batch")
 def check_duplicates_batch(items: List[str]) -> Dict[str, Any]:
-    """
-    Check multiple items (sentences, paragraphs, titles) for duplicates.
+    """Check multiple items for duplicates."""
+    info_print(f"🔎 Batch checking {len(items)} items...")
     
-    More robust than single-string checking - checks each item independently
-    and aggregates results. Use this when you have multiple pieces of content
-    to verify against existing posts.
-    
-    Args:
-        items: List of strings to check (sentences, paragraphs, titles)
-        
-    Returns:
-        {
-            "has_duplicates": bool,
-            "status": "UNIQUE" | "DUPLICATE",
-            "matches": [...],
-            "total_checked": int,
-            "items_checked": int,
-            "recommendation": str
-        }
-    
-    Example:
-        check_duplicates_batch([
-            "OpenAI launches new model",
-            "GPT-5 announced at conference",
-            "AI breakthrough in 2026"
-        ])
-    """
     try:
         detector = _get_detector()
-        
-        # Use batch checking
         result = detector.check_duplicates_batch(items=items, any_match=True)
         
-        # Build response
         status = "DUPLICATE" if result.has_duplicates else "UNIQUE"
         matches = [
             {
@@ -346,11 +378,12 @@ def check_duplicates_batch(items: List[str]) -> Dict[str, Any]:
             for m in result.matches
         ]
         
-        recommendation = ""
         if result.has_duplicates:
             top = result.matches[0]
-            recommendation = f"Similar to existing post '{top.title}' (ID: {top.post_id}). Consider updating instead."
+            warning_print(f"Found duplicate: '{top.title}' ({top.similarity_score:.1%})")
+            recommendation = f"Similar to existing post '{top.title}' (ID: {top.post_id})."
         else:
+            success_print(f"All {len(items)} items are unique")
             recommendation = "All content appears unique. Safe to publish."
         
         return {
@@ -363,12 +396,14 @@ def check_duplicates_batch(items: List[str]) -> Dict[str, Any]:
         }
         
     except ImportError:
+        error_print("praisonaiwp[ai] not installed")
         return {
             "error": "Install with: pip install praisonaiwp[ai]",
             "status": "ERROR",
             "has_duplicates": False
         }
     except Exception as e:
+        error_print(f"Batch duplicate check failed: {e}")
         logger.error(f"Batch duplicate check failed: {e}")
         return {
             "error": str(e),
@@ -385,115 +420,63 @@ def create_wp_post(
     category: str = "News",
     author: str = "praison"
 ) -> Dict[str, Any]:
-    """
-    Create WordPress post with Gutenberg blocks, category, and author.
-    
-    Uses praisonaiwp CLI for full feature support including:
-    - Automatic Gutenberg block conversion
-    - Category assignment
-    - Author assignment
-    - Deduplication (same title won't be created twice)
-    
-    Args:
-        title: Post title
-        content: Post content (markdown/HTML, auto-converted to Gutenberg)
-        status: Post status (draft, publish, private)
-        category: Category name (default: News)
-        author: Author username (default: praison)
-        
-    Returns:
-        {"post_id": int, "status": str, "message": str}
-    """
+    """Create WordPress post with Gutenberg blocks, category, and author."""
     import subprocess
     import re
     
-    # ==========================================================================
-    # TITLE BLOCKLIST - Reject invalid titles
-    # ==========================================================================
-    BLOCKED_TITLE_PATTERNS = [
-        "verified",
-        "my great article",
-        "sample",
-        "test article",
-        "i'm sorry",
-        "i can't assist",
-        "as an ai",
-        "i cannot",
-        "placeholder",
-        "example",
-        "[theme",
-        "[title",
-        "[actual",
-        "[same content",
-        "unchanged content",
-    ]
+    info_print(f"📝 Creating post: '{title[:50]}...'")
+    debug_print(f"   Status: {status}, Category: {category}, Author: {author}")
     
-    normalized_title = title.strip().lower()
-    for pattern in BLOCKED_TITLE_PATTERNS:
-        if pattern in normalized_title:
-            logger.error(f"BLOCKED TITLE: '{title}' contains '{pattern}'")
-            return {
-                "post_id": None,
-                "status": "rejected",
-                "message": f"REJECTED: Title '{title}' is invalid (contains '{pattern}'). Provide a real article title.",
-                "success": False,
-                "blocked": True
-            }
-    
-    # Must be at least 10 characters for a real title
-    if len(title.strip()) < 10:
-        logger.error(f"BLOCKED TITLE: '{title}' too short")
+    # Content word count check (reject if less than 100 words)
+    word_count = len(content.split()) if content else 0
+    if word_count < 100:
+        error_print(f"BLOCKED: Content too short ({word_count} words, minimum 100)")
         return {
             "post_id": None,
-            "status": "rejected", 
-            "message": f"REJECTED: Title '{title}' is too short. Provide a descriptive title.",
+            "status": "rejected",
+            "message": f"REJECTED: Content too short ({word_count} words)",
             "success": False,
             "blocked": True
         }
     
-    # Session-level deduplication to prevent multiple posts with same title
+    # Session deduplication
     if not hasattr(create_wp_post, '_created_titles'):
         create_wp_post._created_titles = set()
     
-    # Check if this title was already created in this session
-    normalized_title = title.strip().lower()
     if normalized_title in create_wp_post._created_titles:
-        logger.info(f"SESSION DUPLICATE - Skipping: {title}")
+        warning_print(f"SESSION DUPLICATE: Already created this session")
         return {
             "post_id": None,
             "status": "skipped",
-            "message": f"SKIPPED: '{title}' already created in this session",
+            "message": f"SKIPPED: Already created in this session",
             "success": True,
             "duplicate": True
         }
     
-    # ==========================================================================
-    # MANDATORY DUPLICATE CHECK - Verify against WordPress before posting
-    # ==========================================================================
+    # Mandatory duplicate check
+    debug_print("   Running duplicate check...")
     try:
         dup_result = check_duplicate(title=title, content=content[:500] if content else "")
         if dup_result.get("has_duplicates"):
             top_match = dup_result.get("matches", [{}])[0]
-            logger.warning(f"DUPLICATE DETECTED: '{title}' similar to post {top_match.get('post_id')}")
+            warning_print(f"DUPLICATE: Similar to post {top_match.get('post_id')}")
             return {
                 "post_id": None,
                 "status": "duplicate",
-                "message": f"BLOCKED: Content similar to existing post '{top_match.get('title')}' (ID: {top_match.get('post_id')}, similarity: {top_match.get('similarity', 0):.1%})",
+                "message": f"BLOCKED: Similar to '{top_match.get('title')}'",
                 "success": False,
                 "duplicate": True,
                 "similar_post": top_match
             }
-        logger.info(f"Duplicate check passed for: {title}")
+        debug_print("   ✓ Duplicate check passed")
     except Exception as e:
-        logger.warning(f"Duplicate check failed, proceeding with caution: {e}")
+        warning_print(f"Duplicate check failed, proceeding: {e}")
     
-    # Add to session immediately to prevent race conditions
+    # Add to session
     create_wp_post._created_titles.add(normalized_title)
-    logger.info(f"CREATING POST: {title}")
     
     try:
-        # Convert markdown to HTML first
-        # CLI expects HTML for Gutenberg block conversion
+        # Convert markdown to HTML
         try:
             import markdown
             html_content = markdown.markdown(
@@ -501,35 +484,19 @@ def create_wp_post(
                 extensions=['tables', 'fenced_code', 'nl2br']
             )
         except ImportError:
-            # Fallback: basic markdown-like conversion
             html_content = content
-            # Convert headers
             html_content = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', html_content, flags=re.MULTILINE)
             html_content = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html_content, flags=re.MULTILINE)
             html_content = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html_content, flags=re.MULTILINE)
             html_content = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html_content, flags=re.MULTILINE)
-            # Convert bold
             html_content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html_content)
-            # Convert checkmarks to list items
-            html_content = re.sub(r'^✅ (.+)$', r'<li>✅ \1</li>', html_content, flags=re.MULTILINE)
-            # Convert blockquotes
-            html_content = re.sub(r'^> (.+)$', r'<blockquote>\1</blockquote>', html_content, flags=re.MULTILINE)
-            # Wrap paragraphs
-            lines = html_content.split('\n\n')
-            processed = []
-            for line in lines:
-                if line.strip() and not line.strip().startswith('<'):
-                    processed.append(f'<p>{line.strip()}</p>')
-                else:
-                    processed.append(line)
-            html_content = '\n'.join(processed)
         
-        # If content already has Gutenberg blocks (<!-- wp:), pass through unchanged
-        # Agent is expected to output Gutenberg format directly
+        # Pass through Gutenberg blocks unchanged
         if '<!-- wp:' in content:
             html_content = content
         
-        # Build CLI command with content
+        debug_print(f"   Content size: {len(html_content)} chars")
+        
         cmd = [
             "praisonaiwp", "create", title,
             "--content", html_content,
@@ -538,22 +505,25 @@ def create_wp_post(
             "--author", author
         ]
         
-        # Run command
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
+        info_print("   📤 Uploading to WordPress...")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
         
-        # Parse output for post ID
         output = result.stdout + result.stderr
+        match = re.search(r'post[:\s]+(?:ID[:\s]*)?(\\d+)', output, re.IGNORECASE)
         
-        # Look for "Created post ID: XXXXX" pattern
-        match = re.search(r'post[:\s]+(?:ID[:\s]*)?(\d+)', output, re.IGNORECASE)
         if match:
             post_id = int(match.group(1))
-            logger.info(f"SUCCESS: Created post ID {post_id} - {title}")
+            if HAS_RICH:
+                console.print(Panel(
+                    f"[bold white]{title}[/bold white]\n"
+                    f"[dim]Post ID:[/dim] [cyan]{post_id}[/cyan]\n"
+                    f"[dim]Status:[/dim] [green]{status}[/green]\n"
+                    f"[dim]Category:[/dim] {category}",
+                    title="✅ POST CREATED",
+                    border_style="green"
+                ))
+            else:
+                success_print(f"Created post ID {post_id}: {title}")
             return {
                 "post_id": post_id,
                 "status": status,
@@ -563,8 +533,7 @@ def create_wp_post(
                 "success": True
             }
         elif result.returncode == 0:
-            # Success but couldn't parse ID
-            logger.info(f"Post created but ID not parsed: {output[:200]}")
+            success_print(f"Post created (ID not parsed)")
             return {
                 "post_id": None,
                 "status": status,
@@ -573,15 +542,14 @@ def create_wp_post(
                 "success": True
             }
         else:
-            logger.error(f"CLI failed: {output}")
-            return {
-                "error": output[:500],
-                "success": False
-            }
+            error_print(f"CLI failed: {output[:200]}")
+            return {"error": output[:500], "success": False}
             
     except subprocess.TimeoutExpired:
+        error_print("Command timed out after 120s")
         return {"error": "Command timed out after 120s", "success": False}
     except Exception as e:
+        error_print(f"Failed to create post: {e}")
         logger.error(f"Failed to create post: {e}")
         return {"error": str(e), "success": False}
 
@@ -592,7 +560,7 @@ def cleanup():
     if _ssh_manager:
         try:
             _ssh_manager.__exit__(None, None, None)
-            logger.info("SSH connection closed")
+            info_print("🔌 SSH connection closed")
         except:
             pass
     _ssh_manager = None
