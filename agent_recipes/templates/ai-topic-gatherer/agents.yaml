@@ -2,55 +2,111 @@ framework: praisonai
 topic: "AI news topic discovery"
 
 # =============================================================================
-# AI TOPIC GATHERER - Modular Recipe
+# AI TOPIC GATHERER - Modular Recipe (2-Agent Approach)
 # =============================================================================
 # 
-# This is a REUSABLE recipe that finds AI news topics.
-# It can be included from other recipes that need topic discovery.
+# This is a REUSABLE recipe that finds AI news topics using 2 agents:
+#   Agent 1: keyword_generator - Searches once, reads info, generates keywords
+#   Agent 2: topic_searcher - Searches all keywords, collects all information
 #
 # Output format:
-#   A list of 5-10 AI topics with URLs
+#   JSON array of 5-10 AI topics with URLs and content
 # =============================================================================
 
 roles:
-  topic_gatherer:
-    role: AI News Researcher
-    goal: Find SPECIFIC, CONCRETE AI news topics with exact names, versions, and details
+  keyword_generator:
+    role: AI Keyword Researcher
+    goal: Generate comprehensive search keywords for AI news discovery
     backstory: |
-      You search for the latest AI developments. You focus on news from the current week only.
-      You NEVER write generic topics like "AI in Manufacturing" or "AI for Sustainability".
-      You ALWAYS include specific product names, company names, version numbers, and concrete details.
+      You perform initial research to understand what's trending in AI, 
+      then generate targeted keywords for deeper searches.
     tools:
       - tavily_search
     tasks:
-      gather_topics:
+      generate_keywords:
         description: |
           Current date: {{today}}
           
-          Search for AI news from January 2026 using tavily_search.
-          Find 5-10 SPECIFIC AI developments from this week.
+          1. FIRST, search for "latest AI news January 2026" to get an overview
+          2. READ the full content from the search results carefully
+          3. Based on what you find, generate 10-15 specific search keywords
           
-          REQUIRED: Each topic MUST include:
-          - Specific company name (e.g., "OpenAI", "Google DeepMind", "Anthropic")
-          - Specific product/model name (e.g., "GPT-5", "Gemini 2.0", "Claude 4")
-          - Specific version numbers or dates when available
-          - Concrete details (pricing, features, benchmarks)
+          Keywords should target:
+          - Specific company announcements (e.g., "OpenAI GPT-5 release")
+          - Product launches (e.g., "Google Gemini 2.0 features")
+          - Model releases (e.g., "Anthropic Claude 4 benchmark")
+          - API updates (e.g., "Microsoft Copilot API update")
+          - Research papers (e.g., "DeepMind AlphaFold 3")
           
-          GOOD examples:
+          Generate keywords that will find SPECIFIC, CONCRETE news.
+        expected_output: |
+          {"keywords": ["keyword1", "keyword2", ...]}
+
+  topic_searcher:
+    role: AI Topic Collector
+    goal: Search all keywords and collect comprehensive AI news topics
+    backstory: |
+      You search exhaustively using provided keywords and compile 
+      a complete list of AI topics with full details.
+    tools:
+      - tavily_search
+    tasks:
+      search_all_topics:
+        description: |
+          KEYWORDS TO SEARCH:
+          {{previous_output}}
+          
+          For EACH keyword in the list above:
+          1. Call tavily_search with the keyword
+          2. Read the FULL content from each result
+          3. Extract specific AI topics with details
+          
+          REQUIRED for each topic:
+          - Specific company name (e.g., "OpenAI", "Google DeepMind")
+          - Specific product/model name (e.g., "GPT-5", "Gemini 2.0")
+          - Version numbers or dates when available
+          - Concrete details (features, benchmarks, pricing)
+          - Source URL
+          - Content summary (what the topic is about, key details)
+          
+          Return 5-10 UNIQUE topics (no duplicates).
+          
+          GOOD topics:
           - "OpenAI Releases GPT-5 with 10x Context Window"
           - "Google DeepMind's AlphaFold 3 Predicts Drug Interactions"
-          - "Anthropic Claude 4 Achieves 95% on MMLU Benchmark"
-          - "Microsoft Copilot Pro Gets Real-Time Code Execution"
           
-          BAD examples (TOO GENERIC - NEVER USE):
+          BAD topics (TOO GENERIC - NEVER USE):
           - "AI in Manufacturing" 
-          - "AI's Impact on Healthcare"
           - "The Future of AI Agents"
-          - "AI and Sustainability"
-          
-          Focus on: product launches, model releases, API updates, benchmark results, acquisitions, funding rounds.
-          Avoid: generic industry trends, opinion pieces, politics, controversies, layoffs.
-          
-          For each topic found, include the URL where you found it.
         expected_output: |
-          A list of 5-10 SPECIFIC AI topics with company names, product names, and URLs
+          [{"title": "Topic Title", "url": "https://source.com", "content": "Detailed description..."}]
+
+steps:
+  - name: generate_keywords
+    agent: keyword_generator
+    output_variable: search_keywords
+    output_json:
+      type: object
+      properties:
+        keywords:
+          type: array
+          items:
+            type: string
+          description: List of 10-15 specific search keywords
+
+  - name: search_topics
+    agent: topic_searcher
+    output_json:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+            description: Specific topic title with company and product names
+          url:
+            type: string
+            description: Source URL
+          content:
+            type: string
+            description: Detailed description of the topic

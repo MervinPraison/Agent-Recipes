@@ -1,26 +1,20 @@
 """
-Tools for AI Code WordPress Generator Recipe
-
-Slim version - imports from praisonai-tools for DRY.
+Tools for AI Research Pipeline Recipe
 
 Provides:
-- tavily_search: Via TavilyTool
-- check_duplicate: Via WordPressTool
-- create_wp_post: Via WordPressTool
-- get_current_date: Recipe-specific
-- crawl_url: Via Crawl4AITool + Jina fallback
+- tavily_search: AI-powered web search with full content
+- check_duplicate: WordPress duplicate detection
+- check_duplicates_batch: Batch duplicate checking
+
+Enhanced with Rich console output for debugging visibility.
 """
 
 import logging
-from datetime import date
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# =============================================================================
-# Rich console output (optional)
-# =============================================================================
-
+# Rich imports for beautiful console output
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -128,119 +122,48 @@ def _get_tavily_tool():
 
 
 # =============================================================================
-# Recipe Tools
+# Search Tool
 # =============================================================================
-
-@recipe_tool("get_current_date")
-def get_current_date() -> str:
-    """Get current date formatted for news queries."""
-    today = date.today().strftime("%B %d, %Y")
-    debug_print(f"📅 Current date: {today}")
-    return today
-
 
 @recipe_tool("tavily_search")
 def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
-    """
-    AI-powered web search using Tavily with full page content.
-    
-    Args:
-        query: Search query
-        max_results: Maximum results (default: 10)
-        
-    Returns:
-        Search results with answer, sources, and full page content
-    """
+    """AI-powered web search using Tavily with full page content."""
     info_print(f"🔍 Searching: '{query}' (max {max_results} results)")
     
     try:
-        # Try praisonai-tools first
         tool = _get_tavily_tool()
-        result = tool.search(query=query, max_results=max_results)
+        result = tool.search(query=query, max_results=max_results, include_raw_content=True)
+        
         num_results = len(result.get("results", []))
         success_print(f"Found {num_results} results for: '{query[:50]}...'")
+        
+        has_raw = sum(1 for r in result.get("results", []) if r.get("raw_content"))
+        if has_raw:
+            debug_print(f"   📄 {has_raw} results include full page content")
+        
         return result
     except ImportError:
-        # Fallback to direct tavily import
-        try:
-            from tavily import TavilyClient
-            import os
-            client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY"))
-            result = client.search(
-                query=query,
-                max_results=max_results,
-                search_depth="advanced",
-                include_raw_content=True,
-                include_answer=True,
-                topic="news"
-            )
-            num_results = len(result.get("results", []))
-            success_print(f"Found {num_results} results for: '{query[:50]}...'")
-            return result
-        except ImportError:
-            error_print("Tavily not installed. Run: pip install tavily-python")
-            return {"error": "Install with: pip install tavily-python"}
+        error_print("praisonai-tools not installed")
+        return {"error": "Install with: pip install praisonai-tools"}
     except Exception as e:
         error_print(f"Tavily search failed: {e}")
         logger.error(f"Tavily search failed: {e}")
         return {"error": str(e)}
 
 
-@recipe_tool("crawl_url")
-def crawl_url(url: str, extract_main_content: bool = True) -> Dict[str, Any]:
-    """Crawl a URL and extract its content for deep research."""
-    info_print(f"🌐 Crawling: {url[:60]}...")
-    
-    try:
-        from praisonai_tools import Crawl4AITool
-        tool = Crawl4AITool()
-        result = tool.crawl(url=url)
-        
-        content_len = len(result.get("content", ""))
-        success_print(f"Crawled {content_len} chars from: {url[:40]}...")
-        
-        return {
-            "url": url,
-            "title": result.get("title", ""),
-            "content": result.get("content", result.get("text", "")),
-            "success": True
-        }
-    except ImportError:
-        debug_print("Crawl4AI not available, using Jina fallback...")
-        try:
-            import requests
-            jina_url = f"https://r.jina.ai/{url}"
-            resp = requests.get(jina_url, timeout=30)
-            success_print(f"Jina crawled {len(resp.text)} chars")
-            return {
-                "url": url,
-                "title": "",
-                "content": resp.text[:10000],
-                "success": True
-            }
-        except Exception as e:
-            error_print(f"Crawl failed: {e}")
-            return {"url": url, "content": "", "success": False, "error": str(e)}
-    except Exception as e:
-        error_print(f"Crawl failed for {url}: {e}")
-        logger.error(f"Crawl failed for {url}: {e}")
-        return {"url": url, "content": "", "success": False, "error": str(e)}
-
+# =============================================================================
+# Duplicate Detection Tools
+# =============================================================================
 
 @recipe_tool("check_duplicate")
 def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
-    """
-    Check for duplicate content in WordPress using semantic similarity.
-    
-    Delegates to WordPressTool from praisonai-tools.
-    """
+    """Check for duplicate content in WordPress."""
     debug_print(f"🔎 Checking: '{title[:50]}...'")
     
     try:
         wp = _get_wp_tool()
         result = wp.check_duplicate(title=title, content=content)
         
-        # Rich output for visibility
         if result.get("has_duplicates"):
             top = result.get("matches", [{}])[0]
             if HAS_RICH:
@@ -265,7 +188,6 @@ def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
         return {"error": str(e), "status": "ERROR", "has_duplicates": False}
     except Exception as e:
         error_print(f"Duplicate check failed: {e}")
-        logger.error(f"Duplicate check failed: {e}")
         return {"error": str(e), "status": "ERROR", "has_duplicates": False}
 
 
@@ -290,66 +212,7 @@ def check_duplicates_batch(items: List[str]) -> Dict[str, Any]:
         return {"error": str(e), "status": "ERROR", "has_duplicates": False}
     except Exception as e:
         error_print(f"Batch duplicate check failed: {e}")
-        logger.error(f"Batch duplicate check failed: {e}")
         return {"error": str(e), "status": "ERROR", "has_duplicates": False}
-
-
-@recipe_tool("create_wp_post")
-def create_wp_post(
-    title: str,
-    content: str,
-    status: str = "draft",
-    category: str = "News",
-    author: str = "praison"
-) -> Dict[str, Any]:
-    """
-    Create WordPress post with content validation.
-    
-    Delegates to WordPressTool from praisonai-tools.
-    """
-    info_print(f"📝 Creating post: '{title[:50]}...'")
-    debug_print(f"   Status: {status}, Category: {category}, Author: {author}")
-    
-    try:
-        wp = _get_wp_tool()
-        result = wp.create_post(
-            title=title,
-            content=content,
-            status=status,
-            category=category,
-            author=author,
-            min_word_count=100,
-            check_duplicates=True
-        )
-        
-        if result.get("success"):
-            post_id = result.get("post_id")
-            if HAS_RICH and post_id:
-                console.print(Panel(
-                    f"[bold white]{title}[/bold white]\n"
-                    f"[dim]Post ID:[/dim] [cyan]{post_id}[/cyan]\n"
-                    f"[dim]Status:[/dim] [green]{status}[/green]\n"
-                    f"[dim]Category:[/dim] {category}",
-                    title="✅ POST CREATED",
-                    border_style="green"
-                ))
-            elif post_id:
-                success_print(f"Created post ID {post_id}: {title}")
-            else:
-                success_print(f"Post created: {title}")
-        elif result.get("blocked") or result.get("duplicate"):
-            warning_print(result.get("message", "Post blocked"))
-        else:
-            error_print(result.get("error", "Failed to create post"))
-        
-        return result
-    except ImportError as e:
-        error_print(str(e))
-        return {"error": str(e), "success": False}
-    except Exception as e:
-        error_print(f"Failed to create post: {e}")
-        logger.error(f"Failed to create post: {e}")
-        return {"error": str(e), "success": False}
 
 
 def cleanup():

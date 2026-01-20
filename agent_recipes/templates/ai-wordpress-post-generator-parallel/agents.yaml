@@ -10,50 +10,18 @@ variables:
 # =============================================================================
 # 
 # HOW IT WORKS:
-# 1. Gather AI news topics
-# 2. Filter duplicates → outputs a JSON list like ["Topic A", "Topic B", "Topic C"]
-# 3. PARALLEL LOOP: Research each topic simultaneously (4 at a time)
-# 4. PARALLEL LOOP: Write blog posts simultaneously (4 at a time)
-# 5. Publish to WordPress
+# 1. Gather AI news topics (ai-topic-gatherer)
+# 2. Filter duplicates, generate keywords, research (ai-research-pipeline)
+# 3. Write blog posts with SEO-optimized titles
+# 4. Publish to WordPress (wordpress-publisher)
 #
-# KEY FEATURES:
-# - output_variable: stores agent output in a named variable
-# - loop: over: iterates over a list (auto-parses JSON arrays from text)
-# - parallel: true: runs iterations concurrently
-# - max_workers: limits concurrent executions
+# USES MODULAR RECIPES:
+# - include: ai-topic-gatherer
+# - include: ai-research-pipeline
+# - include: wordpress-publisher
 # =============================================================================
 
 agents:
-  # Agent that generates search keywords for comprehensive research
-  keyword_generator:
-    role: SEO Keyword Research Specialist
-    goal: Generate comprehensive search keywords and queries for in-depth topic research
-    backstory: |
-      You are an expert at generating diverse, specific search queries.
-      You create keywords that will find unique, specific information - not generic content.
-      You focus on: product names, company names, dates, technical specs, quotes, statistics.
-
-  # Agent that filters out duplicate topics
-  duplicate_checker:
-    role: Content Deduplication Agent
-    goal: Filter topic list to only unique topics not yet published
-    backstory: You check for duplicate content and return ALL unique topics as a JSON array.
-    tools:
-      - check_duplicate
-
-  # Agent that researches each topic IN DEPTH
-  deep_researcher:
-    role: Investigative Technology Journalist
-    goal: Conduct exhaustive research - search extensively, gather ALL facts from search results
-    backstory: |
-      You are a thorough investigative journalist who leaves no stone unturned.
-      You search with MANY different keywords to find all angles of a story.
-      tavily_search returns FULL PAGE CONTENT in raw_content field - use it!
-      You gather: specific dates, exact figures, direct quotes, company names, product specs.
-      You do NOT limit yourself - research until you have complete coverage.
-    tools:
-      - tavily_search
-
   # Agent that writes blog posts with SEO-optimized titles
   content_writer:
     role: SEO Content Strategist and Technology Journalist
@@ -74,116 +42,14 @@ agents:
 
 steps:
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 1: Gather topics (uses modular recipe)
+  # STEP 1: Gather topics (modular recipe)
   # ─────────────────────────────────────────────────────────────────────────────
   - include: ai-topic-gatherer
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 2: Filter duplicates and output as structured JSON
+  # STEP 2-4: Filter duplicates, generate keywords, research (modular recipe)
   # ─────────────────────────────────────────────────────────────────────────────
-  - name: filter_duplicates
-    agent: duplicate_checker
-    output_variable: unique_topics
-    output_json:
-      type: array
-      items:
-        type: object
-        properties:
-          title:
-            type: string
-            description: The specific topic title with company/product names
-          url:
-            type: string
-            description: Source URL for this topic
-    action: |
-      {{previous_output}}
-      
-      For EACH topic from the list above:
-      1. Call check_duplicate with the topic title
-      2. If NOT a duplicate (status is UNIQUE), add to the unique list
-      
-      Return a JSON array of unique topics with their URLs.
-    expected_output: |
-      [{"title": "Specific Topic Title", "url": "https://source.com"}]
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 3: Generate search keywords for comprehensive research
-  # ─────────────────────────────────────────────────────────────────────────────
-  - loop:
-      over: unique_topics
-      parallel: true
-      max_workers: 4
-    agent: keyword_generator
-    output_variable: research_keywords
-    output_json:
-      type: object
-      properties:
-        topic:
-          type: string
-        keywords:
-          type: array
-          items:
-            type: string
-          description: List of 10-20 specific search queries
-    action: |
-      TOPIC: {{item.title}}
-      SOURCE: {{item.url}}
-      
-      Generate 10-20 specific search queries to research this topic thoroughly.
-      Include queries for:
-      - Company/product official announcements
-      - Technical specifications and features
-      - Expert opinions and analyst quotes
-      - Competitor comparisons
-      - Market impact and statistics
-      - Timeline and release dates
-      - User reactions and reviews
-      
-      Be SPECIFIC - use exact names, versions, dates.
-    expected_output: |
-      {"topic": "Topic Title", "keywords": ["query1", "query2", ...]}
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 4: Research each topic IN DEPTH - NO LIMITS
-  # ─────────────────────────────────────────────────────────────────────────────
-  - loop:
-      over: research_keywords
-      parallel: true
-      max_workers: 4
-    agent: deep_researcher
-    output_variable: research_results
-    action: |
-      TOPIC: {{item.topic}}
-      SEARCH KEYWORDS: {{item.keywords}}
-      
-      CONDUCT EXHAUSTIVE RESEARCH:
-      
-      1. SEARCH EXTENSIVELY:
-         - Use tavily_search with EACH keyword from the list above
-         - tavily_search returns FULL PAGE CONTENT in the raw_content field
-         - Search until you have found ALL relevant information
-         - Do NOT limit the number of searches - be thorough
-      
-      2. EXTRACT FROM SEARCH RESULTS:
-         - Read the raw_content field from each search result for full article text
-         - Extract content from official sources, news sites, blogs, forums
-      
-      3. EXTRACT COMPREHENSIVE DATA:
-         - Exact dates and timelines
-         - Specific numbers, statistics, percentages
-         - Direct quotes with attribution
-         - Technical specifications
-         - Company and product names
-         - Pricing information if available
-         - Competitor information
-      
-      4. VERIFY INFORMATION:
-         - Cross-reference facts across multiple sources
-         - Note any conflicting information
-      
-      Compile ALL findings into a comprehensive research document.
-    expected_output: |
-      Comprehensive research with all facts, quotes, statistics, and sources
+  - include: ai-research-pipeline
 
   # ─────────────────────────────────────────────────────────────────────────────
   # STEP 5: Write blog posts IN PARALLEL with SEO-optimized titles
@@ -203,15 +69,31 @@ steps:
           type: string
           description: Full Gutenberg block formatted content
     action: |
+      ═══════════════════════════════════════════════════════════════════════
+      RESEARCH CONTENT TO CONVERT (USE ALL OF THIS - DO NOT SKIP ANY SECTION)
+      ═══════════════════════════════════════════════════════════════════════
+      
       {{item}}
       
       ═══════════════════════════════════════════════════════════════════════
-      WORDPRESS GUTENBERG BLOCKS - COMPLETE REFERENCE
+      CRITICAL INSTRUCTIONS
       ═══════════════════════════════════════════════════════════════════════
       
-      ─────────────────────────────────────────────────────────────────────────
-      TEXT BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
+      1. INCLUDE ALL content from the research - DO NOT skip ANY section
+      
+      2. BE LESS DESCRIPTIVE - focus on facts and information
+         - Minimal explanatory text
+         - Short paragraphs
+      
+      3. PROGRESSIVE STRUCTURE - start simple, build to complex
+         - Begin with key announcement/news
+         - Then details and specifications
+         - Then analysis and implications
+         - Finally future outlook
+      
+      ═══════════════════════════════════════════════════════════════════════
+      WORDPRESS GUTENBERG BLOCKS REFERENCE
+      ═══════════════════════════════════════════════════════════════════════
       
       ✅ PARAGRAPH:
       <!-- wp:paragraph -->
@@ -236,108 +118,10 @@ steps:
       </ul>
       <!-- /wp:list -->
       
-      ✅ LIST (ordered):
-      <!-- wp:list {"ordered":true} -->
-      <ol class="wp-block-list">
-      <li>First item</li>
-      <li>Second item</li>
-      </ol>
-      <!-- /wp:list -->
-      
       ✅ QUOTE:
       <!-- wp:quote -->
       <blockquote class="wp-block-quote"><p>Quote text here.</p></blockquote>
       <!-- /wp:quote -->
-      
-      ✅ PULLQUOTE:
-      <!-- wp:pullquote -->
-      <figure class="wp-block-pullquote"><blockquote><p>Highlighted quote.</p></blockquote></figure>
-      <!-- /wp:pullquote -->
-      
-      ✅ CODE:
-      <!-- wp:code -->
-      <pre class="wp-block-code"><code>your code here</code></pre>
-      <!-- /wp:code -->
-      
-      ✅ PREFORMATTED:
-      <!-- wp:preformatted -->
-      <pre class="wp-block-preformatted">Preformatted text</pre>
-      <!-- /wp:preformatted -->
-      
-      ✅ VERSE:
-      <!-- wp:verse -->
-      <pre class="wp-block-verse">Poetry or verse text</pre>
-      <!-- /wp:verse -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      DESIGN BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
-      
-      ✅ SEPARATOR:
-      <!-- wp:separator -->
-      <hr class="wp-block-separator has-alpha-channel-opacity"/>
-      <!-- /wp:separator -->
-      
-      ✅ SPACER:
-      <!-- wp:spacer {"height":"50px"} -->
-      <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
-      <!-- /wp:spacer -->
-      
-      ✅ GROUP:
-      <!-- wp:group -->
-      <div class="wp-block-group"><!-- nested blocks --></div>
-      <!-- /wp:group -->
-      
-      ✅ COLUMNS:
-      <!-- wp:columns -->
-      <div class="wp-block-columns">
-      <!-- wp:column -->
-      <div class="wp-block-column"><!-- content --></div>
-      <!-- /wp:column -->
-      </div>
-      <!-- /wp:columns -->
-      
-      ✅ BUTTONS:
-      <!-- wp:buttons -->
-      <div class="wp-block-buttons">
-      <!-- wp:button -->
-      <div class="wp-block-button"><a class="wp-block-button__link">Click Here</a></div>
-      <!-- /wp:button -->
-      </div>
-      <!-- /wp:buttons -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      MEDIA BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
-      
-      ✅ IMAGE:
-      <!-- wp:image {"id":123} -->
-      <figure class="wp-block-image"><img src="url" alt="description"/></figure>
-      <!-- /wp:image -->
-      
-      ✅ GALLERY:
-      <!-- wp:gallery -->
-      <figure class="wp-block-gallery"><!-- images --></figure>
-      <!-- /wp:gallery -->
-      
-      ✅ VIDEO:
-      <!-- wp:video -->
-      <figure class="wp-block-video"><video src="url"></video></figure>
-      <!-- /wp:video -->
-      
-      ✅ AUDIO:
-      <!-- wp:audio -->
-      <figure class="wp-block-audio"><audio src="url"></audio></figure>
-      <!-- /wp:audio -->
-      
-      ✅ COVER:
-      <!-- wp:cover {"url":"image-url"} -->
-      <div class="wp-block-cover"><p>Overlay text</p></div>
-      <!-- /wp:cover -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      WIDGET BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
       
       ✅ TABLE:
       <!-- wp:table -->
@@ -347,32 +131,6 @@ steps:
       </table></figure>
       <!-- /wp:table -->
       
-      ✅ CUSTOM HTML:
-      <!-- wp:html -->
-      <div>Any custom HTML here</div>
-      <!-- /wp:html -->
-      
-      ✅ SHORTCODE:
-      <!-- wp:shortcode -->
-      [your_shortcode]
-      <!-- /wp:shortcode -->
-      
-      ✅ SOCIAL ICONS:
-      <!-- wp:social-links -->
-      <ul class="wp-block-social-links">
-      <!-- wp:social-link {"url":"https://twitter.com","service":"twitter"} /-->
-      </ul>
-      <!-- /wp:social-links -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      EMBED BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
-      
-      ✅ EMBED (YouTube, Twitter, etc.):
-      <!-- wp:embed {"url":"https://youtube.com/watch?v=xxx","type":"video"} -->
-      <figure class="wp-block-embed"><div class="wp-block-embed__wrapper">https://youtube.com/watch?v=xxx</div></figure>
-      <!-- /wp:embed -->
-      
       ═══════════════════════════════════════════════════════════════════════
       CRITICAL RULES
       ═══════════════════════════════════════════════════════════════════════
@@ -381,8 +139,7 @@ steps:
       2. Content MUST be inside HTML tags (<p>, <h2>, <ul>, etc.)
       3. Title should be 6-10 words, NO colons
       4. Use British English (colour, centre, organisation)
-      5. No numbers to be ignored. Include all numbers in the main aritcle. 
-      6. No tables or stats to be ignore. Include all stats in the main aritcle. 
+      5. Include ALL numbers, stats, and tables from research
       
       OUTPUT FORMAT:
       ARTICLE_TITLE: [Title about this topic]

@@ -12,58 +12,18 @@ variables:
 # FOCUS: AI Tools, AI Programming, Code, and Techniques for AI Engineers
 # 
 # HOW IT WORKS:
-# 1. Gather AI coding topics (tools, libraries, frameworks, techniques)
-# 2. Filter duplicates → outputs a JSON list like ["Topic A", "Topic B", "Topic C"]
-# 3. PARALLEL LOOP: Research each topic simultaneously (4 at a time)
-# 4. PARALLEL LOOP: Write code-focused blog posts simultaneously (4 at a time)
-# 5. Publish to WordPress
+# 1. Gather AI coding topics (ai-topic-gatherer)
+# 2. Filter duplicates, generate keywords, research (ai-research-pipeline)
+# 3. Write code-focused blog posts
+# 4. Publish to WordPress (wordpress-publisher)
 #
-# TARGET AUDIENCE: AI Engineers who want:
-# - Latest AI development tools and SDKs
-# - New AI programming patterns and architectures
-# - Implementation techniques and code examples
-# - Best practices for building AI systems
-#
-# KEY FEATURES:
-# - output_variable: stores agent output in a named variable
-# - loop: over: iterates over a list (auto-parses JSON arrays from text)
-# - parallel: true: runs iterations concurrently
-# - max_workers: limits concurrent executions
+# USES MODULAR RECIPES:
+# - include: ai-topic-gatherer
+# - include: ai-research-pipeline
+# - include: wordpress-publisher
 # =============================================================================
 
 agents:
-  # Agent that generates search keywords for AI coding research
-  keyword_generator:
-    role: AI Engineering Research Specialist
-    goal: Generate comprehensive search keywords for AI tools, libraries, frameworks, and coding techniques
-    backstory: |
-      You are an expert at generating search queries for AI development topics.
-      You focus on: SDK releases, library updates, framework versions, API changes,
-      code examples, implementation patterns, GitHub repositories, documentation.
-      Your queries target PRACTICAL CODING content, not news or opinions.
-
-  # Agent that filters out duplicate topics
-  duplicate_checker:
-    role: Content Deduplication Agent
-    goal: Filter topic list to only unique topics not yet published
-    backstory: You check for duplicate content and return ALL unique topics as a JSON array.
-    tools:
-      - check_duplicate
-
-  # Agent that researches each topic IN DEPTH with focus on code
-  deep_researcher:
-    role: AI Development Technical Researcher
-    goal: Conduct exhaustive research on AI tools, code examples, and implementation details
-    backstory: |
-      You are a thorough technical researcher specializing in AI development.
-      You search for: code snippets, API documentation, GitHub examples, tutorials.
-      tavily_search returns FULL PAGE CONTENT in raw_content field - use it!
-      You gather: version numbers, installation commands, code examples, API signatures,
-      performance benchmarks, compatibility notes, migration guides.
-      Focus on ACTIONABLE technical content that developers can USE.
-    tools:
-      - tavily_search
-
   # Agent that writes code-focused blog posts
   content_writer:
     role: Technical AI Content Writer and Developer Advocate
@@ -92,118 +52,14 @@ agents:
 
 steps:
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 1: Gather AI coding topics (uses modular recipe)
+  # STEP 1: Gather AI coding topics (modular recipe)
   # ─────────────────────────────────────────────────────────────────────────────
   - include: ai-topic-gatherer
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 2: Filter duplicates and output as structured JSON
+  # STEP 2-4: Filter duplicates, generate keywords, research (modular recipe)
   # ─────────────────────────────────────────────────────────────────────────────
-  - name: filter_duplicates
-    agent: duplicate_checker
-    output_variable: unique_topics
-    output_json:
-      type: array
-      items:
-        type: object
-        properties:
-          title:
-            type: string
-            description: The specific topic title with tool/library/framework names
-          url:
-            type: string
-            description: Source URL for this topic
-    action: |
-      {{previous_output}}
-      
-      For EACH topic from the list above:
-      1. Call check_duplicate with the topic title
-      2. If NOT a duplicate (status is UNIQUE), add to the unique list
-      
-      Return a JSON array of unique topics with their URLs.
-    expected_output: |
-      [{"title": "Specific Tool/Library Topic", "url": "https://source.com"}]
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 3: Generate search keywords for comprehensive code research
-  # ─────────────────────────────────────────────────────────────────────────────
-  - loop:
-      over: unique_topics
-      parallel: true
-      max_workers: 4
-    agent: keyword_generator
-    output_variable: research_keywords
-    output_json:
-      type: object
-      properties:
-        topic:
-          type: string
-        keywords:
-          type: array
-          items:
-            type: string
-          description: List of 10-20 specific code-focused search queries
-    action: |
-      TOPIC: {{item.title}}
-      SOURCE: {{item.url}}
-      
-      Generate 10-20 specific search queries to research this AI coding topic thoroughly.
-      Include queries for:
-      - Official documentation and API references
-      - GitHub repository and code examples
-      - Installation and setup guides
-      - Code tutorials and implementations
-      - Version migration guides
-      - Performance benchmarks and comparisons
-      - Integration examples with other tools
-      - Common issues and solutions
-      
-      Be SPECIFIC - use exact tool names, versions, programming languages.
-    expected_output: |
-      {"topic": "Topic Title", "keywords": ["query1", "query2", ...]}
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 4: Research each topic IN DEPTH - FOCUS ON CODE
-  # ─────────────────────────────────────────────────────────────────────────────
-  - loop:
-      over: research_keywords
-      parallel: true
-      max_workers: 4
-    agent: deep_researcher
-    output_variable: research_results
-    action: |
-      TOPIC: {{item.topic}}
-      SEARCH KEYWORDS: {{item.keywords}}
-      
-      CONDUCT EXHAUSTIVE TECHNICAL RESEARCH:
-      
-      1. SEARCH EXTENSIVELY:
-         - Use tavily_search with EACH keyword from the list above
-         - tavily_search returns FULL PAGE CONTENT in the raw_content field
-         - Search until you have found ALL code examples and documentation
-         - Do NOT limit the number of searches - be thorough
-      
-      2. EXTRACT FROM SEARCH RESULTS:
-         - Read the raw_content field from each search result for full article text
-         - Extract content from official docs, GitHub, tutorials, Stack Overflow
-      
-      3. EXTRACT CODE-FOCUSED DATA:
-         - Installation commands (pip install, npm install, etc.)
-         - Import statements and initialization code
-         - Complete code examples with context
-         - API function signatures and parameters
-         - Configuration options and environment variables
-         - Error handling patterns
-         - Version numbers and compatibility info
-         - Performance metrics and benchmarks
-      
-      4. VERIFY INFORMATION:
-         - Cross-reference code across multiple sources
-         - Note any API differences between versions
-      
-      Compile ALL findings into a comprehensive technical research document.
-    expected_output: |
-      Comprehensive technical research with all code examples, API details, and sources
+  - include: ai-research-pipeline
 
   # ─────────────────────────────────────────────────────────────────────────────
   # STEP 5: Write CODE-FOCUSED blog posts IN PARALLEL
@@ -223,15 +79,32 @@ steps:
           type: string
           description: Full Gutenberg block formatted content with code examples
     action: |
+      ═══════════════════════════════════════════════════════════════════════
+      RESEARCH CONTENT TO CONVERT (USE ALL OF THIS - DO NOT SKIP ANY SECTION)
+      ═══════════════════════════════════════════════════════════════════════
+      
       {{item}}
       
       ═══════════════════════════════════════════════════════════════════════
-      WORDPRESS GUTENBERG BLOCKS - COMPLETE REFERENCE
+      CRITICAL INSTRUCTIONS
       ═══════════════════════════════════════════════════════════════════════
       
-      ─────────────────────────────────────────────────────────────────────────
-      TEXT BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
+      1. INCLUDE ALL content from the research - DO NOT skip ANY section
+      
+      2. BE LESS DESCRIPTIVE - focus on code, steps, and information
+         - Minimal explanatory text, let the code speak
+         - Short paragraphs between code blocks
+      
+      3. PROGRESSIVE STRUCTURE - start simple, build to complex
+         - Begin with installation and basic setup
+         - Then simple usage examples
+         - Then intermediate patterns
+         - Finally advanced features and configurations
+         - Do NOT show complex code at the top
+      
+      ═══════════════════════════════════════════════════════════════════════
+      WORDPRESS GUTENBERG BLOCKS REFERENCE
+      ═══════════════════════════════════════════════════════════════════════
       
       ✅ PARAGRAPH:
       <!-- wp:paragraph -->
@@ -256,19 +129,6 @@ steps:
       </ul>
       <!-- /wp:list -->
       
-      ✅ LIST (ordered):
-      <!-- wp:list {"ordered":true} -->
-      <ol class="wp-block-list">
-      <li>First item</li>
-      <li>Second item</li>
-      </ol>
-      <!-- /wp:list -->
-      
-      ✅ QUOTE:
-      <!-- wp:quote -->
-      <blockquote class="wp-block-quote"><p>Quote text here.</p></blockquote>
-      <!-- /wp:quote -->
-      
       ✅ CODE (IMPORTANT FOR AI CODE CONTENT):
       <!-- wp:code -->
       <pre class="wp-block-code"><code>your code here</code></pre>
@@ -278,24 +138,6 @@ steps:
       <!-- wp:code {"language":"python"} -->
       <pre class="wp-block-code"><code class="language-python">import langchain; agent = langchain.agents.create_react_agent()</code></pre>
       <!-- /wp:code -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      DESIGN BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
-      
-      ✅ SEPARATOR:
-      <!-- wp:separator -->
-      <hr class="wp-block-separator has-alpha-channel-opacity"/>
-      <!-- /wp:separator -->
-      
-      ✅ SPACER:
-      <!-- wp:spacer {"height":"50px"} -->
-      <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
-      <!-- /wp:spacer -->
-      
-      ─────────────────────────────────────────────────────────────────────────
-      WIDGET BLOCKS
-      ─────────────────────────────────────────────────────────────────────────
       
       ✅ TABLE:
       <!-- wp:table -->
@@ -319,6 +161,7 @@ steps:
       8. Include import statements in all code blocks
       9. Specify the programming language in code blocks
       10. Include version numbers when relevant
+      11. Less Descriptive and Code focused
       
       ARTICLE STRUCTURE FOR CODE CONTENT:
       - Introduction: What the tool/library does
@@ -346,3 +189,6 @@ steps:
   # STEP 6: Publish to WordPress
   # ─────────────────────────────────────────────────────────────────────────────
   - include: wordpress-publisher
+
+# Enable context management at workflow level
+context: true

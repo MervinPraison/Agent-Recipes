@@ -1,0 +1,160 @@
+framework: praisonai
+topic: "Research pipeline"
+
+# =============================================================================
+# AI RESEARCH PIPELINE - Modular Recipe
+# =============================================================================
+# 
+# This is a REUSABLE recipe that handles the research workflow:
+#   Step 1: Filter duplicates from topics
+#   Step 2: Generate search keywords for each topic
+#   Step 3: Deep research each topic with all keywords
+#
+# Input: 
+#   Previous step should output topics (e.g., from ai-topic-gatherer)
+#   
+# Output:
+#   research_results - comprehensive research for each topic
+# =============================================================================
+
+roles:
+  duplicate_checker:
+    role: Content Deduplication Agent
+    goal: Filter topic list to only unique topics not yet published
+    backstory: You check for duplicate content and return ALL unique topics as a JSON array.
+    tools:
+      - check_duplicate
+
+  keyword_generator:
+    role: Research Keyword Specialist
+    goal: Generate comprehensive search keywords for in-depth topic research
+    backstory: |
+      You are an expert at generating diverse, specific search queries.
+      You create keywords that will find unique, specific information - not generic content.
+      You focus on: product names, company names, dates, technical specs, quotes, statistics.
+
+  deep_researcher:
+    role: Investigative Technical Researcher
+    goal: Conduct exhaustive research - search extensively, gather ALL facts from search results
+    backstory: |
+      You are a thorough investigative researcher who leaves no stone unturned.
+      You search with MANY different keywords to find all angles of a topic.
+      tavily_search returns FULL PAGE CONTENT in raw_content field - use it!
+      You gather: specific dates, exact figures, direct quotes, company names, product specs.
+      You do NOT limit yourself - research until you have complete coverage.
+    tools:
+      - tavily_search
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 1: Filter duplicates and output as structured JSON
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: filter_duplicates
+    agent: duplicate_checker
+    output_variable: unique_topics
+    output_json:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+            description: The specific topic title with company/product names
+          url:
+            type: string
+            description: Source URL for this topic
+          content:
+            type: string
+            description: Detailed description of what this topic is about including key features and use cases
+    action: |
+      {{previous_output}}
+      
+      For EACH topic from the list above:
+      1. Call check_duplicate with the topic title
+      2. If NOT a duplicate (status is UNIQUE), add to the unique list
+      
+      Return a JSON array of unique topics with their URLs and a detailed content description.
+      The content field should be a detailed paragraph describing what the topic is about, key features, and use cases.
+    expected_output: |
+      [{"title": "Specific Topic Title", "url": "https://source.com", "content": "Detailed description..."}]
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 2: Generate search keywords for comprehensive research
+  # ─────────────────────────────────────────────────────────────────────────────
+  - loop:
+      over: unique_topics
+      parallel: true
+      max_workers: 4
+    agent: keyword_generator
+    output_variable: research_keywords
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+          description: List of 5-10 specific search queries
+    action: |
+      TOPIC: {{item.title}}
+      SOURCE: {{item.url}}
+      CONTEXT: {{item.content}}
+      
+      Using the topic title and detailed context above, generate 5-10 specific search queries 
+      to research this topic thoroughly.
+      
+      Include queries for:
+      - Official announcements and documentation
+      - Technical specifications and features
+      - Expert opinions and analysis
+      - Code examples or implementations (if applicable)
+      - Comparisons and benchmarks
+      - Timeline and release information
+      
+      Be SPECIFIC - use exact names, versions, dates.
+    expected_output: |
+      {"topic": "Topic Title", "keywords": ["query1", "query2", ...]}
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 3: Research each topic IN DEPTH
+  # ─────────────────────────────────────────────────────────────────────────────
+  - loop:
+      over: research_keywords
+      parallel: true
+      max_workers: 4
+    agent: deep_researcher
+    output_variable: research_results
+    action: |
+      TOPIC: {{item.topic}}
+      SEARCH KEYWORDS: {{item.keywords}}
+      
+      CONDUCT EXHAUSTIVE RESEARCH:
+      
+      1. SEARCH EXTENSIVELY:
+         - Use tavily_search with EACH keyword from the list above
+         - tavily_search returns FULL PAGE CONTENT in the raw_content field
+         - Search until you have found ALL relevant information
+         - Do NOT limit the number of searches - be thorough
+      
+      2. EXTRACT FROM SEARCH RESULTS:
+         - Read the raw_content field from each search result for full article text
+         - Extract content from official sources, news sites, blogs, forums
+      
+      3. EXTRACT COMPREHENSIVE DATA:
+         - Exact dates and timelines
+         - Specific numbers, statistics, percentages
+         - Direct quotes with attribution
+         - Technical specifications
+         - Company and product names
+         - Pricing information if available
+         - Code examples if available
+      
+      4. VERIFY INFORMATION:
+         - Cross-reference facts across multiple sources
+         - Note any conflicting information
+      
+      Compile ALL findings into a comprehensive research document.
+    expected_output: |
+      Comprehensive research with all facts, quotes, statistics, code examples, and sources
