@@ -235,6 +235,59 @@ def crawl_url(url: str, extract_main_content: bool = True) -> Dict[str, Any]:
         return {"url": url, "content": "", "success": False, "error": str(e)}
 
 
+@recipe_tool("tavily_extract")
+def tavily_extract(url: str) -> Dict[str, Any]:
+    """
+    Extract full content from a URL using Tavily's extract API.
+    
+    This is ideal for getting complete article content for content generation.
+    Unlike search, this extracts the FULL content from a specific URL.
+    
+    Args:
+        url: The URL to extract content from
+        
+    Returns:
+        Dict with url, title, content, and raw_content
+    """
+    info_print(f"📄 Extracting content from: {url[:60]}...")
+    
+    try:
+        # Try using Tavily's extract endpoint
+        from tavily import TavilyClient
+        import os
+        
+        client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY"))
+        
+        # Use extract for single URL content extraction
+        result = client.extract(urls=[url])
+        
+        if result and result.get("results"):
+            extracted = result["results"][0]
+            content = extracted.get("raw_content", extracted.get("content", ""))
+            content_len = len(content)
+            success_print(f"Extracted {content_len} chars from: {url[:40]}...")
+            
+            return {
+                "url": url,
+                "title": extracted.get("title", ""),
+                "content": content,
+                "raw_content": content,
+                "success": True
+            }
+        else:
+            warning_print(f"No content extracted from: {url[:40]}...")
+            return {"url": url, "content": "", "success": False, "error": "No content extracted"}
+            
+    except ImportError:
+        warning_print("Tavily not installed, falling back to crawl_url...")
+        return crawl_url(url)
+    except Exception as e:
+        error_print(f"Tavily extract failed: {e}")
+        logger.error(f"Tavily extract failed for {url}: {e}")
+        # Fallback to crawl_url
+        return crawl_url(url)
+
+
 @recipe_tool("check_duplicate")
 def check_duplicate(title: str, content: str = "") -> Dict[str, Any]:
     """

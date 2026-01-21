@@ -124,7 +124,7 @@ steps:
       KEYWORDS TO SEARCH:
       {{previous_output}}
       
-      LIMIT: Perform EXACTLY 3 searches (one per keyword).
+      LIMIT: Perform EXACTLY 1 search (one per keyword).
       
       For each search:
       1. Call tavily_search with the keyword
@@ -138,8 +138,14 @@ steps:
       - Source URL
       - Content summary (what the topic is about, key details)
       
+      CRITICAL DEDUPLICATION RULES:
+      - ONE topic per product/release (e.g., only ONE "Claude Code v2.0" topic)
+      - If multiple articles cover the same announcement, pick the BEST one
+      - Merge information from multiple sources into a single comprehensive topic
+      - Different products/versions = different topics (OK: Claude v2.0 AND Cursor v2.1)
+      - Same product from different sources = DUPLICATE (BAD: 3 articles about Claude v2.0)
+      
       Return up to 10 UNIQUE topics (no duplicates).
-      Duplicates will be filtered by the research pipeline.
       
       GOOD topics:
       - "OpenAI Releases GPT-5 with 10x Context Window"
@@ -163,4 +169,7 @@ steps:
             type: string
             description: Detailed description of the topic
 
-context: true
+# Enable context management with truncation
+context:
+  enabled: true
+  max_tool_output_tokens: 5000

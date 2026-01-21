@@ -1,0 +1,145 @@
+name: AI Blog Generator
+
+on:
+  # Manual trigger with custom parameters
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic to generate content about'
+        required: false
+        default: 'AI Tools'
+        type: string
+      style:
+        description: 'Content style (coding/news/interactive/comprehensive)'
+        required: false
+        default: 'comprehensive'
+        type: choice
+        options:
+          - coding
+          - news
+          - interactive
+          - comprehensive
+      url:
+        description: 'Optional: URL to extract content from (instead of search)'
+        required: false
+        default: ''
+        type: string
+      recipe:
+        description: 'Recipe to run'
+        required: false
+        default: 'ai-code-wordpress-generator-parallel'
+        type: choice
+        options:
+          - ai-code-wordpress-generator-parallel
+          - ai-dynamic-blog-generator
+      max_workers:
+        description: 'Max parallel workers'
+        required: false
+        default: '4'
+        type: string
+
+  # Scheduled trigger - every 12 hours
+  schedule:
+    - cron: '0 */12 * * *'  # At minute 0 past every 12th hour
+
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+  WP_URL: ${{ secrets.WP_URL }}
+  WP_USERNAME: ${{ secrets.WP_USERNAME }}
+  WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_KEY: ${{ secrets.SSH_KEY }}
+
+jobs:
+  generate-blog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system praisonai praisonai-tools[wordpress] tavily-python
+
+      - name: Set up SSH key
+        if: env.SSH_KEY != ''
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Determine recipe and parameters
+        id: params
+        run: |
+          # Use inputs if manual trigger, defaults for scheduled
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "topic=${{ inputs.topic }}" >> $GITHUB_OUTPUT
+            echo "style=${{ inputs.style }}" >> $GITHUB_OUTPUT
+            echo "url=${{ inputs.url }}" >> $GITHUB_OUTPUT
+            echo "recipe=${{ inputs.recipe }}" >> $GITHUB_OUTPUT
+            echo "max_workers=${{ inputs.max_workers }}" >> $GITHUB_OUTPUT
+          else
+            # Scheduled run defaults
+            echo "topic=AI Tools $(date +'%B %Y')" >> $GITHUB_OUTPUT
+            echo "style=comprehensive" >> $GITHUB_OUTPUT
+            echo "url=" >> $GITHUB_OUTPUT
+            echo "recipe=ai-code-wordpress-generator-parallel" >> $GITHUB_OUTPUT
+            echo "max_workers=4" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run URL extraction workflow
+        if: steps.params.outputs.url != ''
+        run: |
+          echo "🔗 Running URL-based content generation..."
+          echo "URL: ${{ steps.params.outputs.url }}"
+          echo "Style: ${{ steps.params.outputs.style }}"
+          
+          # Create a temporary workflow for URL extraction
+          cd agent_recipes/templates/${{ steps.params.outputs.recipe }}
+          
+          praisonai workflow run agents.yaml \
+            --var "topic=${{ steps.params.outputs.url }}" \
+            --var "style=${{ steps.params.outputs.style }}" \
+            --verbose
+
+      - name: Run topic search workflow
+        if: steps.params.outputs.url == ''
+        run: |
+          echo "🔍 Running topic-based content generation..."
+          echo "Topic: ${{ steps.params.outputs.topic }}"
+          echo "Style: ${{ steps.params.outputs.style }}"
+          echo "Recipe: ${{ steps.params.outputs.recipe }}"
+          
+          cd agent_recipes/templates/${{ steps.params.outputs.recipe }}
+          
+          praisonai workflow run agents.yaml \
+            --var "topic=${{ steps.params.outputs.topic }}" \
+            --var "style=${{ steps.params.outputs.style }}" \
+            --verbose
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 📝 Blog Generation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Topic**: ${{ steps.params.outputs.topic }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Style**: ${{ steps.params.outputs.style }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Recipe**: ${{ steps.params.outputs.recipe }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.params.outputs.url }}" ]; then
+            echo "- **URL**: ${{ steps.params.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY

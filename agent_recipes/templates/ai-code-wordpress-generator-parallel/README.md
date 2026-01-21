@@ -1,73 +1,137 @@
-# AI Code WordPress Post Generator (Parallel)
+# AI Code WordPress Generator (Parallel)
 
-Research **AI coding tools, programming methods, and code techniques** for AI Engineers and publish multiple Gutenberg-formatted posts to WordPress **in parallel**.
+> **Version**: 1.0.0  
+> **Author**: praison  
+> **License**: Apache-2.0
 
-## Focus Areas
+Research AI coding tools, programming methods, and code techniques for AI engineers — and publish multiple posts to WordPress **in parallel**.
 
-This recipe generates content specifically for **AI Engineers** covering:
-- **AI Tools**: Latest AI development tools, SDKs, frameworks, and libraries
-- **AI Programming Ideas**: New coding patterns, architectures, and methodologies
-- **AI Programming Methods**: Implementation techniques, best practices, algorithms
-- **Code Examples**: Practical code snippets, tutorials, and implementations
-- **AI Engineering**: Development workflows, toolchains, and productivity
+## Architecture
 
-**All articles focus on CODE** - practical, hands-on content for developers building AI systems.
+```mermaid
+graph TD
+    subgraph "Input"
+        T["topic: AI Code & Tools"]
+    end
+    
+    subgraph "Stage 1: Topic Discovery"
+        TG["include: ai-topic-gatherer"]
+    end
+    
+    subgraph "Stage 2: Deduplication"
+        DC["duplicate_checker"]
+    end
+    
+    subgraph "Stage 3-6: Parallel Processing"
+        LOOP["loop(parallel=true, max_workers=4)"]
+        subgraph "Per-Topic Pipeline"
+            KG["keyword_generator"]
+            DR["deep_researcher"]
+            CW["content_writer"]
+            PUB["publisher"]
+        end
+    end
+    
+    T --> TG
+    TG --> DC
+    DC -->|unique_topics| LOOP
+    LOOP --> KG
+    KG --> DR
+    DR --> CW
+    CW --> PUB
+```
 
-## Features
+## Quick Start
 
-- **Code-Focused Content**: All articles emphasize code examples and implementations
-- **Parallel Processing**: Research and write multiple topics simultaneously
-- **Duplicate Detection**: Checks WordPress for existing similar content
-- **Batch Duplicate Checking**: Efficiently checks multiple topics at once
-- **Gutenberg Format**: Outputs proper WordPress block format with code blocks
-- **Modular Design**: Uses include steps for topic gathering
+```bash
+# Run the recipe
+praisonai recipe run ai-code-wordpress-generator-parallel
+
+# Dry run (no actual publishing)
+praisonai recipe run ai-code-wordpress-generator-parallel --dry-run
+```
+
+## Customization
+
+Override any variable when running:
+
+```bash
+# Custom topic
+praisonai recipe run ai-code-wordpress-generator-parallel \
+  --var topic="Python AI Libraries"
+
+# Custom parallelism and WordPress settings
+praisonai recipe run ai-code-wordpress-generator-parallel \
+  --var max_workers=8 \
+  --var wp_category="Tutorials" \
+  --var wp_author="admin"
+```
+
+### Available Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `topic` | `"AI Code & Tools {{today}}"` | Main search topic |
+| `today` | `"January 2026"` | Current date |
+| `max_workers` | `4` | Parallel workers |
+| `wp_category` | `"News"` | WordPress category |
+| `wp_author` | `"praison"` | WordPress author |
+| `keyword_count` | `3` | Keywords per topic |
+| `content_focus` | `"code-focused"` | Writing style |
+
+## Use in Other Recipes
+
+Include this recipe in your workflow:
+
+```yaml
+steps:
+  # Custom variables override defaults
+  - include:
+      recipe: ai-code-wordpress-generator-parallel
+      variables:
+        topic: "Machine Learning Tools"
+        max_workers: 6
+        wp_category: "ML"
+```
 
 ## Requirements
 
 ### Environment Variables
-- `OPENAI_API_KEY` - OpenAI API key
-- `TAVILY_API_KEY` - Tavily search API key
+
+```bash
+export OPENAI_API_KEY="your-key"
+export TAVILY_API_KEY="your-key"
+```
 
 ### Packages
+
 ```bash
 pip install praisonai praisonai-tools praisonaiwp tavily-python
 ```
 
-### WordPress Configuration
-Configure `~/.praisonaiwp/config.yaml` with your WordPress server details.
-
-## Usage
-
-### As a Recipe
-```bash
-praisonai recipe run ai-code-wordpress-generator-parallel
-```
-
-### As a Workflow
-```bash
-cd /path/to/ai-code-wordpress-generator-parallel
-praisonai agents.yaml
-```
-
 ## How It Works
 
-1. **Gather Topics**: Uses `ai-topic-gatherer` include (configured for AI coding topics)
-2. **Filter Duplicates**: Checks each topic against existing WordPress posts
-3. **Parallel Research**: Researches multiple topics simultaneously (4 at a time)
-4. **Parallel Writing**: Writes code-focused blog posts for each topic in parallel
-5. **Publish**: Creates WordPress posts with proper Gutenberg formatting (with code blocks)
+1. **Topic Gathering** (modular): Uses `ai-topic-gatherer` to find 5-10 AI coding topics
+2. **Deduplication**: Checks each topic against existing WordPress posts
+3. **Parallel Pipeline**: For each unique topic (up to `max_workers` in parallel):
+   - Generates research keywords
+   - Performs deep research with Tavily
+   - Writes code-focused Gutenberg article
+   - Publishes to WordPress
 
-## Key YAML Features Used
+## Troubleshooting
 
-- `output_variable`: Stores agent output in a named variable
-- `loop: over:`: Iterates over a list (auto-parses JSON arrays)
-- `parallel: true`: Runs iterations concurrently
-- `max_workers`: Limits concurrent executions
+### Empty Output
+If no posts are published, check:
+- All topics may already exist (duplicate detection)
+- WordPress credentials may be invalid
+- Tavily API rate limits
 
-## Tools
+### Slow Execution
+Increase `max_workers` for faster parallel processing:
+```bash
+praisonai recipe run ai-code-wordpress-generator-parallel --var max_workers=8
+```
 
-- `tavily_search` - Search for AI coding tools and techniques
-- `crawl_url` - Extract content from URLs
-- `check_duplicate` - Check single topic for duplicates
-- `check_duplicates_batch` - Check multiple topics at once
-- `create_wp_post` - Create WordPress post
+### Token Overflow
+The recipe includes context management (`max_tool_output_tokens: 5000`) to prevent token overflow. If issues persist, reduce this value.

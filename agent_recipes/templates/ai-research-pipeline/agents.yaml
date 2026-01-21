@@ -170,4 +170,7 @@ steps:
     expected_output: |
       {"topic": "Topic name", "research": "Comprehensive research findings..."}
 
-context: true
+# Enable context management with truncation
+context:
+  enabled: true
+  max_tool_output_tokens: 5000  # Truncate large tavily_search outputs

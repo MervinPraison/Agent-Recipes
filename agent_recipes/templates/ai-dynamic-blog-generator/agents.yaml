@@ -1,38 +1,36 @@
 framework: praisonai
-topic: "AI Code & Tools {{today}}"
+topic: "{{topic}}"
 
 # =============================================================================
-# AI CODE BLOG POST GENERATOR - FULLY PARALLEL PIPELINE (MODULAR)
+# DYNAMIC BLOG POST GENERATOR - FULLY PARALLEL PIPELINE
 # =============================================================================
 # 
-# A modular, customizable recipe that:
-# 1. Gathers AI coding topics (include: ai-topic-gatherer)
-# 2. Filters duplicates
-# 3. For each unique topic IN PARALLEL:
-#    - Generate research keywords
-#    - Deep research the topic
-#    - Write code-focused blog post
-#    - Publish to WordPress (include: wordpress-publisher)
+# A dynamic, parameterized recipe that adapts to any topic and style:
+# 
+# USAGE:
+#   praisonai workflow run ai-dynamic-blog-generator/agents.yaml \
+#     --var topic="AI Tools January 2026" \
+#     --var style="coding" \
+#     --var max_workers=4
 #
-# CUSTOMIZATION:
-# Parent recipes can override these variables:
-#   - topic: Main search topic (default: "AI Code & Tools {{today}}")
-#   - today: Current date (default: "January 2026")
-#   - max_workers: Parallel workers (default: 4)
-#   - wp_category: WordPress category (default: "News")
-#   - wp_author: WordPress author (default: "praison")
-#   - keyword_count: Keywords per topic (default: 3)
-#   - content_focus: Writing style (default: "code-focused")
+# STYLE MODES:
+#   - coding: Code examples, installation commands, practical implementation
+#   - news: Breaking news format, quotes, statistics, timeline
+#   - interactive: Diagrams, tables, bullet points, visual elements
+#   - comprehensive: All of the above combined
+#
 # =============================================================================
 
-# Variables with sensible defaults (can be overridden by parent recipe)
+# Variables with sensible defaults (override via CLI --var)
 variables:
+  topic: "AI Tools"
   today: "January 2026"
+  style: "comprehensive"  # coding | news | interactive | comprehensive
   max_workers: 4
-  wp_category: "News"
+  wp_category: "AI"
   wp_author: "praison"
   keyword_count: 3
-  content_focus: "code-focused"
+  search_results: 5
 
 agents:
   # ═══════════════════════════════════════════════════════════════════════════
@@ -54,6 +52,7 @@ agents:
     backstory: |
       You are an expert at generating diverse, specific search queries.
       You create keywords that will find unique, specific information.
+      Generate queries that cover: official sources, technical details, and examples.
 
   # ═══════════════════════════════════════════════════════════════════════════
   # DEEP RESEARCHER - Gathers comprehensive facts
@@ -64,24 +63,60 @@ agents:
     backstory: |
       You are a thorough investigative researcher who leaves no stone unturned.
       tavily_search returns FULL PAGE CONTENT in raw_content field - use it!
+      Extract EVERYTHING: dates, statistics, quotes, code, specifications.
+      NEVER summarize prematurely - preserve all details for the writer.
     tools:
       - tavily_search
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # CONTENT WRITER - Creates code-focused articles (UNIQUE TO THIS RECIPE)
+  # DYNAMIC CONTENT WRITER - Adapts to style parameter
   # ═══════════════════════════════════════════════════════════════════════════
   content_writer:
-    role: Technical AI Content Writer and Developer Advocate
-    goal: Write code-focused, practical blog posts with working examples for AI engineers
+    role: Dynamic Content Writer and Developer Advocate
+    goal: Write engaging, comprehensive blog posts that include ALL researched information
     backstory: |
       You MUST use correct Gutenberg block format where content is inside HTML tags.
       You write about ONE topic only - never combine multiple topics.
       You use British English (colour, centre, organisation).
       
-      CONTENT FOCUS ({{content_focus}}):
-      - Every article MUST include code examples
-      - Emphasise practical implementation over theory
-      - Include installation commands, imports, and usage examples
+      CRITICAL: Include ALL information from research - nothing should be lost!
+      
+      STYLE ADAPTATION (current: {{style}}):
+      
+      IF style = "coding":
+        - Lead with code examples and installation commands
+        - Include imports, usage examples, and practical implementation
+        - Use code blocks extensively
+        - Add inline code for function/class names
+      
+      IF style = "news":
+        - Lead with the most important news/announcement
+        - Include quotes from official sources
+        - Add statistics and data points
+        - Include timeline of events
+        - Use blockquotes for citations
+      
+      IF style = "interactive":
+        - Use tables for comparisons and specifications
+        - Include bullet point lists for features
+        - Add diagrams descriptions (Mermaid syntax if possible)
+        - Use headers to create scannable structure
+        - Include summary boxes
+      
+      IF style = "comprehensive":
+        - Combine ALL above styles
+        - Start with news/announcement
+        - Include code examples
+        - Add tables and diagrams
+        - Use interactive elements throughout
+      
+      MANDATORY ELEMENTS (ALL STYLES):
+      - Include EVERY fact from research
+      - Use tables for any comparative data
+      - Use bullet lists for features/specifications
+      - Include all dates, versions, and statistics
+      - Add code examples where relevant
+      - Use blockquotes for official quotes
       
       TITLE RULES (SEO-CRITICAL):
       - Include SPECIFIC names: tool, library, framework, or version
@@ -102,7 +137,7 @@ agents:
 
 steps:
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 1: Gather AI coding topics (MODULAR - uses ai-topic-gatherer)
+  # STEP 1: Gather topics based on the provided topic parameter
   # ─────────────────────────────────────────────────────────────────────────────
   - include: ai-topic-gatherer
 
@@ -159,12 +194,13 @@ steps:
           CONTEXT: {{item.content}}
           
           Generate EXACTLY {{keyword_count}} specific search queries to research this topic.
+          
           Include queries for:
-          - Official announcements and documentation
-          - Technical specifications and features
-          - Code examples or implementations
+          1. Official announcements and documentation (site:official-domain)
+          2. Technical specifications, features, and capabilities
+          3. Code examples, implementations, or tutorials
 
-      # Step 3b: Research THIS topic
+      # Step 3b: Research THIS topic EXHAUSTIVELY
       - name: deep_research
         agent: deep_researcher
         output_json:
@@ -172,19 +208,70 @@ steps:
           properties:
             topic:
               type: string
-            research:
-              type: string
+            all_facts:
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  facts:
+                    type: array
+                    items:
+                      type: string
+            code_examples:
+              type: array
+              items:
+                type: string
+            statistics:
+              type: array
+              items:
+                type: string
+            quotes:
+              type: array
+              items:
+                type: string
+            sources:
+              type: array
+              items:
+                type: string
         action: |
           TOPIC: {{previous_output.topic}}
           SEARCH KEYWORDS: {{previous_output.keywords}}
           
           Perform EXACTLY {{keyword_count}} searches using the keywords above.
-          Read the raw_content field from each result for full article text.
-          Extract: dates, statistics, quotes, technical specs, code examples.
           
-          Compile ALL findings into comprehensive research.
+          CRITICAL: Extract and preserve EVERYTHING from raw_content:
+          
+          1. ALL FACTS - Organize by category:
+             - Features and capabilities
+             - Technical specifications
+             - Pricing and availability
+             - Release dates and versions
+             - Compatibility and requirements
+          
+          2. CODE EXAMPLES - Extract any:
+             - Installation commands
+             - Import statements
+             - Usage examples
+             - Configuration snippets
+          
+          3. STATISTICS - Extract all numbers:
+             - Performance metrics
+             - Pricing
+             - User counts
+             - Benchmarks
+          
+          4. QUOTES - Extract official statements:
+             - Company announcements
+             - Developer comments
+             - Expert opinions
+          
+          5. SOURCES - Track all URLs for citations
+          
+          DO NOT SUMMARIZE - preserve all details for the writer!
 
-      # Step 3c: Write the article
+      # Step 3c: Write the article with ALL collected information
       - name: write_article
         agent: content_writer
         output_json:
@@ -195,15 +282,52 @@ steps:
             content:
               type: string
         action: |
-          RESEARCH CONTENT:
+          STYLE MODE: {{style}}
+          
+          RESEARCH DATA (include ALL of this in the article):
           {{previous_output}}
           
-          Write a {{content_focus}} blog post using Gutenberg blocks.
-          Include: installation commands, code examples, practical usage.
+          Write a {{style}} blog post using Gutenberg blocks.
+          
+          MANDATORY STRUCTURE:
+          
+          1. INTRODUCTION (1-2 paragraphs)
+             - What is this about?
+             - Why does it matter?
+          
+          2. KEY FEATURES/ANNOUNCEMENTS (use table or bullet list)
+             - Include ALL features from research
+             - Use a comparison table if applicable
+          
+          3. TECHNICAL DETAILS (if style includes coding)
+             - Installation commands in code blocks
+             - Usage examples with full code
+             - Configuration snippets
+          
+          4. STATISTICS & DATA (use table)
+             - Include ALL numbers from research
+             - Format as a clear table
+          
+          5. QUOTES & SOURCES (use blockquotes)
+             - Include official quotes
+             - Cite sources
+          
+          6. CONCLUSION
+             - Summary of key points
+             - What's next / implications
+          
+          GUTENBERG BLOCKS TO USE:
+          - <!-- wp:paragraph --> for text
+          - <!-- wp:heading --> for headers
+          - <!-- wp:code --> for code blocks
+          - <!-- wp:table --> for data tables
+          - <!-- wp:list --> for bullet points
+          - <!-- wp:quote --> for blockquotes
+          - <!-- wp:separator --> for section breaks
           
           OUTPUT FORMAT:
-          - title: SEO-optimized title (6-10 words, include tool name)
-          - content: Full Gutenberg block formatted content
+          - title: SEO-optimized title (6-10 words, include tool/product name)
+          - content: Full Gutenberg block formatted content with ALL research included
 
       # Step 3d: Publish to WordPress
       - name: publish_article

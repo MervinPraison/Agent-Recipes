@@ -16,10 +16,9 @@ tags:
 requires:
   tools:
     - tavily_search
-    - crawl_url
     - check_duplicate
-    - check_duplicates_batch
     - create_wp_post
+
   packages:
     - praisonai
     - praisonai-tools
@@ -34,6 +33,8 @@ cli:
   examples:
     - praisonai recipe run ai-code-wordpress-generator-parallel
     - praisonai recipe run ai-code-wordpress-generator-parallel --dry-run
+    - praisonai recipe run ai-code-wordpress-generator-parallel --var max_workers=8
+    - praisonai recipe run ai-code-wordpress-generator-parallel --var wp_category="Tutorials"
 
 agents: agents.yaml
 
