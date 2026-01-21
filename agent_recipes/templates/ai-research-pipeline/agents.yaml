@@ -96,14 +96,14 @@ steps:
           type: array
           items:
             type: string
-          description: List of 5-10 specific search queries
+          description: List of exactly 3 specific search queries
     action: |
       TOPIC: {{item.title}}
       SOURCE: {{item.url}}
       CONTEXT: {{item.content}}
       
-      Using the topic title and detailed context above, generate 5-10 specific search queries 
-      to research this topic thoroughly.
+      Using the topic title and detailed context above, generate EXACTLY 3 specific search queries 
+      to research this topic thoroughly. DO NOT generate more than 3 queries.
       
       Include queries for:
       - Official announcements and documentation
@@ -126,17 +126,26 @@ steps:
       max_workers: 4
     agent: deep_researcher
     output_variable: research_results
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: The topic that was researched
+        research:
+          type: string
+          description: Comprehensive research findings including facts, quotes, statistics, code examples, and sources
     action: |
       TOPIC: {{item.topic}}
       SEARCH KEYWORDS: {{item.keywords}}
       
-      CONDUCT EXHAUSTIVE RESEARCH:
+      CONDUCT FOCUSED RESEARCH (MAX 3 SEARCHES):
       
-      1. SEARCH EXTENSIVELY:
-         - Use tavily_search with EACH keyword from the list above
+      1. SEARCH EFFICIENTLY:
+         - Use tavily_search with EACH of the 3 keywords from the list above
          - tavily_search returns FULL PAGE CONTENT in the raw_content field
-         - Search until you have found ALL relevant information
-         - Do NOT limit the number of searches - be thorough
+         - LIMIT: Perform EXACTLY 3 searches total - no more
+         - Extract maximum information from each search result
       
       2. EXTRACT FROM SEARCH RESULTS:
          - Read the raw_content field from each search result for full article text
@@ -155,8 +164,10 @@ steps:
          - Cross-reference facts across multiple sources
          - Note any conflicting information
       
-      Compile ALL findings into a comprehensive research document.
+      Compile ALL findings into the required JSON format.
+      
+      IMPORTANT: Return ONLY a JSON object with 'topic' and 'research' fields.
     expected_output: |
-      Comprehensive research with all facts, quotes, statistics, code examples, and sources
+      {"topic": "Topic name", "research": "Comprehensive research findings..."}
 
 context: true

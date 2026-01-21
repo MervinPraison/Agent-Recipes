@@ -38,7 +38,7 @@ roles:
           
           1. FIRST, search for the topic above to get an overview
           2. READ the full content from the search results carefully
-          3. Based on what you find, generate 5-7 specific search keywords
+          3. Based on what you find, generate EXACTLY 3 specific search keywords
           
           Keywords should target:
           - Specific company announcements
@@ -98,7 +98,7 @@ steps:
       
       1. FIRST, search for the topic above to get an overview
       2. READ the full content from the search results carefully
-      3. Based on what you find, generate 3-5 specific search keywords
+      3. Based on what you find, generate EXACTLY 3 specific search keywords
       
       Keywords should target:
       - Specific company announcements
@@ -124,7 +124,9 @@ steps:
       KEYWORDS TO SEARCH:
       {{previous_output}}
       
-      For EACH keyword in the list above:
+      LIMIT: Perform EXACTLY 3 searches (one per keyword).
+      
+      For each search:
       1. Call tavily_search with the keyword
       2. Read the FULL content from each result
       3. Extract specific topics with details
@@ -136,7 +138,8 @@ steps:
       - Source URL
       - Content summary (what the topic is about, key details)
       
-      Return 5-10 UNIQUE topics (no duplicates).
+      Return up to 10 UNIQUE topics (no duplicates).
+      Duplicates will be filtered by the research pipeline.
       
       GOOD topics:
       - "OpenAI Releases GPT-5 with 10x Context Window"

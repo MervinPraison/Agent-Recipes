@@ -142,14 +142,14 @@ def get_current_date() -> str:
 @recipe_tool("tavily_search")
 def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
     """
-    AI-powered web search using Tavily with full page content.
+    AI-powered web search using Tavily.
     
     Args:
         query: Search query
         max_results: Maximum results (default: 10)
         
     Returns:
-        Search results with answer, sources, and full page content
+        Search results with answer and sources
     """
     info_print(f"🔍 Searching: '{query}' (max {max_results} results)")
     
@@ -158,7 +158,15 @@ def tavily_search(query: str, max_results: int = 10) -> Dict[str, Any]:
         tool = _get_tavily_tool()
         result = tool.search(query=query, max_results=max_results)
         num_results = len(result.get("results", []))
-        success_print(f"Found {num_results} results for: '{query[:50]}...'")
+        
+        # Check if raw_content is present and count
+        has_raw = sum(1 for r in result.get("results", []) if r.get("raw_content"))
+        if has_raw > 0:
+            success_print(f"Found {num_results} results for: '{query[:50]}...'")
+            debug_print(f"   📄 {has_raw} results include full page content")
+        else:
+            success_print(f"Found {num_results} results for: '{query[:50]}...'")
+        
         return result
     except ImportError:
         # Fallback to direct tavily import
