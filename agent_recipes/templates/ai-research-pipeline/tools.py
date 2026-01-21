@@ -126,12 +126,12 @@ def _get_tavily_tool():
 # =============================================================================
 
 @recipe_tool("tavily_search")
-def tavily_search(query: str, max_results: int = 3) -> Dict[str, Any]:
+def tavily_search(query: str, max_results: int = 5) -> Dict[str, Any]:
     """AI-powered web search using Tavily.
     
     Args:
         query: Search query
-        max_results: Maximum results (default: 3)
+        max_results: Maximum results (default: 5)
         
     Returns:
         Search results with answer and sources
