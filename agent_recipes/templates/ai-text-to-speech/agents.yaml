@@ -1,0 +1,39 @@
+# ============================================================================
+# AI TEXT-TO-SPEECH RECIPE
+# ============================================================================
+# Convert text to speech audio using AudioAgent.
+#
+# Usage:
+#   praisonai recipe run ai-text-to-speech --var text="Hello world"
+#   praisonai recipe run ai-text-to-speech --var text="Hello" --var voice=nova
+#   praisonai recipe run ai-text-to-speech --var text="Hello" --var output=hello.mp3
+#
+# Supported Providers:
+#   - OpenAI: openai/tts-1, openai/tts-1-hd
+#   - ElevenLabs: elevenlabs/eleven_multilingual_v2
+#   - Gemini: gemini/gemini-2.5-flash-preview-tts
+# ============================================================================
+
+framework: praisonai
+name: ai-text-to-speech
+process: sequential
+
+variables:
+  text: "Hello, welcome to PraisonAI!"
+  voice: alloy
+  output: output.mp3
+
+agents:
+  speaker:
+    agent: AudioAgent
+    llm: openai/tts-1
+    role: Text-to-Speech Agent
+    goal: Convert text to natural-sounding speech
+
+steps:
+  - name: generate_speech
+    agent: speaker
+    action: speech
+    text: "{{text}}"
+    voice: "{{voice}}"
+    output: "{{output}}"

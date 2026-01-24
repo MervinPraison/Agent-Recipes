@@ -1,0 +1,22 @@
+name: ai-speech-to-text
+version: "1.0.0"
+description: Transcribe audio to text using AudioAgent
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - audio
+  - stt
+  - transcription
+  - speech
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  packages:
+    - litellm
+
+cli:
+  command: praisonai recipe run ai-speech-to-text
+  examples:
+    - praisonai recipe run ai-speech-to-text --var audio=recording.mp3
+    - praisonai recipe run ai-speech-to-text --var audio=meeting.wav --var language=en

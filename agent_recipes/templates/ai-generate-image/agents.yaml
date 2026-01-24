@@ -1,0 +1,35 @@
+# ============================================================================
+# AI IMAGE GENERATION RECIPE
+# ============================================================================
+# Generate images using ImageAgent.
+#
+# Usage:
+#   praisonai recipe run ai-generate-image --var prompt="A sunset over mountains"
+#   praisonai recipe run ai-generate-image --var prompt="A cat" --var output=cat.png
+#
+# Supported Providers:
+#   - OpenAI: openai/dall-e-3, openai/dall-e-2
+#   - Vertex AI: vertex_ai/imagen-3.0-generate-001
+# ============================================================================
+
+framework: praisonai
+name: ai-generate-image
+process: sequential
+
+variables:
+  prompt: "A beautiful landscape with mountains and a lake"
+  output: generated_image.png
+
+agents:
+  artist:
+    agent: ImageAgent
+    llm: openai/dall-e-3
+    role: Image Generator
+    goal: Create high-quality images from text descriptions
+
+steps:
+  - name: generate_image
+    agent: artist
+    action: generate
+    prompt: "{{prompt}}"
+    output: "{{output}}"

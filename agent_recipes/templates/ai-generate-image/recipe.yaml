@@ -1,0 +1,22 @@
+name: ai-generate-image
+version: "1.0.0"
+description: Generate images using ImageAgent
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - image
+  - generation
+  - dall-e
+  - art
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  packages:
+    - litellm
+
+cli:
+  command: praisonai recipe run ai-generate-image
+  examples:
+    - praisonai recipe run ai-generate-image --var prompt="A sunset over mountains"
+    - praisonai recipe run ai-generate-image --var prompt="A cat" --var output=cat.png

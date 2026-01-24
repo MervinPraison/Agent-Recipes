@@ -1,0 +1,32 @@
+# ============================================================================
+# AI DOCUMENT OCR RECIPE
+# ============================================================================
+# Extract text from documents and images using OCRAgent.
+#
+# Usage:
+#   praisonai recipe run ai-document-ocr --var source="document.pdf"
+#   praisonai recipe run ai-document-ocr --var source="https://example.com/doc.pdf"
+#
+# Supported Providers:
+#   - Mistral: mistral/mistral-ocr-latest
+# ============================================================================
+
+framework: praisonai
+name: ai-document-ocr
+process: sequential
+
+variables:
+  source: document.pdf
+
+agents:
+  reader:
+    agent: OCRAgent
+    llm: mistral/mistral-ocr-latest
+    role: Document Reader
+    goal: Extract text from documents and images accurately
+
+steps:
+  - name: extract_text
+    agent: reader
+    action: extract
+    source: "{{source}}"

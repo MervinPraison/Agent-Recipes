@@ -5,13 +5,17 @@ topic: "{{topic}}"
 # DYNAMIC BLOG POST GENERATOR - FULLY PARALLEL PIPELINE
 # =============================================================================
 # 
-# A dynamic, parameterized recipe that adapts to any topic and style:
-# 
-# USAGE:
-#   praisonai workflow run ai-dynamic-blog-generator/agents.yaml \
-#     --var topic="AI Tools January 2026" \
-#     --var style="coding" \
-#     --var max_workers=4
+# TWO MODES:
+#
+# MODE 1: URL MODE (set url variable)
+#   Set url to extract content from a specific article:
+#   url: "https://medium.com/article-name"
+#   → Extracts content, writes blog post, publishes
+#
+# MODE 2: TOPIC MODE (set topic, leave url empty)
+#   Set topic to search for multiple articles:
+#   topic: "LangGraph 0.3"
+#   → Searches, finds topics, researches each, writes, publishes
 #
 # STYLE MODES:
 #   - coding: Code examples, installation commands, practical implementation
@@ -21,27 +25,56 @@ topic: "{{topic}}"
 #
 # =============================================================================
 
-# Variables with sensible defaults (override via CLI --var)
+# Variables - set EITHER url OR topic before running
 variables:
-  topic: "AI Tools"
+  url: ""  # ← SET THIS for URL mode (extracts content from this URL)
+  topic: "AI Coding Tools"  # ← SET THIS for topic mode (searches for topics)
+
+
   today: "January 2026"
   style: "comprehensive"  # coding | news | interactive | comprehensive
   max_workers: 4
   wp_category: "AI"
   wp_author: "praison"
   keyword_count: 3
-  search_results: 5
+  max_topics: 5
+
 
 agents:
   # ═══════════════════════════════════════════════════════════════════════════
-  # DUPLICATE CHECKER - Filters already-published topics
+  # URL CONTENT EXTRACTOR - Extracts content from a specific URL (URL MODE)
   # ═══════════════════════════════════════════════════════════════════════════
-  duplicate_checker:
-    role: Content Deduplication Agent
-    goal: Filter topic list to only unique topics not yet published
-    backstory: You check for duplicate content and return ALL unique topics as a JSON array.
+  url_content_extractor:
+    role: URL Content Extractor
+    goal: Extract full content from a provided URL and prepare it for blog writing
+    backstory: |
+      You extract content from URLs using tavily_extract.
+      You analyze the extracted content and prepare it for the content writer.
+      You identify the main topic, key points, and structure of the article.
     tools:
+      - tavily_extract
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TOPIC DISCOVERER - Finds specific topics (ONE product per topic) (TOPIC MODE)
+  # ═══════════════════════════════════════════════════════════════════════════
+  topic_discoverer:
+    role: Topic Discovery Specialist
+    goal: Find specific, unique topics about ONE product/tool per topic
+    backstory: |
+      You search for topics and ensure each result is about ONE specific product.
+      NEVER combine multiple products in a single topic title.
+      
+      STRICT RULES:
+      - ONE product per topic (e.g., "Claude Code v2.0" not "Claude, GPT, Gemini")
+      - Include version numbers when available
+      - Be specific: company name + product name + version
+      
+      GOOD: "Claude Code v2.0 Release"
+      BAD: "New AI Tools from Reclaim, Zapier, and Sybill"
+    tools:
+      - tavily_search
       - check_duplicate
+
 
   # ═══════════════════════════════════════════════════════════════════════════
   # KEYWORD GENERATOR - Creates search queries for research
@@ -51,20 +84,37 @@ agents:
     goal: Generate comprehensive search keywords for in-depth topic research
     backstory: |
       You are an expert at generating diverse, specific search queries.
-      You create keywords that will find unique, specific information.
-      Generate queries that cover: official sources, technical details, and examples.
+      You create keywords that will find unique, specific information - not generic content.
+      You focus on: product names, company names, dates, technical specs, quotes, statistics.
+      
+      STRICT RULES:
+      - Generate EXACTLY 3 keywords - no more, no less
+      - Each keyword must be specific to the ONE product
+      - Include site: filters for official sources when possible
+      - Use exact names, versions, dates
+      
+      GOOD: "Claude Code v2.0 official announcement site:anthropic.com"
+      BAD: "AI coding tools 2026"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # DEEP RESEARCHER - Gathers comprehensive facts
   # ═══════════════════════════════════════════════════════════════════════════
   deep_researcher:
     role: Investigative Technical Researcher
-    goal: Conduct exhaustive research - search extensively, gather ALL facts
+    goal: Conduct exhaustive research - search extensively, gather ALL facts from search results
     backstory: |
       You are a thorough investigative researcher who leaves no stone unturned.
-      tavily_search returns FULL PAGE CONTENT in raw_content field - use it!
-      Extract EVERYTHING: dates, statistics, quotes, code, specifications.
-      NEVER summarize prematurely - preserve all details for the writer.
+      You search with MANY different keywords to find all angles of a topic.
+      
+      CRITICAL: tavily_search returns FULL PAGE CONTENT in raw_content field - USE IT!
+      
+      STRICT EXTRACTION RULES:
+      - Read the raw_content field from each search result
+      - Extract: specific dates, exact figures, direct quotes, company names, product specs
+      - Extract: code examples, installation commands, API references
+      - Extract: pricing information, benchmarks, compatibility details
+      - You do NOT limit yourself - research until you have complete coverage
+      - NEVER summarize prematurely - preserve ALL details for the writer
     tools:
       - tavily_search
 
@@ -73,55 +123,101 @@ agents:
   # ═══════════════════════════════════════════════════════════════════════════
   content_writer:
     role: Dynamic Content Writer and Developer Advocate
-    goal: Write engaging, comprehensive blog posts that include ALL researched information
+    goal: Write ONE focused blog post about ONE specific product/topic using Gutenberg blocks
     backstory: |
+      ═══════════════════════════════════════════════════════════════════════════
+      GUTENBERG BLOCK FORMAT - MANDATORY
+      ═══════════════════════════════════════════════════════════════════════════
+      
       You MUST use correct Gutenberg block format where content is inside HTML tags.
-      You write about ONE topic only - never combine multiple topics.
-      You use British English (colour, centre, organisation).
+      EVERY piece of content must be wrapped in proper WordPress Gutenberg blocks.
       
-      CRITICAL: Include ALL information from research - nothing should be lost!
+      REQUIRED BLOCKS:
       
-      STYLE ADAPTATION (current: {{style}}):
+      <!-- wp:paragraph -->
+      <p>Your paragraph text here.</p>
+      <!-- /wp:paragraph -->
+      
+      <!-- wp:heading {"level":2} -->
+      <h2>Section Heading</h2>
+      <!-- /wp:heading -->
+      
+      <!-- wp:code -->
+      <pre class="wp-block-code"><code>pip install langchain
+      from langchain import Agent</code></pre>
+      <!-- /wp:code -->
+      
+      <!-- wp:list -->
+      <ul>
+      <li>Feature one</li>
+      <li>Feature two</li>
+      </ul>
+      <!-- /wp:list -->
+      
+      <!-- wp:table -->
+      <figure class="wp-block-table"><table><thead><tr><th>Feature</th><th>Value</th></tr></thead><tbody><tr><td>Price</td><td>$20/month</td></tr></tbody></table></figure>
+      <!-- /wp:table -->
+      
+      <!-- wp:quote -->
+      <blockquote class="wp-block-quote"><p>Quote text here.</p><cite>Source</cite></blockquote>
+      <!-- /wp:quote -->
+      
+      <!-- wp:separator -->
+      <hr class="wp-block-separator"/>
+      <!-- /wp:separator -->
+      
+      ═══════════════════════════════════════════════════════════════════════════
+      CONTENT RULES
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      - ONE topic only - never combine multiple topics
+      - British English (colour, centre, organisation)
+      - Include ALL information from research - nothing should be lost!
+      
+      ═══════════════════════════════════════════════════════════════════════════
+      STYLE ADAPTATION (current: {{style}})
+      ═══════════════════════════════════════════════════════════════════════════
       
       IF style = "coding":
         - Lead with code examples and installation commands
         - Include imports, usage examples, and practical implementation
-        - Use code blocks extensively
+        - Use <!-- wp:code --> blocks extensively
         - Add inline code for function/class names
       
       IF style = "news":
         - Lead with the most important news/announcement
-        - Include quotes from official sources
+        - Include quotes from official sources using <!-- wp:quote -->
         - Add statistics and data points
         - Include timeline of events
-        - Use blockquotes for citations
       
       IF style = "interactive":
-        - Use tables for comparisons and specifications
-        - Include bullet point lists for features
-        - Add diagrams descriptions (Mermaid syntax if possible)
-        - Use headers to create scannable structure
-        - Include summary boxes
+        - Use <!-- wp:table --> for comparisons and specifications
+        - Include <!-- wp:list --> for features
+        - Add diagrams descriptions
+        - Use <!-- wp:heading --> to create scannable structure
       
       IF style = "comprehensive":
         - Combine ALL above styles
         - Start with news/announcement
         - Include code examples
         - Add tables and diagrams
-        - Use interactive elements throughout
+        - Use all block types throughout
       
-      MANDATORY ELEMENTS (ALL STYLES):
-      - Include EVERY fact from research
-      - Use tables for any comparative data
-      - Use bullet lists for features/specifications
-      - Include all dates, versions, and statistics
-      - Add code examples where relevant
-      - Use blockquotes for official quotes
+      ═══════════════════════════════════════════════════════════════════════════
+      TITLE RULES (SEO-CRITICAL)
+      ═══════════════════════════════════════════════════════════════════════════
       
-      TITLE RULES (SEO-CRITICAL):
-      - Include SPECIFIC names: tool, library, framework, or version
+      - Include SPECIFIC name of the ONE product/tool
+      - Include version number if available
+      - 6-10 words, SEO-optimized
       - NEVER use generic words like "Insights", "Findings", "Overview", "Guide"
-      - GOOD: "LangChain 0.2 Agents Tutorial with Python Code Examples"
+      - NEVER combine multiple products in title
+      
+      GOOD: "Claude Code v2.0 Time-Travel Debugging Tutorial"
+      GOOD: "LangChain 0.3 Agents with Python Code Examples"
+      
+      BAD: "AI Tools from OpenAI, Anthropic, and Google"
+      BAD: "The Future of Coding Assistants"
 
   # ═══════════════════════════════════════════════════════════════════════════
   # PUBLISHER - Publishes to WordPress
@@ -131,21 +227,23 @@ agents:
     goal: Validate and publish blog post to WordPress
     backstory: |
       You extract title and content from structured input and publish to WordPress.
-      You validate that content is in Gutenberg block format.
+      
+      VALIDATION REQUIREMENTS:
+      - Content MUST contain Gutenberg blocks (<!-- wp: -->)
+      - If no Gutenberg blocks found, REJECT the content
+      - Verify title is about ONE specific product
+      - Verify content is not empty
     tools:
       - create_wp_post
 
 steps:
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 1: Gather topics based on the provided topic parameter
+  # STEP 0: URL MODE - Extract content from URL (if url is set)
+  # If url variable is set, this step extracts content and creates a single topic
   # ─────────────────────────────────────────────────────────────────────────────
-  - include: ai-topic-gatherer
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 2: Filter duplicates (checks against existing WordPress posts)
-  # ─────────────────────────────────────────────────────────────────────────────
-  - name: filter_duplicates
-    agent: duplicate_checker
+  - name: extract_url_content
+    agent: url_content_extractor
+    condition: "{{url}}"
     output_variable: unique_topics
     output_json:
       type: array
@@ -159,16 +257,91 @@ steps:
           content:
             type: string
     action: |
-      {{previous_output}}
+      ═══════════════════════════════════════════════════════════════════════════
+      URL MODE - EXTRACT CONTENT FROM: {{url}}
+      ═══════════════════════════════════════════════════════════════════════════
       
-      For EACH topic from the list above:
-      1. Call check_duplicate with the topic title
-      2. If NOT a duplicate (status is UNIQUE), add to the unique list
+      1. Call tavily_extract with the URL: {{url}}
+      2. Read the extracted content
+      3. Create a SINGLE topic from the extracted content
       
-      Return a JSON array of unique topics with their URLs and content.
+      Return a JSON array with ONE topic:
+      - title: Extract the main topic/title from the content (specific product/version)
+      - url: {{url}}
+      - content: The extracted content (key points, features, details)
+      
+      TITLE RULES:
+      - ONE product per title
+      - Include version numbers
+      - Be specific (e.g., "Claude Code with Ollama Local LLMs")
+      - NEVER use generic titles
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEPS 3-6: For EACH unique topic - research, write, publish (PARALLEL)
+  # STEP 1: TOPIC MODE - Discover topics AND filter duplicates in ONE step
+  # This step is skipped if URL mode already populated unique_topics
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: discover_unique_topics
+    agent: topic_discoverer
+    condition: "not {{url}}"
+    output_variable: unique_topics
+
+    output_json:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+            description: Specific topic title with company/product name and version
+          url:
+            type: string
+            description: Source URL for this topic
+          content:
+            type: string
+            description: Detailed description including key features and use cases
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      MANDATORY SEARCH TOPIC: "{{topic}}"
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      You MUST search for: "{{topic}}"
+      DATE: {{today}}
+      MAX TOPICS: {{max_topics}}
+      
+      STEP 1: SEARCH
+      - Call tavily_search with EXACTLY: "{{topic}}"
+      - Read the FULL content from each result (raw_content field)
+      
+      STEP 2: EXTRACT INDIVIDUAL TOPICS
+      CRITICAL RULES:
+      - Each topic must be about ONE specific product/feature
+      - NEVER combine multiple products (e.g., "Tools from A, B, and C")
+      - Include version numbers when available
+      - Be specific: company name + product name + version
+      
+      STEP 3: DEDUPLICATE BEFORE RETURNING
+      For each potential topic:
+      - Call check_duplicate with the exact title
+      - Only include if status is UNIQUE
+      - Skip if marked as DUPLICATE
+      
+      GOOD TITLES (ONE product each):
+      - "Claude Code v2.0 Release with Time-Travel Debugging"
+      - "GitHub Copilot G3 with GPT-5.2 Codex"
+      - "Cursor AI 2026 Pro Features"
+      
+      BAD TITLES (NEVER USE):
+      - "New AI Tools from Reclaim, Zapier, and Sybill"
+      - "Microsoft and Google AI Updates"
+      - "Top 5 AI Coding Assistants"
+      
+      Return up to {{max_topics}} UNIQUE topics with:
+      - title: Specific product name + version
+      - url: Source URL
+      - content: Detailed description (key features, use cases)
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEPS 2-5: For EACH unique topic - research, write, publish (PARALLEL)
   # Each iteration has ISOLATED context - no cross-contamination
   # ─────────────────────────────────────────────────────────────────────────────
   - loop:
@@ -176,7 +349,7 @@ steps:
       parallel: true
       max_workers: 4
     steps:
-      # Step 3a: Generate keywords for THIS topic
+      # Step 2a: Generate keywords for THIS topic
       - name: generate_keywords
         agent: keyword_generator
         output_json:
@@ -184,23 +357,36 @@ steps:
           properties:
             topic:
               type: string
+              description: The specific topic being researched
             keywords:
               type: array
               items:
                 type: string
+              description: List of EXACTLY 3 specific search queries
         action: |
           TOPIC: {{item.title}}
           SOURCE: {{item.url}}
           CONTEXT: {{item.content}}
           
-          Generate EXACTLY {{keyword_count}} specific search queries to research this topic.
+          Generate EXACTLY {{keyword_count}} specific search queries to research this ONE topic.
+          DO NOT generate more than {{keyword_count}} queries.
           
-          Include queries for:
-          1. Official announcements and documentation (site:official-domain)
+          INCLUDE QUERIES FOR:
+          1. Official announcements and documentation (use site: filter)
+             Example: "Claude Code v2.0 official site:anthropic.com"
           2. Technical specifications, features, and capabilities
+             Example: "Claude Code v2.0 technical specifications features"
           3. Code examples, implementations, or tutorials
+             Example: "Claude Code v2.0 Python tutorial examples"
+          
+          STRICT RULES:
+          - Be SPECIFIC - use exact names, versions, dates
+          - Focus ONLY on this ONE product: {{item.title}}
+          - DO NOT generate generic queries about AI or coding tools
+        expected_output: >
+          A JSON object with topic name and keywords array containing exactly 3 search queries
 
-      # Step 3b: Research THIS topic EXHAUSTIVELY
+      # Step 2b: Research THIS topic EXHAUSTIVELY
       - name: deep_research
         agent: deep_researcher
         output_json:
@@ -208,70 +394,50 @@ steps:
           properties:
             topic:
               type: string
-            all_facts:
-              type: array
-              items:
-                type: object
-                properties:
-                  category:
-                    type: string
-                  facts:
-                    type: array
-                    items:
-                      type: string
-            code_examples:
-              type: array
-              items:
-                type: string
-            statistics:
-              type: array
-              items:
-                type: string
-            quotes:
-              type: array
-              items:
-                type: string
-            sources:
-              type: array
-              items:
-                type: string
+              description: The topic that was researched
+            research:
+              type: string
+              description: Comprehensive research findings including facts, quotes, statistics, code examples, and sources
         action: |
           TOPIC: {{previous_output.topic}}
           SEARCH KEYWORDS: {{previous_output.keywords}}
           
-          Perform EXACTLY {{keyword_count}} searches using the keywords above.
+          CONDUCT FOCUSED RESEARCH (EXACTLY {{keyword_count}} SEARCHES):
           
-          CRITICAL: Extract and preserve EVERYTHING from raw_content:
+          1. SEARCH EFFICIENTLY:
+             - Use tavily_search with EACH keyword from the list
+             - tavily_search returns FULL PAGE CONTENT in raw_content field
+             - LIMIT: Perform EXACTLY {{keyword_count}} searches - no more
+             - Extract maximum information from each result
           
-          1. ALL FACTS - Organize by category:
-             - Features and capabilities
+          2. EXTRACT FROM RAW_CONTENT FIELD:
+             - Read the raw_content field from each search result
+             - This contains the FULL article text - use it!
+             - Extract content from official sources, news sites, blogs
+          
+          3. EXTRACT COMPREHENSIVE DATA:
+             - Exact dates and timelines
+             - Specific numbers, statistics, percentages
+             - Direct quotes with attribution
              - Technical specifications
-             - Pricing and availability
-             - Release dates and versions
-             - Compatibility and requirements
+             - Company and product names
+             - Pricing information if available
+             - Code examples (installation, imports, usage)
+             - API references and configuration
           
-          2. CODE EXAMPLES - Extract any:
-             - Installation commands
-             - Import statements
-             - Usage examples
-             - Configuration snippets
+          4. VERIFY INFORMATION:
+             - Cross-reference facts across multiple sources
+             - Note any conflicting information
           
-          3. STATISTICS - Extract all numbers:
-             - Performance metrics
-             - Pricing
-             - User counts
-             - Benchmarks
+          CRITICAL: Focus ONLY on {{previous_output.topic}}
+          - Ignore information about other products
+          - Extract ONLY facts about this ONE product
           
-          4. QUOTES - Extract official statements:
-             - Company announcements
-             - Developer comments
-             - Expert opinions
-          
-          5. SOURCES - Track all URLs for citations
-          
-          DO NOT SUMMARIZE - preserve all details for the writer!
+          DO NOT SUMMARIZE - preserve ALL details for the writer!
+        expected_output: >
+          A JSON object with topic name and comprehensive research findings
 
-      # Step 3c: Write the article with ALL collected information
+      # Step 2c: Write the article with ALL collected information
       - name: write_article
         agent: content_writer
         output_json:
@@ -279,74 +445,101 @@ steps:
           properties:
             title:
               type: string
+              description: SEO-optimized title (6-10 words, ONE product name + version)
             content:
               type: string
+              description: Full article in Gutenberg block format
         action: |
           STYLE MODE: {{style}}
           
           RESEARCH DATA (include ALL of this in the article):
           {{previous_output}}
           
-          Write a {{style}} blog post using Gutenberg blocks.
+          ═══════════════════════════════════════════════════════════════════════════
+          WRITE A {{style}} BLOG POST USING GUTENBERG BLOCKS
+          ═══════════════════════════════════════════════════════════════════════════
           
           MANDATORY STRUCTURE:
           
-          1. INTRODUCTION (1-2 paragraphs)
-             - What is this about?
+          1. TITLE
+             - About ONE specific product from the research
+             - Include product name and version if available
+             - 6-10 words, SEO-optimized
+             - NO combining multiple products
+          
+          2. INTRODUCTION (1-2 paragraphs)
+             - What is this product?
              - Why does it matter?
+             - Use <!-- wp:paragraph --> blocks
           
-          2. KEY FEATURES/ANNOUNCEMENTS (use table or bullet list)
+          3. KEY FEATURES/ANNOUNCEMENTS
              - Include ALL features from research
-             - Use a comparison table if applicable
+             - Use <!-- wp:table --> for comparisons
+             - Use <!-- wp:list --> for feature lists
           
-          3. TECHNICAL DETAILS (if style includes coding)
-             - Installation commands in code blocks
+          4. TECHNICAL DETAILS (if style includes coding)
+             - Installation commands in <!-- wp:code --> blocks
              - Usage examples with full code
              - Configuration snippets
+             - API references
           
-          4. STATISTICS & DATA (use table)
+          5. STATISTICS & DATA
              - Include ALL numbers from research
-             - Format as a clear table
+             - Format as <!-- wp:table -->
           
-          5. QUOTES & SOURCES (use blockquotes)
-             - Include official quotes
+          6. QUOTES & SOURCES
+             - Include official quotes using <!-- wp:quote -->
              - Cite sources
           
-          6. CONCLUSION
+          7. CONCLUSION
              - Summary of key points
              - What's next / implications
           
-          GUTENBERG BLOCKS TO USE:
-          - <!-- wp:paragraph --> for text
-          - <!-- wp:heading --> for headers
-          - <!-- wp:code --> for code blocks
-          - <!-- wp:table --> for data tables
-          - <!-- wp:list --> for bullet points
-          - <!-- wp:quote --> for blockquotes
-          - <!-- wp:separator --> for section breaks
+          ═══════════════════════════════════════════════════════════════════════════
+          GUTENBERG BLOCKS (MANDATORY)
+          ═══════════════════════════════════════════════════════════════════════════
           
-          OUTPUT FORMAT:
-          - title: SEO-optimized title (6-10 words, include tool/product name)
-          - content: Full Gutenberg block formatted content with ALL research included
+          <!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->
+          <!-- wp:heading {"level":2} --><h2>Heading</h2><!-- /wp:heading -->
+          <!-- wp:code --><pre class="wp-block-code"><code>code</code></pre><!-- /wp:code -->
+          <!-- wp:table --><figure class="wp-block-table"><table>...</table></figure><!-- /wp:table -->
+          <!-- wp:list --><ul><li>item</li></ul><!-- /wp:list -->
+          <!-- wp:quote --><blockquote class="wp-block-quote"><p>quote</p></blockquote><!-- /wp:quote -->
+          
+          INCLUDE ALL INFORMATION FROM RESEARCH - NOTHING SHOULD BE LOST!
 
-      # Step 3d: Publish to WordPress
+      # Step 2d: Publish to WordPress
       - name: publish_article
         agent: publisher
         action: |
-          ARTICLE:
+          ARTICLE TO PUBLISH:
+          
           Title: {{previous_output.title}}
           Content: {{previous_output.content}}
           
-          Call create_wp_post with:
+          VALIDATION BEFORE PUBLISHING:
+          1. Content contains Gutenberg blocks (<!-- wp: -->)?
+          2. Title is about ONE specific product?
+          3. Content is not empty?
+          
+          If validation passes, call create_wp_post with:
           - title: the title above
           - content: the content above
           - status: publish
           - category: {{wp_category}}
           - author: {{wp_author}}
           
-          Report the post ID.
+          Report the post ID on success.
 
-# Enable context management with truncation (backup safeguard)
+# Enable smart context management with aggressive summarization for parallel workflows
 context:
   enabled: true
-  max_tool_output_tokens: 5000
+  auto_compact: true
+  compact_threshold: 0.6
+  strategy: smart
+  llm_summarize: true
+  smart_tool_summarize: true
+  max_tool_output_tokens: 2000
+  tool_summarize_limits:
+    tavily_search: 1000
+    tavily_extract: 1500

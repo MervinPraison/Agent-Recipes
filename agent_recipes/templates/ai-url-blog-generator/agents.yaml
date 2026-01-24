@@ -1,0 +1,416 @@
+framework: praisonai
+topic: "URL Article"
+
+# =============================================================================
+# URL BLOG GENERATOR - Full Research Pipeline from URL
+# =============================================================================
+# 
+# USAGE:
+#   praisonai recipe run ai-url-blog-generator --var url="https://example.com/article"
+#   
+# FLOW:
+#   1. Extract full content from URL using tavily_extract
+#   2. Generate search keywords from extracted content
+#   3. Research topic using generated keywords (tavily_search)
+#   4. Write comprehensive article using ALL gathered information
+#   5. Publish to WordPress
+#
+# =============================================================================
+
+variables:
+  url: ""  # ← SET THIS to your article URL
+  style: "comprehensive"  # coding | news | interactive | comprehensive
+  keyword_count: 3
+  wp_category: "AI"
+  wp_author: "praison"
+
+agents:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # URL CONTENT EXTRACTOR - Extracts FULL content from URL
+  # ═══════════════════════════════════════════════════════════════════════════
+  url_extractor:
+    role: URL Content Extractor
+    goal: Extract FULL content from a provided URL and identify key topics for research
+    backstory: |
+      You extract content from URLs using tavily_extract.
+      You read the FULL extracted content and identify:
+      - Main topic/product name with version
+      - Key features and capabilities
+      - Technical details
+      - Important facts, dates, statistics
+      
+      CRITICAL: Pass through the FULL content - do NOT summarize!
+      The content will be used for keyword generation and research.
+    tools:
+      - tavily_extract
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # KEYWORD GENERATOR - Creates search queries from extracted content
+  # ═══════════════════════════════════════════════════════════════════════════
+  keyword_generator:
+    role: Research Keyword Specialist
+    goal: Generate specific search keywords from extracted URL content for deeper research
+    backstory: |
+      You analyze extracted content and generate targeted search queries.
+      You create keywords that will find:
+      - Official documentation and announcements
+      - Technical specifications and tutorials
+      - Code examples and implementations
+      
+      STRICT RULES:
+      - Generate EXACTLY 3 keywords - no more, no less
+      - Each keyword must be specific to the product/topic
+      - Include site: filters for official sources when possible
+      - Use exact names, versions, dates from the content
+      
+      GOOD: "Claude Code v2.0 official documentation site:anthropic.com"
+      BAD: "AI coding tools 2026"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DEEP RESEARCHER - Gathers additional information using keywords
+  # ═══════════════════════════════════════════════════════════════════════════
+  deep_researcher:
+    role: Investigative Technical Researcher
+    goal: Conduct exhaustive research using generated keywords to gather ALL facts
+    backstory: |
+      You are a thorough investigative researcher.
+      You search with the provided keywords to find additional information.
+      
+      CRITICAL: tavily_search returns FULL PAGE CONTENT in raw_content field - USE IT!
+      
+      EXTRACTION RULES:
+      - Read the raw_content field from each search result
+      - Extract: specific dates, exact figures, direct quotes
+      - Extract: code examples, installation commands, API references
+      - Extract: pricing information, benchmarks, compatibility details
+      - NEVER summarize prematurely - preserve ALL details for the writer
+    tools:
+      - tavily_search
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONTENT WRITER - Writes article using ALL gathered information
+  # ═══════════════════════════════════════════════════════════════════════════
+  content_writer:
+    role: Technical Content Writer and Developer Advocate
+    goal: Write a comprehensive blog post using ALL extracted and researched information
+    backstory: |
+      ═══════════════════════════════════════════════════════════════════════════
+      GUTENBERG BLOCK FORMAT - MANDATORY
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      You MUST use correct Gutenberg block format:
+      
+      <!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->
+      <!-- wp:heading {"level":2} --><h2>Heading</h2><!-- /wp:heading -->
+      <!-- wp:code --><pre class="wp-block-code"><code>code</code></pre><!-- /wp:code -->
+      <!-- wp:list --><ul><li>item</li></ul><!-- /wp:list -->
+      <!-- wp:table --><figure class="wp-block-table"><table>...</table></figure><!-- /wp:table -->
+      <!-- wp:quote --><blockquote class="wp-block-quote"><p>quote</p></blockquote><!-- /wp:quote -->
+      
+      CONTENT RULES:
+      - ONE product/topic per article
+      - British English (colour, centre, organisation)
+      - Include ALL information from BOTH extracted content AND research
+      - SEO title: 6-10 words, specific product name + version
+      - NEVER use generic titles like "Overview" or "Guide"
+      
+      STYLE ADAPTATION (current: {{style}}):
+      
+      IF style = "coding":
+        - Lead with code examples and installation commands
+        - Use <!-- wp:code --> blocks extensively
+      
+      IF style = "news":
+        - Lead with the most important announcement
+        - Include quotes using <!-- wp:quote -->
+      
+      IF style = "comprehensive":
+        - Combine ALL styles
+        - Include code, tables, lists, quotes
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PUBLISHER - Publishes to WordPress with validation
+  # ═══════════════════════════════════════════════════════════════════════════
+  publisher:
+    role: WordPress Publisher
+    goal: Validate and publish blog post to WordPress
+    backstory: |
+      You publish validated content to WordPress.
+      
+      VALIDATION REQUIREMENTS:
+      - Content MUST contain Gutenberg blocks (<!-- wp: -->)
+      - Title must be specific (product name + version)
+      - Content must not be empty
+    tools:
+      - create_wp_post
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 1: Extract FULL content from URL
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: extract_url
+    agent: url_extractor
+    output_variable: extracted_content
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: Main topic/product name with version
+        content:
+          type: string
+          description: FULL extracted content - do NOT summarize
+        url:
+          type: string
+        key_points:
+          type: array
+          items:
+            type: string
+          description: Key features, capabilities, and facts from the content
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      EXTRACT FULL CONTENT FROM URL: {{url}}
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      1. Call tavily_extract with the URL: {{url}}
+      2. Read the FULL extracted content from the response
+      3. Identify the main topic/product name (include version if available)
+      4. Extract key points for keyword generation
+      
+      CRITICAL: Pass through the FULL content - do NOT summarize!
+      
+      Return:
+      - topic: Main topic/title (specific product name + version)
+      - content: The FULL extracted content (preserve everything)
+      - url: {{url}}
+      - key_points: Array of key features, capabilities, facts for keyword generation
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 2: Generate search keywords from extracted content
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: generate_keywords
+    agent: keyword_generator
+    output_variable: keywords_data
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: The topic being researched
+        keywords:
+          type: array
+          items:
+            type: string
+          description: EXACTLY 3 specific search queries
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      GENERATE SEARCH KEYWORDS FROM EXTRACTED CONTENT
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      TOPIC: {{extracted_content.topic}}
+      SOURCE URL: {{extracted_content.url}}
+      
+      KEY POINTS FROM CONTENT:
+      {{extracted_content.key_points}}
+      
+      FULL CONTENT EXCERPT:
+      {{extracted_content.content}}
+      
+      Generate EXACTLY {{keyword_count}} specific search queries to research this topic further.
+      
+      INCLUDE QUERIES FOR:
+      1. Official announcements and documentation (use site: filter if possible)
+         Example: "{{extracted_content.topic}} official site:example.com"
+      2. Technical specifications, features, and capabilities
+         Example: "{{extracted_content.topic}} technical specifications features"
+      3. Code examples, implementations, or tutorials
+         Example: "{{extracted_content.topic}} Python tutorial examples"
+      
+      STRICT RULES:
+      - Be SPECIFIC - use exact names, versions, dates from the content
+      - Focus ONLY on this ONE product: {{extracted_content.topic}}
+      - DO NOT generate generic queries
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 3: Research topic using generated keywords
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: deep_research
+    agent: deep_researcher
+    output_variable: research_data
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: The topic that was researched
+        original_content:
+          type: string
+          description: The original extracted content from the URL
+        research:
+          type: string
+          description: Additional research findings from searches
+        all_facts:
+          type: array
+          items:
+            type: string
+          description: All facts, statistics, quotes gathered
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      RESEARCH TOPIC USING GENERATED KEYWORDS
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      TOPIC: {{keywords_data.topic}}
+      SEARCH KEYWORDS: {{keywords_data.keywords}}
+      
+      ORIGINAL EXTRACTED CONTENT (preserve this):
+      {{extracted_content.content}}
+      
+      CONDUCT FOCUSED RESEARCH:
+      
+      1. SEARCH with each keyword:
+         - Use tavily_search with EACH keyword from the list
+         - Perform EXACTLY {{keyword_count}} searches
+         - tavily_search returns FULL PAGE CONTENT in raw_content field - USE IT!
+      
+      2. EXTRACT from raw_content field:
+         - Specific dates and timelines
+         - Exact numbers, statistics, percentages
+         - Direct quotes with attribution
+         - Technical specifications
+         - Code examples (installation, imports, usage)
+         - API references and configuration
+      
+      3. COMBINE with original content:
+         - Keep the original extracted content
+         - Add new information from research
+         - Note any additional details found
+      
+      Return:
+      - topic: {{keywords_data.topic}}
+      - original_content: The full original extracted content
+      - research: Additional findings from the searches
+      - all_facts: Array of all facts, statistics, quotes gathered
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 4: Write comprehensive article using ALL information
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: write_article
+    agent: content_writer
+    output_variable: article
+    output_json:
+      type: object
+      properties:
+        title:
+          type: string
+          description: SEO-optimized title (6-10 words, product name + version)
+        content:
+          type: string
+          description: Full article in Gutenberg block format
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      WRITE {{style}} BLOG POST USING ALL GATHERED INFORMATION
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      STYLE MODE: {{style}}
+      SOURCE URL: {{extracted_content.url}}
+      
+      TOPIC: {{research_data.topic}}
+      
+      ORIGINAL EXTRACTED CONTENT:
+      {{research_data.original_content}}
+      
+      ADDITIONAL RESEARCH:
+      {{research_data.research}}
+      
+      KEY FACTS:
+      {{research_data.all_facts}}
+      
+      ═══════════════════════════════════════════════════════════════════════════
+      MANDATORY STRUCTURE
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      1. TITLE
+         - About the specific product from the content
+         - Include product name and version if available
+         - 6-10 words, SEO-optimized
+         - NEVER use generic words like "Overview", "Guide", "Insights"
+      
+      2. INTRODUCTION (1-2 paragraphs)
+         - What is this product?
+         - Why does it matter?
+         - Use <!-- wp:paragraph --> blocks
+      
+      3. KEY FEATURES/CAPABILITIES
+         - Include ALL features from original content AND research
+         - Use <!-- wp:table --> for comparisons
+         - Use <!-- wp:list --> for feature lists
+      
+      4. TECHNICAL DETAILS (if style includes coding)
+         - Installation commands in <!-- wp:code --> blocks
+         - Usage examples with full code
+         - Configuration snippets
+      
+      5. STATISTICS & DATA
+         - Include ALL numbers from research
+         - Format as <!-- wp:table --> if applicable
+      
+      6. QUOTES & SOURCES (if available)
+         - Include official quotes using <!-- wp:quote -->
+         - Cite sources
+      
+      7. CONCLUSION
+         - Summary of key points
+         - What's next / implications
+      
+      ═══════════════════════════════════════════════════════════════════════════
+      GUTENBERG BLOCKS (MANDATORY)
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      <!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->
+      <!-- wp:heading {"level":2} --><h2>Heading</h2><!-- /wp:heading -->
+      <!-- wp:code --><pre class="wp-block-code"><code>code</code></pre><!-- /wp:code -->
+      <!-- wp:table --><figure class="wp-block-table"><table>...</table></figure><!-- /wp:table -->
+      <!-- wp:list --><ul><li>item</li></ul><!-- /wp:list -->
+      <!-- wp:quote --><blockquote class="wp-block-quote"><p>quote</p></blockquote><!-- /wp:quote -->
+      
+      INCLUDE ALL INFORMATION - NOTHING SHOULD BE LOST!
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 5: Publish to WordPress
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: publish
+    agent: publisher
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      PUBLISH ARTICLE TO WORDPRESS
+      ═══════════════════════════════════════════════════════════════════════════
+      
+      Title: {{article.title}}
+      Content: {{article.content}}
+      
+      VALIDATION BEFORE PUBLISHING:
+      1. Content contains Gutenberg blocks (<!-- wp: -->)?
+      2. Title is specific (product name)?
+      3. Content is not empty?
+      
+      If validation passes, call create_wp_post with:
+      - title: the title above
+      - content: the content above
+      - status: publish
+      - category: {{wp_category}}
+      - author: {{wp_author}}
+      
+      Report the post ID on success.
+
+# Enable smart context management with LLM summarization
+context:
+  enabled: true
+  auto_compact: true
+  compact_threshold: 0.7
+  strategy: smart
+  llm_summarize: true
+  smart_tool_summarize: true
+  max_tool_output_tokens: 8000
+  tool_summarize_limits:
+    tavily_search: 2000
+    tavily_extract: 3000

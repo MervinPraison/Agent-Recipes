@@ -1,0 +1,37 @@
+# ============================================================================
+# AI VIDEO GENERATION RECIPE
+# ============================================================================
+# Generate videos using VideoAgent.
+#
+# Usage:
+#   praisonai recipe run ai-generate-video --var prompt="A cat playing with yarn"
+#   praisonai recipe run ai-generate-video --var prompt="Sunset timelapse" --var output=sunset.mp4
+#
+# Supported Providers:
+#   - OpenAI: openai/sora-2, openai/sora-2-pro
+#   - Gemini: gemini/veo-3.0-generate-preview
+#   - RunwayML: runwayml/gen4_turbo
+# ============================================================================
+
+framework: praisonai
+name: ai-generate-video
+process: sequential
+
+variables:
+  prompt: "A serene sunset over the ocean with gentle waves"
+  output: generated_video.mp4
+
+agents:
+  director:
+    agent: VideoAgent
+    llm: openai/sora-2
+    role: Video Generator
+    goal: Create high-quality videos from text descriptions
+
+steps:
+  - name: generate_video
+    agent: director
+    action: generate
+    prompt: "{{prompt}}"
+    output: "{{output}}"
+    wait: true

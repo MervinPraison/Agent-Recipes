@@ -157,4 +157,15 @@ steps:
   # ─────────────────────────────────────────────────────────────────────────────
   - include: wordpress-publisher
 
-context: true
+# Enable smart context management with aggressive summarization for parallel workflows
+context:
+  enabled: true
+  auto_compact: true
+  compact_threshold: 0.6
+  strategy: smart
+  llm_summarize: true
+  smart_tool_summarize: true
+  max_tool_output_tokens: 2000
+  tool_summarize_limits:
+    tavily_search: 1000
+    tavily_extract: 1500

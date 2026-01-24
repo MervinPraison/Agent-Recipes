@@ -1,0 +1,22 @@
+name: ai-document-ocr
+version: "1.0.0"
+description: Extract text from documents and images using OCRAgent
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - ocr
+  - document
+  - text-extraction
+  - pdf
+
+requires:
+  env:
+    - MISTRAL_API_KEY
+  packages:
+    - litellm
+
+cli:
+  command: praisonai recipe run ai-document-ocr
+  examples:
+    - praisonai recipe run ai-document-ocr --var source="document.pdf"
+    - praisonai recipe run ai-document-ocr --var source="https://example.com/doc.pdf"

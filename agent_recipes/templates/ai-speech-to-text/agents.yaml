@@ -1,0 +1,36 @@
+# ============================================================================
+# AI SPEECH-TO-TEXT RECIPE
+# ============================================================================
+# Transcribe audio to text using AudioAgent.
+#
+# Usage:
+#   praisonai recipe run ai-speech-to-text --var audio=recording.mp3
+#   praisonai recipe run ai-speech-to-text --var audio=meeting.wav --var language=en
+#
+# Supported Providers:
+#   - OpenAI: openai/whisper-1
+#   - Groq: groq/whisper-large-v3
+#   - Deepgram: deepgram/nova-2
+# ============================================================================
+
+framework: praisonai
+name: ai-speech-to-text
+process: sequential
+
+variables:
+  audio: input.mp3
+  language: en
+
+agents:
+  transcriber:
+    agent: AudioAgent
+    llm: openai/whisper-1
+    role: Speech-to-Text Agent
+    goal: Accurately transcribe audio to text
+
+steps:
+  - name: transcribe_audio
+    agent: transcriber
+    action: transcribe
+    input: "{{audio}}"
+    language: "{{language}}"

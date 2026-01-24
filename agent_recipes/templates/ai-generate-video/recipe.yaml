@@ -1,0 +1,22 @@
+name: ai-generate-video
+version: "1.0.0"
+description: Generate videos using VideoAgent
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - video
+  - generation
+  - sora
+  - media
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  packages:
+    - litellm
+
+cli:
+  command: praisonai recipe run ai-generate-video
+  examples:
+    - praisonai recipe run ai-generate-video --var prompt="A cat playing with yarn"
+    - praisonai recipe run ai-generate-video --var prompt="Sunset timelapse" --var output=sunset.mp4

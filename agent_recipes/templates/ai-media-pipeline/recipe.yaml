@@ -1,0 +1,26 @@
+name: ai-media-pipeline
+version: "1.0.0"
+description: Complete multi-agent media pipeline from audio to video
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - pipeline
+  - multi-agent
+  - audio
+  - video
+  - image
+  - media
+
+requires:
+  env:
+    - OPENAI_API_KEY
+    - TAVILY_API_KEY
+  packages:
+    - litellm
+    - praisonai-tools
+
+cli:
+  command: praisonai recipe run ai-media-pipeline
+  examples:
+    - praisonai recipe run ai-media-pipeline --var audio_file=input.mp3
+    - praisonai recipe run ai-media-pipeline --var audio_file=podcast.mp3 --var output_dir=./output

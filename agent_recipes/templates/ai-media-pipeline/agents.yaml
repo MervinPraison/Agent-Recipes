@@ -1,0 +1,108 @@
+# ============================================================================
+# AI MEDIA PIPELINE RECIPE
+# ============================================================================
+# Complete multi-agent media pipeline demonstrating specialized agents working
+# together in a sequential workflow.
+#
+# Pipeline: STT → Research → Image → Video → TTS
+#   1. AudioAgent (STT) - Transcribe audio to text
+#   2. Agent (Research) - Research the topic using web search
+#   3. ImageAgent - Generate an image based on research
+#   4. VideoAgent - Generate a video from the concept
+#   5. AudioAgent (TTS) - Generate voiceover narration
+#
+# Usage:
+#   praisonai recipe run ai-media-pipeline --var audio_file=input.mp3
+#   praisonai recipe run ai-media-pipeline --var audio_file=podcast.mp3 --var output_dir=./output
+#
+# This recipe demonstrates:
+#   - Multiple specialized agent types in one workflow
+#   - Context passing between agents via {{previous_output}}
+#   - Sequential process execution
+# ============================================================================
+
+framework: praisonai
+name: ai-media-pipeline
+description: Complete media pipeline from audio input to video output
+process: sequential
+
+variables:
+  audio_file: input.mp3
+  output_dir: ./output
+
+agents:
+  # Agent 1: Speech-to-Text
+  transcriber:
+    agent: AudioAgent
+    llm: openai/whisper-1
+    role: Audio Transcriber
+    goal: Convert audio to accurate text
+
+  # Agent 2: Research (standard Agent with tools)
+  researcher:
+    role: Research Specialist
+    goal: Research the topic from transcription
+    tools:
+      - tavily_search
+
+  # Agent 3: Image Generation
+  image_creator:
+    agent: ImageAgent
+    llm: openai/dall-e-3
+    role: Visual Artist
+    goal: Create compelling images based on research
+
+  # Agent 4: Video Generation
+  video_creator:
+    agent: VideoAgent
+    llm: openai/sora-2
+    role: Video Producer
+    goal: Create engaging videos
+
+  # Agent 5: Text-to-Speech (Voiceover)
+  narrator:
+    agent: AudioAgent
+    llm: openai/tts-1-hd
+    role: Voice Narrator
+    goal: Create professional voiceovers
+
+steps:
+  - name: transcribe_audio
+    agent: transcriber
+    action: transcribe
+    input: "{{audio_file}}"
+
+  - name: research_topic
+    agent: researcher
+    action: |
+      Based on the transcription below, research the main topic and find 3-5 key facts:
+      
+      TRANSCRIPTION:
+      {{previous_output}}
+      
+      Provide a concise summary suitable for creating visual content.
+
+  - name: generate_image
+    agent: image_creator
+    action: generate
+    prompt: "Create a professional image representing: {{previous_output}}"
+    output: "{{output_dir}}/image.png"
+
+  - name: generate_video
+    agent: video_creator
+    action: generate
+    prompt: "Create a short video based on: {{previous_output}}"
+    output: "{{output_dir}}/video.mp4"
+    wait: true
+
+  - name: generate_voiceover
+    agent: narrator
+    action: speech
+    text: "Here's what we learned: {{previous_output}}"
+    voice: nova
+    output: "{{output_dir}}/voiceover.mp3"
+
+context:
+  enabled: true
+  auto_compact: true
+  strategy: smart

@@ -1,0 +1,23 @@
+name: ai-text-to-speech
+version: "1.0.0"
+description: Convert text to speech audio using AudioAgent
+author: PraisonAI
+license: Apache-2.0
+tags:
+  - audio
+  - tts
+  - speech
+  - voice
+
+requires:
+  env:
+    - OPENAI_API_KEY
+  packages:
+    - litellm
+
+cli:
+  command: praisonai recipe run ai-text-to-speech
+  examples:
+    - praisonai recipe run ai-text-to-speech --var text="Hello world"
+    - praisonai recipe run ai-text-to-speech --var text="Hello" --var voice=nova
+    - praisonai recipe run ai-text-to-speech --var text="Hello" --var output=hello.mp3

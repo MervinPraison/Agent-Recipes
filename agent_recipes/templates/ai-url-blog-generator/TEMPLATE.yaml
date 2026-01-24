@@ -1,0 +1,41 @@
+name: ai-url-blog-generator
+version: "2.0.0"
+description: Generate a comprehensive blog post from a URL - extracts content, generates keywords, researches topic, and publishes to WordPress
+author: praison
+license: Apache-2.0
+tags:
+  - web
+  - wordpress
+  - content
+  - url
+  - extraction
+  - research
+  - blog
+
+requires:
+  tools:
+    - tavily_extract
+    - tavily_search
+    - create_wp_post
+
+  packages:
+    - praisonai
+    - praisonai-tools
+    - praisonaiwp
+    - tavily-python
+  env:
+    - OPENAI_API_KEY
+    - TAVILY_API_KEY
+
+cli:
+  command: praisonai recipe run ai-url-blog-generator
+  examples:
+    - praisonai recipe run ai-url-blog-generator --var url="https://example.com/article"
+    - praisonai recipe run ai-url-blog-generator --var url="https://example.com/article" --var style="coding"
+    - praisonai recipe run ai-url-blog-generator --save --var url="https://example.com/article"
+
+agents: agents.yaml
+
+safety:
+  dry_run_default: false
+  overwrites_files: false
