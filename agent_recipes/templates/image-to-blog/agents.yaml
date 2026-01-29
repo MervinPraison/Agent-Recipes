@@ -1,0 +1,43 @@
+metadata:
+  name: analyze-image-research-blog
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  analyst:
+    role: Image Analyst
+    goal: Analyze the provided image using vision capabilities.
+    backstory: Skilled in interpreting visual data and extracting meaningful insights from images.
+    tools: []
+    llm: gpt-4o-mini
+
+  researcher:
+    role: Research Specialist
+    goal: Gather relevant information related to the analyzed image.
+    backstory: Expert at finding current, accurate information from web sources.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: Blog Writer
+    goal: Create a comprehensive blog post based on the analysis and research.
+    backstory: Expert at transforming complex information into engaging blog content.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyst
+    action: "Analyze the provided image at {{image_path}} using vision capabilities. Describe the main subject, key visual elements, colors, text visible, and overall composition. Extract meaningful insights from what you observe."
+    expected_output: "Detailed analysis with key features, insights, and descriptions of the image."
+
+  - agent: researcher
+    action: "Based on the image analysis: {{analyst_output}}, you MUST call the search_web tool to research related topics. Do NOT respond without calling search_web first. Return at least 5 relevant findings with titles, descriptions, and source URLs."
+    expected_output: "Raw research data with 5+ findings, each containing: title, description, source URL."
+
+  - agent: writer
+    action: "Using the image analysis: {{analyst_output}} and the research findings: {{researcher_output}}, create an engaging blog post that summarizes the insights and findings."
+    expected_output: "A well-structured blog post with introduction, key insights, and conclusion."

@@ -141,7 +141,7 @@ steps:
       CRITICAL DEDUPLICATION RULES:
       - ONE topic per product/release (e.g., only ONE "Claude Code v2.0" topic)
       - If multiple articles cover the same announcement, pick the BEST one
-      - Merge information from multiple sources into a single comprehensive topic
+      - Merge information from multiple sources into a single detailed topic
       - Different products/versions = different topics (OK: Claude v2.0 AND Cursor v2.1)
       - Same product from different sources = DUPLICATE (BAD: 3 articles about Claude v2.0)
       

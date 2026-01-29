@@ -1,0 +1,45 @@
+metadata:
+  name: blog-post-generation
+  requires:
+    env:
+      - OPENAI_API_KEY
+      - TAVILY_API_KEY
+    variables:
+      - url
+
+agents:
+  crawler:
+    role: Content Extractor
+    goal: Extract content from the provided URL
+    backstory: Expert at extracting and parsing web content from URLs.
+    tools:
+      - web_crawl
+    llm: gpt-4o-mini
+
+  researcher:
+    role: Research Specialist
+    goal: Research related topics based on the extracted content
+    backstory: Expert at finding current, accurate information from web sources.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: Blog Post Writer
+    goal: Generate a comprehensive blog post for WordPress
+    backstory: Skilled in transforming research findings into engaging and informative blog posts.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: crawler
+    action: "You MUST call the web_crawl tool to extract content from the URL: {{url}}. Do NOT respond without calling web_crawl first. Return the extracted title and main content."
+    expected_output: "Extracted content with title and main text from the URL."
+
+  - agent: researcher
+    action: "Based on the extracted content: {{crawler_output}}, you MUST call the search_web tool to research related topics. Do NOT respond without calling search_web first. Return at least 5 relevant findings with titles, descriptions, and source URLs."
+    expected_output: "Raw research data with 5+ findings, each containing: title, description, source URL."
+
+  - agent: writer
+    action: "Using the extracted content: {{crawler_output}} and the research findings: {{researcher_output}}, generate a blog post suitable for WordPress with headings, subheadings, and a conclusion."
+    expected_output: "A structured blog post with a title, introduction, body content, and conclusion."
