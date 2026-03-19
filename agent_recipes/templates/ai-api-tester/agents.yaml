@@ -1,0 +1,28 @@
+metadata:
+  name: ai-api-tester
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - api_spec
+
+agents:
+  tester:
+    role: QA Engineer
+    goal: Generate and run API test cases.
+    backstory: Test engineer who ensures API reliability.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: tester
+    action: |
+      Generate tests for API: {{api_spec}}
+      
+      Create:
+      - Positive test cases
+      - Negative test cases
+      - Edge cases
+      - Performance tests
+    expected_output: "API test suite with results."

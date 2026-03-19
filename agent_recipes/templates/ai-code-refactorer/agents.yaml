@@ -1,0 +1,64 @@
+metadata:
+  name: ai-code-refactorer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - code_path
+
+# =============================================================================
+# AI CODE REFACTORER - Refactor code using CodeAgent
+# =============================================================================
+# Uses CodeAgent for intelligent code refactoring and optimization
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Code Analyst
+    goal: Analyze code for refactoring opportunities using CodeAgent.
+    backstory: Senior developer who spots code smells and improvement areas.
+    tools:
+      - read_source_file
+    llm: gpt-4o-mini
+
+  refactorer:
+    role: Refactoring Expert
+    goal: Implement code refactoring improvements using CodeAgent.
+    backstory: Clean code advocate who transforms messy code into maintainable solutions.
+    tools:
+      - refactor_code
+      - fix_bugs
+      - optimize_performance
+      - modernize_code
+      - save_refactored
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Use read_source_file to analyze code at {{code_path}}.
+      
+      Identify:
+      - Code smells (duplication, long methods, large classes)
+      - Design pattern opportunities
+      - Naming improvements
+      - Complexity hotspots
+      - Potential bugs
+    expected_output: "Analysis with identified refactoring opportunities."
+
+  - agent: refactorer
+    action: |
+      Based on analysis: {{analyzer_output}}
+      
+      Use the CodeAgent tools:
+      1. Use fix_bugs for any identified bugs
+      2. Use optimize_performance for slow code
+      3. Use modernize_code to update patterns
+      4. Use refactor_code for the final cleanup
+      
+      Provide:
+      - Priority-ranked improvements
+      - Before/after code examples
+      - Estimated effort for each
+      - Risk assessment
+    expected_output: "Refactoring plan with refactored code."

@@ -1,0 +1,29 @@
+metadata:
+  name: ai-comment-miner
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+
+agents:
+  miner:
+    role: Comment Analyst
+    goal: Extract insights from comments and feedback.
+    backstory: Researcher who finds gold in user feedback.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: miner
+    action: |
+      Analyze comments from {{url}}.
+      
+      Extract:
+      - Common themes
+      - User pain points
+      - Feature requests
+      - Sentiment breakdown
+      - Content ideas from questions
+    expected_output: "Comment analysis with insights."

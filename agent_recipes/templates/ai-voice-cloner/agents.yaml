@@ -1,0 +1,29 @@
+metadata:
+  name: ai-voice-cloner
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - voice_sample
+      - text
+
+agents:
+  synthesizer:
+    role: Voice Technician
+    goal: Clone voice and generate speech.
+    backstory: Audio engineer working with AI voice synthesis.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: synthesizer
+    action: |
+      Clone voice from {{voice_sample}}.
+      Generate speech: {{text}}
+      
+      Ensure:
+      - Natural prosody
+      - Proper pacing
+      - Clear pronunciation
+    expected_output: "Audio file with cloned voice."

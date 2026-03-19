@@ -1,0 +1,29 @@
+metadata:
+  name: ai-brief-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - project_info
+
+agents:
+  writer:
+    role: Brief Writer
+    goal: Create comprehensive project briefs.
+    backstory: Project manager who writes clear requirement docs.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: writer
+    action: |
+      Create brief from: {{project_info}}
+      
+      Include:
+      - Project overview
+      - Goals and objectives
+      - Target audience
+      - Deliverables
+      - Timeline
+      - Success metrics
+    expected_output: "Complete project brief document."

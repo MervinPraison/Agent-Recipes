@@ -1,0 +1,81 @@
+metadata:
+  name: ai-social-media-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - platforms
+
+# =============================================================================
+# AI SOCIAL MEDIA GENERATOR - Create platform-optimized social posts
+# =============================================================================
+# 
+# Stage 1: researcher - Research topic and trends
+# Stage 2: creator - Create posts for each platform
+# Stage 3: optimizer - Optimize for engagement
+# =============================================================================
+
+agents:
+  researcher:
+    role: Social Media Researcher
+    goal: Research trending topics and hashtags relevant to the content.
+    backstory: Social media analyst who understands what drives engagement on each platform.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  creator:
+    role: Content Creator
+    goal: Create engaging posts tailored to each social platform.
+    backstory: Social media manager who crafts viral content across multiple platforms.
+    tools: []
+    llm: gpt-4o-mini
+
+  optimizer:
+    role: Engagement Optimizer
+    goal: Optimize posts for maximum reach and engagement.
+    backstory: Growth hacker who knows the algorithms and best practices for each platform.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: researcher
+    action: |
+      Research {{topic}} for social media content on {{platforms}}.
+      
+      Find:
+      - Current trending hashtags
+      - Recent viral posts on similar topics
+      - Optimal posting times
+      - Audience engagement patterns
+    expected_output: "Research summary with trends, hashtags, and engagement insights."
+
+  - agent: creator
+    action: |
+      Using research: {{researcher_output}}
+      
+      Create posts about {{topic}} for these platforms: {{platforms}}
+      
+      For each platform, include:
+      - **Twitter/X**: 280 chars, punchy, 2-3 hashtags
+      - **LinkedIn**: Professional tone, 1-2 paragraphs, industry hashtags
+      - **Instagram**: Caption + 10-15 hashtags, emoji usage
+      - **Facebook**: Conversational, 1-2 paragraphs, minimal hashtags
+      
+      Create 3 variations per platform.
+    expected_output: "Platform-specific posts with multiple variations."
+
+  - agent: optimizer
+    action: |
+      Optimize these posts: {{creator_output}}
+      
+      For each post:
+      1. Check character limits
+      2. Verify hashtag relevance and count
+      3. Add emojis strategically
+      4. Ensure call-to-action is clear
+      5. Suggest best posting time
+      
+      Output final optimized versions.
+    expected_output: "Optimized social media posts ready to publish."

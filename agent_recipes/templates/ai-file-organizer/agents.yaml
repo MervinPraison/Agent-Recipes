@@ -1,0 +1,29 @@
+metadata:
+  name: ai-file-organizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - directory_path
+
+agents:
+  organizer:
+    role: File Organizer
+    goal: Organize files into logical folder structures.
+    backstory: Digital organizer who creates clean, intuitive folder hierarchies.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: organizer
+    action: |
+      Organize files in {{directory_path}}.
+      
+      Steps:
+      1. Scan directory for files
+      2. Categorize by type/date/project
+      3. Suggest folder structure
+      4. Move files to appropriate folders
+      5. Report organization summary
+    expected_output: "Organization report with new structure."

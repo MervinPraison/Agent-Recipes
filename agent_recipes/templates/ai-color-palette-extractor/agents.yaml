@@ -1,0 +1,28 @@
+metadata:
+  name: ai-color-palette-extractor
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  extractor:
+    role: Color Analyst
+    goal: Extract and analyze color palettes from images.
+    backstory: Brand designer who creates cohesive color schemes.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      Extract color palette from {{image_path}}.
+      
+      Provide:
+      - Dominant colors (5-7)
+      - Hex codes
+      - RGB values
+      - Color name descriptions
+      - Suggested complementary colors
+    expected_output: "Color palette with codes and suggestions."

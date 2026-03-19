@@ -1,0 +1,35 @@
+metadata:
+  name: ai-commit-message-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - diff
+
+# =============================================================================
+# AI COMMIT MESSAGE GENERATOR - Generate meaningful commit messages
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Code Change Analyst
+    goal: Analyze code changes and generate descriptive commit messages.
+    backstory: Developer who writes clear, conventional commit messages.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze this diff: {{diff}}
+      
+      Generate commit message following Conventional Commits:
+      
+      1. **Type**: feat/fix/docs/style/refactor/test/chore
+      2. **Scope**: Component affected (optional)
+      3. **Subject**: Imperative, 50 chars max
+      4. **Body**: Detailed explanation (optional)
+      5. **Footer**: Breaking changes, issue refs
+      
+      Format: type(scope): subject
+    expected_output: "Conventional commit message with appropriate type and description."

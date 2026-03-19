@@ -1,0 +1,53 @@
+metadata:
+  name: ai-test-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - code_path
+
+# =============================================================================
+# AI TEST GENERATOR - Generate unit tests for code
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Code Analyzer
+    goal: Analyze code to identify testable functions and edge cases.
+    backstory: Senior QA engineer who designs comprehensive test suites.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+  generator:
+    role: Test Writer
+    goal: Write comprehensive unit tests with good coverage.
+    backstory: TDD practitioner who writes tests that catch bugs.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze code at {{code_path}}.
+      
+      Identify:
+      1. Functions/methods to test
+      2. Input parameters and types
+      3. Expected outputs
+      4. Edge cases and boundary conditions
+      5. Error scenarios
+    expected_output: "Test plan with functions, cases, and scenarios."
+
+  - agent: generator
+    action: |
+      Generate tests based on: {{analyzer_output}}
+      
+      Create:
+      1. Unit tests for each function
+      2. Edge case tests
+      3. Error handling tests
+      4. Mock setup if needed
+      
+      Use pytest syntax with descriptive names.
+    expected_output: "Complete test file with comprehensive coverage."

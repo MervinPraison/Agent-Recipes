@@ -1,0 +1,46 @@
+metadata:
+  name: ai-api-doc-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - code_path
+
+agents:
+  analyzer:
+    role: API Analyst
+    goal: Analyze code to extract API endpoints and structure.
+    backstory: Technical writer who documents APIs comprehensively.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+  documenter:
+    role: Documentation Writer
+    goal: Create clear, complete API documentation.
+    backstory: Developer advocate who writes developer-friendly docs.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze code at {{code_path}} for API documentation.
+      
+      Extract:
+      - Endpoints (URL, method)
+      - Parameters and types
+      - Response formats
+      - Authentication requirements
+    expected_output: "API structure with endpoints and parameters."
+
+  - agent: documenter
+    action: |
+      Create API documentation from: {{analyzer_output}}
+      
+      Format (OpenAPI/Swagger style):
+      - Endpoint descriptions
+      - Request/response examples
+      - Error codes
+      - Usage examples
+    expected_output: "Complete API documentation in markdown."

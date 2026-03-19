@@ -1,0 +1,25 @@
+metadata:
+  name: ai-form-filler
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - form_fields
+      - data
+
+agents:
+  filler:
+    role: Data Entry Specialist
+    goal: Auto-fill forms with provided data.
+    backstory: Admin assistant who fills forms accurately.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: filler
+    action: |
+      Fill form with fields: {{form_fields}}
+      Using data: {{data}}
+      
+      Map data to fields and output filled form values.
+    expected_output: "Form field values ready for submission."

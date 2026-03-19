@@ -1,0 +1,58 @@
+metadata:
+  name: ai-product-description-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - product_name
+      - product_details
+
+# =============================================================================
+# AI PRODUCT DESCRIPTION GENERATOR - Create compelling product descriptions
+# =============================================================================
+
+agents:
+  researcher:
+    role: Market Researcher
+    goal: Research similar products and identify key selling points.
+    backstory: E-commerce specialist who understands what makes buyers click.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  copywriter:
+    role: Product Copywriter
+    goal: Write compelling descriptions that convert browsers to buyers.
+    backstory: Conversion-focused copywriter with expertise in e-commerce.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: researcher
+    action: |
+      Research {{product_name}} and similar products.
+      
+      Details: {{product_details}}
+      
+      Identify:
+      - Key features and benefits
+      - Unique selling propositions
+      - Target audience pain points
+      - Competitor positioning
+    expected_output: "Market research with features, benefits, and positioning insights."
+
+  - agent: copywriter
+    action: |
+      Using research: {{researcher_output}}
+      
+      Create product description for {{product_name}}:
+      
+      Include:
+      - Compelling headline (5-8 words)
+      - Hook paragraph (emotional connection)
+      - Feature bullets (5-7 key features with benefits)
+      - Detailed description (2-3 paragraphs)
+      - SEO keywords naturally integrated
+      
+      Tone: Professional but approachable.
+    expected_output: "Complete product description with headline, bullets, and copy."

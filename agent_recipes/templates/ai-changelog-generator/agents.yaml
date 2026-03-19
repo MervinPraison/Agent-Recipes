@@ -1,0 +1,30 @@
+metadata:
+  name: ai-changelog-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - repo_path
+
+agents:
+  analyzer:
+    role: Changelog Writer
+    goal: Generate changelogs from git history.
+    backstory: Release manager who creates clear changelogs.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Generate changelog from git commits at {{repo_path}}.
+      
+      Group by:
+      - Features (feat)
+      - Bug fixes (fix)
+      - Breaking changes
+      - Other notable changes
+      
+      Format as Keep a Changelog style.
+    expected_output: "CHANGELOG.md content ready for release."

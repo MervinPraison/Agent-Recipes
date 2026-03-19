@@ -1,0 +1,52 @@
+metadata:
+  name: ai-report-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - data
+      - report_type
+
+# =============================================================================
+# AI REPORT GENERATOR - Generate professional reports from data
+# =============================================================================
+
+agents:
+  analyst:
+    role: Data Analyst
+    goal: Analyze data and extract insights for reporting.
+    backstory: Business analyst who creates executive-level reports.
+    tools: []
+    llm: gpt-4o-mini
+
+  writer:
+    role: Report Writer
+    goal: Create professional, well-structured reports.
+    backstory: Technical writer who presents complex data clearly.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyst
+    action: |
+      Analyze this data for a {{report_type}} report: {{data}}
+      
+      Identify:
+      1. Key metrics and trends
+      2. Notable findings
+      3. Comparisons and benchmarks
+      4. Areas of concern
+      5. Opportunities
+    expected_output: "Data analysis with key findings and insights."
+
+  - agent: writer
+    action: |
+      Create a {{report_type}} report from: {{analyst_output}}
+      
+      Structure:
+      1. **Executive Summary**: Key takeaways in 2-3 sentences
+      2. **Key Metrics**: Important numbers with context
+      3. **Analysis**: Detailed findings with charts descriptions
+      4. **Conclusions**: What the data tells us
+      5. **Recommendations**: Suggested actions
+    expected_output: "Professional report with all sections."

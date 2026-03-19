@@ -1,0 +1,29 @@
+metadata:
+  name: ai-meta-tag-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+
+agents:
+  generator:
+    role: SEO Specialist
+    goal: Generate optimized meta tags for web pages.
+    backstory: SEO expert who crafts click-worthy meta descriptions.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate meta tags for: {{url}}
+      
+      Create:
+      1. Title tag (50-60 chars)
+      2. Meta description (150-160 chars)
+      3. Open Graph tags
+      4. Twitter Card tags
+      5. Schema.org markup suggestion
+    expected_output: "Complete meta tags ready to implement."

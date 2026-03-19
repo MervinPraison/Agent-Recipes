@@ -1,0 +1,28 @@
+metadata:
+  name: ai-context-enricher
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+
+agents:
+  enricher:
+    role: Context Expert
+    goal: Add context and background to content.
+    backstory: Researcher who provides depth to stories.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: enricher
+    action: |
+      Enrich with context: {{content}}
+      
+      Add:
+      - Background information
+      - Related facts
+      - Historical context
+      - Expert perspectives
+    expected_output: "Enriched content with context."

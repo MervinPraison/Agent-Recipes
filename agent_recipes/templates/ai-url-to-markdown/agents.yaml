@@ -1,0 +1,28 @@
+metadata:
+  name: ai-url-to-markdown
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+
+agents:
+  scraper:
+    role: Web Scraper
+    goal: Extract web content and convert to clean markdown.
+    backstory: Content curator who creates readable articles from web pages.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: scraper
+    action: |
+      Convert {{url}} to markdown.
+      
+      Extract:
+      - Main content (skip nav/footer)
+      - Preserve headings
+      - Format links properly
+      - Include images with alt text
+    expected_output: "Clean markdown version of page."

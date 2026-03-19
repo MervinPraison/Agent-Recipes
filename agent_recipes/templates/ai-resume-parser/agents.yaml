@@ -1,0 +1,73 @@
+metadata:
+  name: ai-resume-parser
+  requires:
+    env:
+      - OPENAI_API_KEY
+      - MISTRAL_API_KEY
+    variables:
+      - resume_path
+
+# =============================================================================
+# AI RESUME PARSER - Extract and structure resume information using OCRAgent
+# =============================================================================
+# Uses OCRAgent for PDF/image resume extraction
+# =============================================================================
+
+agents:
+  extractor:
+    role: Data Extractor
+    goal: Extract all relevant information from the resume using OCR.
+    backstory: HR specialist skilled at parsing various resume formats with OCR technology.
+    tools:
+      - extract_resume_text
+      - extract_contact_info
+      - read_text_file
+    llm: gpt-4o-mini
+
+  analyzer:
+    role: Resume Analyst
+    goal: Analyze skills, experience, and provide structured output.
+    backstory: Recruiter who evaluates candidates for technical and cultural fit.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      1. Use extract_resume_text to extract text from {{resume_path}}
+      2. Use extract_contact_info to get email/phone
+      
+      Extract:
+      - Contact information
+      - Work experience (company, role, dates, responsibilities)
+      - Education (institution, degree, dates)
+      - Skills (technical and soft)
+      - Certifications
+      - Languages
+    expected_output: "Raw extracted data from resume."
+
+  - agent: analyzer
+    action: |
+      Analyze this resume data: {{extractor_output}}
+      
+      Create structured output:
+      
+      ```json
+      {
+        "name": "",
+        "email": "",
+        "phone": "",
+        "location": "",
+        "summary": "",
+        "experience": [
+          {"company": "", "role": "", "dates": "", "highlights": []}
+        ],
+        "education": [
+          {"institution": "", "degree": "", "dates": ""}
+        ],
+        "skills": {"technical": [], "soft": []},
+        "certifications": [],
+        "years_experience": 0
+      }
+      ```
+    expected_output: "Structured JSON with all resume information."

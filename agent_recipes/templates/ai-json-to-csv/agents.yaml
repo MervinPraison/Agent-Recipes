@@ -1,0 +1,28 @@
+metadata:
+  name: ai-json-to-csv
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - json_path
+
+agents:
+  converter:
+    role: Data Converter
+    goal: Convert JSON data to CSV format.
+    backstory: Data engineer who transforms between formats.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: converter
+    action: |
+      Convert JSON at {{json_path}} to CSV.
+      
+      Handle:
+      - Nested objects (flatten)
+      - Arrays (expand or stringify)
+      - Missing values
+      - Data type preservation
+    expected_output: "CSV file with clean column mapping."

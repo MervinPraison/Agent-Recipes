@@ -1,0 +1,39 @@
+metadata:
+  name: ai-code-documenter
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - code_path
+
+# =============================================================================
+# AI CODE DOCUMENTER - Generate documentation using CodeAgent
+# =============================================================================
+# Uses CodeAgent for intelligent code explanation and docstring generation
+# =============================================================================
+
+agents:
+  documenter:
+    role: Technical Writer
+    goal: Generate comprehensive code documentation using CodeAgent tools.
+    backstory: Developer advocate who writes clear documentation with AI assistance.
+    tools:
+      - read_source_file
+      - explain_code
+      - generate_docstrings
+    llm: gpt-4o-mini
+
+steps:
+  - agent: documenter
+    action: |
+      1. Use read_source_file to read the code at {{code_path}}
+      2. Use explain_code to understand what the code does
+      3. Use generate_docstrings to create proper documentation
+      
+      Generate:
+      - Module overview
+      - Function docstrings (Google style)
+      - Class documentation
+      - Usage examples
+      - Type hints explanation
+    expected_output: "Complete documentation in markdown with docstrings."

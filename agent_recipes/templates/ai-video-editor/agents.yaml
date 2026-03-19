@@ -1,36 +1,45 @@
-framework: praisonai
-topic: AI Video Editing Pipeline
-roles:
+metadata:
+  name: ai-video-editor
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - input
+      - output
+      - preset
+
+agents:
   video_editor:
     role: Video Editor
-    goal: Edit videos by removing fillers, repetitions, tangents, and silences
+    goal: Edit videos by removing fillers, repetitions, tangents, and silences.
     backstory: |
-      I am an AI video editor that uses praisonai_tools.video to process videos.
-      I can analyze video content, transcribe audio, identify segments to remove,
-      and render polished final output.
-    tasks:
-      edit_video:
-        description: |
-          Edit the input video using AI analysis:
-          1. Probe video to get metadata
-          2. Transcribe audio with word-level timestamps
-          3. Analyze content to identify segments to remove
-          4. Optimize timeline and render final video
-          
-          Input video: {input}
-          Output path: {output}
-          Preset: {preset}
-          
-          Run the video editing CLI:
-          python -m praisonai_tools.video edit "{input}" --preset {preset} --output "{output}" -v
-        expected_output: |
-          Edited video file with:
-          - Filler words removed
-          - Repetitions removed
-          - Silences trimmed
-          - Transcript and captions generated
-          - Edit decision list created
+      AI video editor that uses praisonai_tools.video to process videos.
+      Analyzes video content, transcribes audio, identifies segments to remove,
+      and renders polished final output.
     tools:
       - shell_tool
+    llm: gpt-4o-mini
 
-dependencies: []
+steps:
+  - agent: video_editor
+    action: |
+      Edit the input video: {{input}}
+      
+      Steps:
+      1. Probe video to get metadata
+      2. Transcribe audio with word-level timestamps
+      3. Analyze content to identify segments to remove
+      4. Optimize timeline and render final video
+      
+      Output path: {{output}}
+      Preset: {{preset}}
+      
+      Run the video editing CLI:
+      python -m praisonai_tools.video edit "{{input}}" --preset {{preset}} --output "{{output}}" -v
+    expected_output: |
+      Edited video file with:
+      - Filler words removed
+      - Repetitions removed
+      - Silences trimmed
+      - Transcript and captions generated
+      - Edit decision list created

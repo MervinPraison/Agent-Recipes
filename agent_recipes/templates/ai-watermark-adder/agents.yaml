@@ -1,0 +1,28 @@
+metadata:
+  name: ai-watermark-adder
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+      - watermark_text
+
+agents:
+  processor:
+    role: Image Editor
+    goal: Add watermarks to images professionally.
+    backstory: Brand specialist who protects visual content.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: processor
+    action: |
+      Add watermark "{{watermark_text}}" to {{image_path}}.
+      
+      Apply:
+      - Semi-transparent overlay
+      - Optimal positioning
+      - Professional styling
+    expected_output: "Image with watermark applied."

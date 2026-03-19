@@ -1,0 +1,29 @@
+metadata:
+  name: ai-hashtag-optimizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+      - platform
+
+agents:
+  optimizer:
+    role: Hashtag Strategist
+    goal: Optimize hashtags for reach and engagement.
+    backstory: Social media expert who maximizes discoverability.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: optimizer
+    action: |
+      Optimize hashtags for {{platform}}: {{content}}
+      
+      Provide:
+      - High-volume hashtags
+      - Niche hashtags
+      - Branded hashtags
+      - Optimal count
+    expected_output: "Optimized hashtag set with strategy."

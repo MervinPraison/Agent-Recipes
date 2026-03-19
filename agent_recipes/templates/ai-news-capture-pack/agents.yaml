@@ -1,0 +1,28 @@
+metadata:
+  name: ai-news-capture-pack
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - sources
+
+agents:
+  aggregator:
+    role: News Aggregator
+    goal: Capture and package news from multiple sources.
+    backstory: Media monitor who tracks all major outlets.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: aggregator
+    action: |
+      Capture news from: {{sources}}
+      
+      Create package:
+      - Headlines summary
+      - Full articles
+      - Key quotes
+      - Media assets
+    expected_output: "News capture package."

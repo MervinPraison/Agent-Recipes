@@ -1,0 +1,29 @@
+metadata:
+  name: ai-data-profiler
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - data_path
+
+agents:
+  profiler:
+    role: Data Analyst
+    goal: Profile datasets and generate statistics.
+    backstory: Statistician who analyzes data quality and patterns.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: profiler
+    action: |
+      Profile data at {{data_path}}.
+      
+      Generate:
+      - Column statistics (min, max, mean, etc.)
+      - Data types detected
+      - Missing value %
+      - Unique value counts
+      - Distribution summaries
+    expected_output: "Data profile report with statistics."

@@ -1,0 +1,59 @@
+metadata:
+  name: ai-video-compressor
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+      - target_size
+
+# =============================================================================
+# AI VIDEO COMPRESSOR - Intelligently compress video files
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Video Analyzer
+    goal: Analyze video and determine optimal compression settings.
+    backstory: Video encoding specialist who balances quality and size.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+  compressor:
+    role: Video Encoder
+    goal: Compress video to target size while preserving quality.
+    backstory: FFmpeg expert who optimizes encoding parameters.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze video at {{video_path}}.
+      Target size: {{target_size}}
+      
+      Use ffprobe to determine:
+      - Current file size
+      - Resolution and aspect ratio
+      - Frame rate
+      - Codec and bitrate
+      - Duration
+      
+      Calculate optimal bitrate for target size.
+    expected_output: "Analysis with recommended encoding settings."
+
+  - agent: compressor
+    action: |
+      Based on analysis: {{analyzer_output}}
+      
+      Compress video using ffmpeg:
+      1. Use H.264/H.265 codec
+      2. Apply calculated bitrate
+      3. Maintain aspect ratio
+      4. Preserve audio quality
+      5. Use 2-pass encoding for better quality
+      
+      Create compressed file matching target size.
+    expected_output: "Compressed video file at target size."

@@ -1,0 +1,29 @@
+metadata:
+  name: ai-calendar-scheduler
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - events
+      - constraints
+
+agents:
+  scheduler:
+    role: Calendar Manager
+    goal: Optimize schedule and suggest meeting times.
+    backstory: Executive assistant who manages complex calendars.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: scheduler
+    action: |
+      Schedule events: {{events}}
+      Constraints: {{constraints}}
+      
+      Optimize for:
+      - No conflicts
+      - Travel time between meetings
+      - Focus time blocks
+      - Preferred meeting hours
+    expected_output: "Optimized schedule with recommendations."

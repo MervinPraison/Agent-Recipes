@@ -1,0 +1,29 @@
+metadata:
+  name: ai-rss-aggregator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - rss_urls
+
+agents:
+  aggregator:
+    role: Content Aggregator
+    goal: Aggregate and summarize RSS feed content.
+    backstory: News curator who identifies the most relevant stories.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: aggregator
+    action: |
+      Aggregate content from: {{rss_urls}}
+      
+      For each feed:
+      1. Extract recent articles
+      2. Summarize key points
+      3. Categorize by topic
+      4. Rank by relevance
+      5. Create digest summary
+    expected_output: "Aggregated feed digest with categorized summaries."

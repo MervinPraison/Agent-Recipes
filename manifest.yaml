@@ -386,6 +386,24 @@ templates:
       packages:
       - requests
       - beautifulsoup4
+  ai-url-to-script:
+    name: AI URL to Script
+    version: 1.0.0
+    description: Turn URLs + a prompt into a ready-to-record script (YouTube, podcast, short, thread, or generic)
+    path: templates/ai-url-to-script
+    tags:
+    - web
+    - url
+    - script
+    - youtube
+    - podcast
+    - content
+    requires:
+      env:
+      - OPENAI_API_KEY
+      packages:
+      - requests
+      - beautifulsoup4
   ai-sitemap-scraper:
     name: AI Sitemap Scraper
     version: 1.0.0

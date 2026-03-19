@@ -1,0 +1,83 @@
+metadata:
+  name: ai-newsletter-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - audience
+
+# =============================================================================
+# AI NEWSLETTER GENERATOR - Generate engaging email newsletters
+# =============================================================================
+# 
+# Stage 1: curator - Curate relevant content and news
+# Stage 2: writer - Write newsletter sections
+# Stage 3: formatter - Format for email delivery
+# =============================================================================
+
+agents:
+  curator:
+    role: Content Curator
+    goal: Find and curate the most relevant content for the newsletter topic.
+    backstory: Expert at identifying trending topics and newsworthy content.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: Newsletter Writer
+    goal: Write engaging newsletter content that resonates with the audience.
+    backstory: Experienced email marketer who writes compelling copy that drives engagement.
+    tools: []
+    llm: gpt-4o-mini
+
+  formatter:
+    role: Email Formatter
+    goal: Format the newsletter for optimal email deliverability and readability.
+    backstory: Email design specialist who ensures content looks great across all email clients.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: curator
+    action: |
+      Research and curate content for a newsletter about {{topic}} for {{audience}}.
+      
+      Find:
+      - 3-5 relevant news stories or updates
+      - 1-2 tips or insights
+      - 1 featured piece (deep dive topic)
+      
+      For each item, include: headline, brief summary, and source URL.
+    expected_output: "Curated content list with headlines, summaries, and sources."
+
+  - agent: writer
+    action: |
+      Using the curated content: {{curator_output}}
+      
+      Write a newsletter for {{audience}} about {{topic}}:
+      
+      1. **Subject Line**: Compelling, 40-60 characters
+      2. **Preview Text**: 90-120 characters
+      3. **Opening Hook**: Personal greeting + value proposition
+      4. **Main Content**: 3-5 sections with headlines
+      5. **Featured Article**: Deeper exploration of key topic
+      6. **Tips Section**: Actionable takeaways
+      7. **Call-to-Action**: Clear next step
+      8. **Sign-off**: Personal, friendly ending
+    expected_output: "Complete newsletter draft with all sections."
+
+  - agent: formatter
+    action: |
+      Format this newsletter for email: {{writer_output}}
+      
+      Apply email-safe formatting:
+      - Short paragraphs (2-3 sentences max)
+      - Clear section headers
+      - Bullet points for scanability
+      - Links formatted as buttons where appropriate
+      - Mobile-friendly width (600px max)
+      
+      Output as clean HTML email template.
+    expected_output: "Email-formatted newsletter ready to send."

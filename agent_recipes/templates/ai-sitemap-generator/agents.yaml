@@ -1,0 +1,30 @@
+metadata:
+  name: ai-sitemap-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+
+agents:
+  crawler:
+    role: Site Crawler
+    goal: Crawl website and generate sitemap.
+    backstory: SEO specialist who creates comprehensive sitemaps.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: crawler
+    action: |
+      Generate sitemap for {{url}}.
+      
+      Crawl and include:
+      - All public pages
+      - Last modified dates
+      - Change frequency
+      - Priority levels
+      
+      Output XML sitemap format.
+    expected_output: "XML sitemap ready for submission."

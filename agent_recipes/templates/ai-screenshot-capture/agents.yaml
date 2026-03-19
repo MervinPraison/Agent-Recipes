@@ -1,0 +1,28 @@
+metadata:
+  name: ai-screenshot-capture
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+
+agents:
+  capturer:
+    role: Screenshot Specialist
+    goal: Capture screenshots of web pages.
+    backstory: QA tester who documents visual states.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: capturer
+    action: |
+      Capture screenshot of {{url}}.
+      
+      Options:
+      - Full page
+      - Viewport only
+      - Mobile simulation
+      - Multiple resolutions
+    expected_output: "Screenshot images."

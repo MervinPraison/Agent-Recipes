@@ -1,0 +1,39 @@
+metadata:
+  name: ai-podcast-transcriber
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - audio_path
+
+# =============================================================================
+# AI PODCAST TRANSCRIBER - Transcribe podcasts using AudioAgent
+# =============================================================================
+# Uses AudioAgent for high-quality transcription via Whisper API
+# =============================================================================
+
+agents:
+  transcriber:
+    role: Podcast Transcriber
+    goal: Transcribe podcast audio with speaker identification using AudioAgent.
+    backstory: Transcription specialist using advanced Whisper AI speech recognition.
+    tools:
+      - transcribe_podcast
+      - get_audio_duration
+      - save_transcript
+    llm: gpt-4o-mini
+
+steps:
+  - agent: transcriber
+    action: |
+      1. Use get_audio_duration to check the podcast length at {{audio_path}}
+      2. Use transcribe_podcast to get the full transcription
+      3. Use save_transcript to save the result
+      
+      Provide:
+      1. Full transcript with timestamps
+      2. Speaker identification (where possible)
+      3. Chapter markers based on topic changes
+      4. Key topics discussed
+      5. Summary of main points
+    expected_output: "Complete transcript with timestamps and speaker identification."

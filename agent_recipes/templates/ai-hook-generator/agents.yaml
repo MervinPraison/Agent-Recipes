@@ -1,0 +1,28 @@
+metadata:
+  name: ai-hook-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - platform
+
+agents:
+  creator:
+    role: Hook Writer
+    goal: Create attention-grabbing hooks and opening lines.
+    backstory: Viral content creator who captures attention instantly.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: creator
+    action: |
+      Create hooks for {{topic}} on {{platform}}.
+      
+      Generate 10 variations:
+      - Question hooks
+      - Story hooks
+      - Statistic hooks
+      - Controversial hooks
+    expected_output: "10 hook variations ranked by potential impact."

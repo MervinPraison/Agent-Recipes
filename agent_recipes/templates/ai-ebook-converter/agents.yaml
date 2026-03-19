@@ -1,0 +1,29 @@
+metadata:
+  name: ai-ebook-converter
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - input_path
+      - output_format
+
+agents:
+  converter:
+    role: Ebook Specialist
+    goal: Convert between ebook formats.
+    backstory: Publisher who handles multiple ebook formats.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: converter
+    action: |
+      Convert {{input_path}} to {{output_format}}.
+      
+      Preserve:
+      - Chapter structure
+      - Formatting and styles
+      - Metadata
+      - Images and media
+    expected_output: "Converted ebook file."

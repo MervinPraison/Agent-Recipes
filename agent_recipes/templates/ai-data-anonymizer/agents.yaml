@@ -1,0 +1,29 @@
+metadata:
+  name: ai-data-anonymizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - data_path
+
+agents:
+  anonymizer:
+    role: Privacy Specialist
+    goal: Anonymize PII in datasets.
+    backstory: Data privacy expert who protects sensitive information.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: anonymizer
+    action: |
+      Anonymize data at {{data_path}}.
+      
+      Detect and mask:
+      - Names → pseudonyms
+      - Emails → hashed
+      - Phone numbers → masked
+      - Addresses → generalized
+      - SSNs, IDs → removed
+    expected_output: "Anonymized dataset with PII report."

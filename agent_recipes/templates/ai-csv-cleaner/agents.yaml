@@ -1,0 +1,29 @@
+metadata:
+  name: ai-csv-cleaner
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - csv_path
+
+agents:
+  cleaner:
+    role: Data Cleaner
+    goal: Clean and standardize CSV data.
+    backstory: Data analyst who prepares datasets for analysis.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: cleaner
+    action: |
+      Clean CSV at {{csv_path}}.
+      
+      Fix:
+      - Missing values
+      - Inconsistent formats
+      - Duplicate rows
+      - Data type issues
+      - Trim whitespace
+    expected_output: "Cleaned CSV with report of changes."

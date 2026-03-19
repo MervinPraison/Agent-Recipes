@@ -1,0 +1,27 @@
+metadata:
+  name: ai-signal-ranker
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - signals
+
+agents:
+  ranker:
+    role: Signal Analyst
+    goal: Rank and prioritize content signals.
+    backstory: Data scientist who identifies signal from noise.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: ranker
+    action: |
+      Rank signals: {{signals}}
+      
+      Evaluate:
+      - Signal strength
+      - Relevance score
+      - Actionability
+      - Priority ranking
+    expected_output: "Ranked signal analysis."

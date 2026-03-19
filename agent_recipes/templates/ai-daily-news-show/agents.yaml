@@ -1,0 +1,28 @@
+metadata:
+  name: ai-daily-news-show
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topics
+
+agents:
+  producer:
+    role: News Producer
+    goal: Create daily news show scripts.
+    backstory: TV producer who creates engaging news segments.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: producer
+    action: |
+      Create daily news show for: {{topics}}
+      
+      Include:
+      - Opening segment
+      - Top stories with scripts
+      - Transitions
+      - Closing remarks
+    expected_output: "Complete news show script."

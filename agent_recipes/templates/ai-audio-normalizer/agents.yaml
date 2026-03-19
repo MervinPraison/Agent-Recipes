@@ -1,0 +1,29 @@
+metadata:
+  name: ai-audio-normalizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - audio_path
+
+agents:
+  normalizer:
+    role: Audio Engineer
+    goal: Normalize audio levels to broadcast standards.
+    backstory: Mastering engineer who ensures consistent audio levels.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: normalizer
+    action: |
+      Normalize audio at {{audio_path}}.
+      
+      Apply:
+      - LUFS normalization (-16 LUFS)
+      - Peak limiting
+      - Consistent levels throughout
+      
+      Export normalized file.
+    expected_output: "Normalized audio file."

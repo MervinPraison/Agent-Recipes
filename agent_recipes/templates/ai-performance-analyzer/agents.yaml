@@ -1,0 +1,27 @@
+metadata:
+  name: ai-performance-analyzer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - metrics
+
+agents:
+  analyst:
+    role: Performance Analyst
+    goal: Analyze content performance metrics.
+    backstory: Analytics expert who finds actionable insights.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyst
+    action: |
+      Analyze performance: {{metrics}}
+      
+      Provide:
+      - Key trends
+      - Top/bottom performers
+      - Recommendations
+      - Benchmark comparison
+    expected_output: "Performance analysis with recommendations."

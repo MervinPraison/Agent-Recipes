@@ -1,0 +1,30 @@
+metadata:
+  name: ai-video-to-gif
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+      - duration
+
+agents:
+  converter:
+    role: Video Converter
+    goal: Convert video segments to optimized GIFs.
+    backstory: Media specialist who creates shareable GIFs.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: converter
+    action: |
+      Convert {{video_path}} to GIF ({{duration}} seconds).
+      
+      Optimize for:
+      - Web-friendly file size
+      - Smooth animation
+      - Good color palette
+      
+      Use ffmpeg with optimal settings.
+    expected_output: "Optimized GIF file."

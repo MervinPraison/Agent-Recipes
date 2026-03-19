@@ -1,0 +1,244 @@
+framework: praisonai
+topic: "{{topic}}"
+
+# =============================================================================
+# AI SKILL GENERATOR - Generate SKILL.md from Multiple Web Sources
+# =============================================================================
+#
+# Replicates TinySkills approach:
+# 1. Identify 8 relevant URLs (2 docs, 2 github, 2 stackoverflow, 2 blog)
+# 2. Scrape all sources in parallel with type-specific extraction
+# 3. Synthesize into comprehensive SKILL.md following Anthropic's format
+#
+# Usage:
+#   praisonai recipe run ai-skill-generator --var topic="react hooks"
+#   praisonai recipe run ai-skill-generator --var topic="kubernetes pods"
+#
+# Output:
+#   SKILL-{topic}.md file with Quick Start, Core Concepts, Patterns, Pitfalls
+# =============================================================================
+
+metadata:
+  name: ai-skill-generator
+  version: "1.0.0"
+  description: Generate comprehensive SKILL.md files from multiple web sources
+  author: praison
+  license: Apache-2.0
+  tags:
+    - skill
+    - learning
+    - documentation
+    - research
+  requires:
+    env:
+      - OPENAI_API_KEY
+
+variables:
+  topic: "{{topic}}"
+  sources_per_type: 2
+  max_workers: 4
+
+agents:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SOURCE FINDER - Identifies 8 relevant URLs for the topic
+  # ═══════════════════════════════════════════════════════════════════════════
+  source_finder:
+    role: Source Discovery Specialist
+    goal: Find the 8 best learning resources for {{topic}} - 2 docs, 2 github, 2 stackoverflow, 2 blog
+    backstory: |
+      You are an expert at finding high-quality learning resources.
+      You identify diverse sources: official documentation, code repositories,
+      Q&A sites, and tutorials. You ensure variety and quality.
+    tools:
+      - identify_sources
+    tool_choice: required
+    llm: gpt-4o-mini
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONTENT SCRAPER - Extracts content from each source
+  # ═══════════════════════════════════════════════════════════════════════════
+  scraper:
+    role: Content Extractor
+    goal: Extract relevant technical content from the assigned URL
+    backstory: |
+      You are skilled at extracting the most valuable information from web pages.
+      You focus on practical, actionable content: code examples, API references,
+      solutions to problems, and step-by-step instructions.
+    tools:
+      - scrape_source
+    tool_choice: required
+    llm: gpt-4o-mini
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SYNTHESIZER - Combines all content into SKILL.md
+  # ═══════════════════════════════════════════════════════════════════════════
+  synthesizer:
+    role: Technical Documentation Writer
+    goal: Create a comprehensive, well-structured SKILL.md for {{topic}}
+    backstory: |
+      You are an expert technical writer who creates clear, practical documentation.
+      You follow Anthropic's SKILL.md format with these sections:
+      - Quick Start: Get up and running in minutes
+      - Core Concepts: Essential knowledge everyone needs
+      - Essential Patterns: Common usage patterns with examples
+      - Common Pitfalls: Mistakes to avoid and how to fix them
+      
+      You synthesize information from multiple sources into a cohesive guide.
+      You include code examples, practical tips, and real-world advice.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 1: Find 8 relevant sources (2 per type)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: find_sources
+    agent: source_finder
+    output_variable: sources
+    output_json:
+      type: array
+      items:
+        type: object
+        properties:
+          url:
+            type: string
+            description: The source URL
+          type:
+            type: string
+            description: Source type (docs, github, stackoverflow, blog)
+          title:
+            type: string
+            description: Title of the source
+          reason:
+            type: string
+            description: Why this source was selected
+    action: |
+      Find 8 high-quality learning resources for: {{topic}}
+      
+      You MUST call identify_sources with the topic "{{topic}}".
+      
+      The tool will return 8 URLs:
+      - 2 documentation sources (official docs, API references)
+      - 2 GitHub sources (code examples, repositories)
+      - 2 StackOverflow sources (Q&A, common problems)
+      - 2 blog/tutorial sources (guides, explanations)
+      
+      Return the sources as a JSON array.
+    expected_output: |
+      A JSON array of 8 sources, each with url, type, title, and reason.
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 2: Scrape all sources in parallel
+  # ─────────────────────────────────────────────────────────────────────────────
+  - loop:
+      over: sources
+      parallel: true
+      max_workers: 4
+    name: scrape_sources
+    agent: scraper
+    output_variable: scraped_content
+    output_json:
+      type: object
+      properties:
+        url:
+          type: string
+        source_type:
+          type: string
+        content:
+          type: string
+          description: Extracted content from the source
+        key_points:
+          type: array
+          items:
+            type: string
+          description: Key takeaways from this source
+    action: |
+      Scrape content from: {{item.url}}
+      Source type: {{item.type}}
+      
+      You MUST call scrape_source with:
+      - url: "{{item.url}}"
+      - source_type: "{{item.type}}"
+      
+      After scraping, extract the most valuable information:
+      - For docs: API signatures, parameters, examples
+      - For github: Code patterns, implementation details
+      - For stackoverflow: Problems and solutions
+      - For blog: Step-by-step instructions, explanations
+      
+      Return the extracted content and 3-5 key points.
+    expected_output: |
+      JSON object with url, source_type, content, and key_points array.
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 3: Synthesize into SKILL.md
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: synthesize_skill
+    agent: synthesizer
+    output_file: "SKILL-{{topic}}.md"
+    action: |
+      Create a comprehensive SKILL.md for: {{topic}}
+      
+      Use all the scraped content below to create a well-structured guide:
+      
+      {{scraped_content}}
+      
+      Follow this EXACT structure:
+      
+      # {{topic}}
+      
+      > A comprehensive skill guide for {{topic}}
+      
+      ---
+      
+      ## Quick Start
+      
+      [Provide the fastest way to get started - installation, basic setup, first example]
+      [Include actual code that works]
+      
+      ---
+      
+      ## Core Concepts
+      
+      [Explain the fundamental concepts everyone needs to understand]
+      [Use clear explanations with code examples]
+      [Cover: what it is, why it matters, how it works]
+      
+      ---
+      
+      ## Essential Patterns
+      
+      [Show common usage patterns with real code examples]
+      [Include: basic pattern, intermediate pattern, advanced pattern]
+      [Explain when to use each pattern]
+      
+      ---
+      
+      ## Common Pitfalls
+      
+      [List mistakes developers commonly make]
+      [For each pitfall: what goes wrong, why, how to fix it]
+      [Include code showing the wrong way and the right way]
+      
+      ---
+      
+      ## Sources
+      
+      [List all sources used with URLs]
+      
+      IMPORTANT:
+      - Include working code examples throughout
+      - Be practical and actionable
+      - Use clear, concise language
+      - Cite sources where appropriate
+    expected_output: |
+      A complete SKILL.md file with Quick Start, Core Concepts, Essential Patterns,
+      Common Pitfalls, and Sources sections. Should be comprehensive yet readable.
+
+# Enable context management for parallel workflows
+context:
+  enabled: true
+  auto_compact: true
+  compact_threshold: 0.7
+  strategy: smart
+  max_tool_output_tokens: 5000

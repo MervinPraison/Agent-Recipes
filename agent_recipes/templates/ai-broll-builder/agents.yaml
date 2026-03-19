@@ -1,0 +1,28 @@
+metadata:
+  name: ai-broll-builder
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - script
+
+agents:
+  editor:
+    role: B-Roll Specialist
+    goal: Suggest B-roll footage for video scripts.
+    backstory: Video editor who enhances stories with visuals.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: editor
+    action: |
+      Suggest B-roll for script: {{script}}
+      
+      For each section provide:
+      - Visual concept
+      - Stock footage keywords
+      - Timing recommendations
+      - Mood/style guidance
+    expected_output: "B-roll suggestions with stock footage keywords."

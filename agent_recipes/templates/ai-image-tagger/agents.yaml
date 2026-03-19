@@ -1,0 +1,43 @@
+metadata:
+  name: ai-image-tagger
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+# =============================================================================
+# AI IMAGE TAGGER - Tag and categorize images using VisionAgent
+# =============================================================================
+# Uses VisionAgent for intelligent image analysis and tagging
+# =============================================================================
+
+agents:
+  tagger:
+    role: Image Classifier
+    goal: Generate relevant tags and categories for images using VisionAgent.
+    backstory: Media librarian who organizes large image collections with AI vision.
+    tools:
+      - tag_image
+      - categorize_image
+      - describe_for_alt_text
+    llm: gpt-4o-mini
+
+steps:
+  - agent: tagger
+    action: |
+      Analyze and tag image at {{image_path}} using VisionAgent tools.
+      
+      1. Use tag_image to get comprehensive tags
+      2. Use categorize_image for primary category
+      3. Use describe_for_alt_text for accessibility text
+      
+      Generate:
+      - Primary category and confidence
+      - Subcategories
+      - Descriptive tags (10-20)
+      - Objects detected
+      - Colors present
+      - Mood/style
+      - Alt text for accessibility
+    expected_output: "Comprehensive tags, categories, and accessibility text."

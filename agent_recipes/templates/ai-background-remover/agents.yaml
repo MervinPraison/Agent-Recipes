@@ -1,0 +1,27 @@
+metadata:
+  name: ai-background-remover
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  processor:
+    role: Image Editor
+    goal: Remove backgrounds from images.
+    backstory: Photo editor who creates clean cutouts.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: processor
+    action: |
+      Remove background from {{image_path}}.
+      
+      Create:
+      - Transparent PNG
+      - White background version
+      - Edge refinement
+    expected_output: "Image with removed background."

@@ -1,0 +1,277 @@
+framework: praisonai
+topic: "URL to Script"
+
+# =============================================================================
+# AI URL TO SCRIPT
+# =============================================================================
+#
+# USAGE:
+#   praisonai recipe run ai-url-to-script \
+#     --var urls='["https://example.com/article"]' \
+#     --var prompt="5-minute YouTube tutorial on this topic" \
+#     --var format=youtube
+#
+# FLOW:
+#   1. Scraper    — fetches content from each URL
+#   2. Synthesizer — merges multi-URL content; extracts facts, quotes, structure
+#   3. Script Writer — writes the final script per prompt + format
+#
+# SUPPORTED FORMATS:
+#   youtube | podcast | short | thread | generic
+#
+# =============================================================================
+
+variables:
+  urls: []            # List of URLs  e.g. '["https://a.com", "https://b.com"]'
+  prompt: ""          # What kind of script to write e.g. "5-min YouTube tutorial"
+  format: "youtube"   # youtube | podcast | short | thread | generic
+  tone: "educational" # educational | entertaining | professional | conversational
+  target_length: 300  # Target length in seconds (used as a guide)
+
+agents:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # URL SCRAPER — fetch raw content from every URL
+  # ═══════════════════════════════════════════════════════════════════════════
+  url_scraper:
+    role: Web Content Scraper
+    goal: |
+      Fetch clean, readable text from each URL in the list.
+      Preserve headings, key facts, statistics, quotes, and code examples.
+      Do NOT summarise — pass through the full text.
+    backstory: |
+      You are a precise web scraper whose only job is to retrieve content.
+      You call crawl_web to fetch the given URLs.
+      You return the raw combined text, clearly labelled by source URL.
+      CRITICAL: never summarise or interpret — just extract and label.
+    tools:
+      - crawl_web
+    llm: gpt-4o-mini
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CONTENT SYNTHESIZER — merge + structure the scraped content
+  # ═══════════════════════════════════════════════════════════════════════════
+  content_synthesizer:
+    role: Content Research Synthesizer
+    goal: |
+      Combine content from multiple URLs into a single, well-structured brief
+      that a script writer can use directly.
+    backstory: |
+      You read raw scraped content from multiple sources and produce a concise
+      but comprehensive research brief.
+
+      Your brief must include:
+      - Core topic / main idea
+      - Key facts, statistics, and data points (with source URL)
+      - Direct quotes worth keeping
+      - Narrative arc or logical flow of ideas
+      - Any important disclaimers, contrasts, or nuance
+
+      Keep ALL important information — you are a researcher, not a summariser.
+    llm: gpt-4o-mini
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCRIPT WRITER — turn the brief + prompt into a polished script
+  # ═══════════════════════════════════════════════════════════════════════════
+  script_writer:
+    role: Professional Script Writer
+    goal: |
+      Write a complete, ready-to-record script based on the research brief,
+      the user's prompt, and the chosen format.
+    backstory: |
+      You are an experienced script writer for digital media.
+      You adapt your style and structure based on the FORMAT variable.
+
+      FORMAT GUIDELINES:
+
+      IF format = "youtube":
+        Structure: Hook (0:00) → Intro → Main Sections with [TIMESTAMP] markers
+                   → Outro + CTA (subscribe/like/comment)
+        Style: Conversational, upbeat, clear signposting ("In this video...")
+        Length guide: ~{{target_length}} seconds of spoken content
+
+      IF format = "podcast":
+        Structure: Cold open → Host intro → Topic sections → Guest/research
+                   segments → Takeaways → Sign-off
+        Style: Natural spoken dialogue, allow for pauses and emphasis
+        Length guide: ~{{target_length}} seconds
+
+      IF format = "short":
+        Structure: HOOK (first 2 sec) → Single core message → CTA
+        Style: Ultra-concise, punchy, one idea only
+        Length guide: 30–60 seconds max
+
+      IF format = "thread":
+        Structure: Tweet 1 = hook, Tweets 2-N = one idea each (≤280 chars),
+                   Final tweet = CTA
+        Style: Punchy, numbered (1/ 2/ 3/), conversational
+
+      IF format = "generic":
+        Structure: Flexible — follow the user's prompt exactly
+        Style: Match the tone specified in the prompt
+
+      TONE: {{tone}}
+      User prompt: {{prompt}}
+
+      RULES:
+      - Write the full script — no placeholders or "[add content here]"
+      - Include speaker directions where helpful  e.g. [pause] [show graphic]
+      - British English is fine if the source content uses it
+    llm: gpt-4o
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 1: Fetch content from all URLs
+  # ─────────────────────────────────────────────────────────────────────────
+  - name: scrape_urls
+    agent: url_scraper
+    output_variable: scraped_content
+    output_json:
+      type: object
+      properties:
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              content:
+                type: string
+                description: Full scraped text from this URL
+          description: One entry per URL with its full scraped content
+        combined_text:
+          type: string
+          description: All source content concatenated with URL labels
+    action: |
+      ═══════════════════════════════════════════════════════════════════════
+      FETCH CONTENT FROM ALL URLS
+      ═══════════════════════════════════════════════════════════════════════
+
+      URLs to fetch: {{urls}}
+
+      For EACH URL in the list:
+        1. Call crawl_web to get the content
+        2. Record the returned text along with the source URL
+
+      Return:
+        - sources: array of {url, content} for each URL
+        - combined_text: all content concatenated, each section prefixed with
+          "=== SOURCE: <url> ===" so the next agent knows the origin
+
+      CRITICAL: Do NOT summarise — return the full text from every URL.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 2: Synthesize into a research brief
+  # ─────────────────────────────────────────────────────────────────────────
+  - name: synthesize_content
+    agent: content_synthesizer
+    output_variable: research_brief
+    output_json:
+      type: object
+      properties:
+        topic:
+          type: string
+          description: Core topic / title derived from the sources
+        key_facts:
+          type: array
+          items:
+            type: string
+          description: Most important facts, statistics, quotes from all sources
+        narrative_flow:
+          type: string
+          description: Logical outline / narrative arc for the script
+        source_urls:
+          type: array
+          items:
+            type: string
+          description: Original URLs processed
+    action: |
+      ═══════════════════════════════════════════════════════════════════════
+      SYNTHESIZE MULTI-SOURCE CONTENT INTO A RESEARCH BRIEF
+      ═══════════════════════════════════════════════════════════════════════
+
+      SCRAPED CONTENT FROM {{urls}}:
+      {{scraped_content.combined_text}}
+
+      USER PROMPT / SCRIPT GOAL:
+      {{prompt}}
+
+      FORMAT: {{format}} | TONE: {{tone}} | TARGET LENGTH: ~{{target_length}}s
+
+      Your task:
+      1. Identify the core topic across all sources
+      2. Extract the most important facts, statistics, and direct quotes
+         (keep attribution where possible)
+      3. Identify an interesting narrative arc or logical ordering
+         that suits the requested FORMAT and PROMPT
+      4. Note anything that should be highlighted, contrasted, or nuanced
+
+      Return a structured research brief the script writer can use directly.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 3: Write the final script
+  # ─────────────────────────────────────────────────────────────────────────
+  - name: write_script
+    agent: script_writer
+    output_variable: script_output
+    output_file: "script_{{format}}.txt"   # SDK auto-saves this step's output here
+    output_json:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Script / episode / video title
+        script:
+          type: string
+          description: Full ready-to-record script
+        word_count:
+          type: integer
+        estimated_duration_seconds:
+          type: integer
+        format:
+          type: string
+    action: |
+      ═══════════════════════════════════════════════════════════════════════
+      WRITE THE FINAL SCRIPT
+      ═══════════════════════════════════════════════════════════════════════
+
+      USER PROMPT: {{prompt}}
+      FORMAT: {{format}}
+      TONE: {{tone}}
+      TARGET LENGTH: ~{{target_length}} seconds
+
+      TOPIC: {{research_brief.topic}}
+
+      KEY FACTS & QUOTES:
+      {{research_brief.key_facts}}
+
+      NARRATIVE FLOW:
+      {{research_brief.narrative_flow}}
+
+      SOURCE URLS (cite where relevant):
+      {{research_brief.source_urls}}
+
+      ═══════════════════════════════════════════════════════════════════════
+      Write the complete, polished script now.
+      Follow all FORMAT GUIDELINES for the chosen format: {{format}}
+      Do NOT use placeholders — write every word of the script.
+      ═══════════════════════════════════════════════════════════════════════
+
+      Return:
+        - title: the script / episode / video title
+        - script: the full ready-to-record script
+        - word_count: approximate word count
+        - estimated_duration_seconds: estimated speaking time
+        - format: {{format}}
+
+# Context management — keep token usage sane for multi-URL workflows
+context:
+  enabled: true
+  auto_compact: true
+  compact_threshold: 0.7
+  strategy: smart
+  llm_summarize: true
+  smart_tool_summarize: true
+  max_tool_output_tokens: 6000
+  tool_summarize_limits:
+    crawl_web: 4000

@@ -1,0 +1,42 @@
+metadata:
+  name: ai-image-captioner
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+# =============================================================================
+# AI IMAGE CAPTIONER - Generate captions for images using VisionAgent
+# =============================================================================
+# Uses VisionAgent for intelligent image analysis and captioning
+# =============================================================================
+
+agents:
+  analyst:
+    role: Image Analyst
+    goal: Analyze images and generate descriptive captions using VisionAgent tools.
+    backstory: Visual AI specialist who excels at describing images accurately using advanced vision models.
+    tools:
+      - caption_image
+      - analyze_image
+      - extract_text_from_image
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyst
+    action: |
+      Analyze the image at {{image_path}} using the vision tools.
+      
+      1. Use caption_image to get a detailed description
+      2. Use analyze_image for specific visual elements
+      3. Use extract_text_from_image if any text is visible
+      
+      Then provide:
+      1. **Short Caption**: 5-10 words, suitable for social media
+      2. **Medium Caption**: 1-2 sentences with context
+      3. **Long Caption**: Detailed description for accessibility (alt text)
+      4. **Hashtags**: 5-10 relevant hashtags
+      5. **Keywords**: SEO-friendly keywords
+      6. **Extracted Text**: Any visible text from the image
+    expected_output: "Multiple caption formats with hashtags, keywords, and extracted text."

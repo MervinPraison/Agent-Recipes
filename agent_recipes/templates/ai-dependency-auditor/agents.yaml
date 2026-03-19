@@ -1,0 +1,30 @@
+metadata:
+  name: ai-dependency-auditor
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - project_path
+
+agents:
+  auditor:
+    role: Security Analyst
+    goal: Audit dependencies for vulnerabilities.
+    backstory: Security expert who identifies risky dependencies.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: auditor
+    action: |
+      Audit dependencies at {{project_path}}.
+      
+      Check:
+      - Known vulnerabilities (CVEs)
+      - Outdated packages
+      - License compatibility
+      - Unmaintained packages
+      
+      Provide risk report with remediation.
+    expected_output: "Security audit report with fixes."

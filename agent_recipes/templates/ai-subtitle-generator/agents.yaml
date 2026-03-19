@@ -1,0 +1,60 @@
+metadata:
+  name: ai-subtitle-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+
+# =============================================================================
+# AI SUBTITLE GENERATOR - Generate subtitles using AudioAgent
+# =============================================================================
+# Uses AudioAgent for high-quality speech-to-text transcription
+# =============================================================================
+
+agents:
+  transcriber:
+    role: Audio Transcriber
+    goal: Transcribe audio from video with accurate timestamps using AudioAgent.
+    backstory: Transcription expert using advanced speech-to-text AI models.
+    tools:
+      - transcribe_audio
+      - extract_audio_from_video
+    llm: gpt-4o-mini
+
+  formatter:
+    role: Subtitle Formatter
+    goal: Format transcription into proper subtitle files.
+    backstory: Subtitle specialist who creates perfectly timed captions.
+    tools:
+      - format_as_srt
+    llm: gpt-4o-mini
+
+steps:
+  - agent: transcriber
+    action: |
+      1. Use extract_audio_from_video to extract audio from {{video_path}}
+      2. Use transcribe_audio to transcribe the extracted audio
+      
+      Generate:
+      - Word-level timestamps
+      - Speaker identification if multiple speakers
+      - Punctuation and proper formatting
+    expected_output: "Transcription with timestamps."
+
+  - agent: formatter
+    action: |
+      Format this transcription: {{transcriber_output}}
+      
+      Use format_as_srt to create subtitle files.
+      
+      Create:
+      1. **SRT file**: Standard subtitle format with timing
+      2. **VTT file**: WebVTT format for web players
+      3. **Plain text**: Full transcript without timestamps
+      
+      Ensure:
+      - Lines are 2-3 seconds max
+      - Max 42 characters per line
+      - Natural reading flow
+    expected_output: "Formatted subtitle files in SRT and VTT formats."

@@ -1,0 +1,28 @@
+metadata:
+  name: ai-news-crawler
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+
+agents:
+  crawler:
+    role: News Researcher
+    goal: Crawl and aggregate news on specific topics.
+    backstory: Journalist who monitors news sources 24/7.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: crawler
+    action: |
+      Crawl news about {{topic}}.
+      
+      Find:
+      - Latest headlines
+      - Source diversity
+      - Key facts
+      - Trending angles
+    expected_output: "News digest with sources."

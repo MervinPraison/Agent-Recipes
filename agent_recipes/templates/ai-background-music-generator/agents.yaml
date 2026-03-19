@@ -1,0 +1,29 @@
+metadata:
+  name: ai-background-music-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - mood
+      - duration
+
+agents:
+  composer:
+    role: Music Producer
+    goal: Generate or select background music.
+    backstory: Audio producer who creates fitting soundscapes.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: composer
+    action: |
+      Create {{duration}} second background music.
+      Mood: {{mood}}
+      
+      Suggest:
+      - Music style
+      - BPM and key
+      - Instrument choices
+      - Royalty-free recommendations
+    expected_output: "Music specification or recommendations."

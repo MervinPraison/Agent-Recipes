@@ -1,0 +1,27 @@
+metadata:
+  name: ai-publisher-pack
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+
+agents:
+  packager:
+    role: Content Publisher
+    goal: Package content for multi-platform publishing.
+    backstory: Content ops specialist who manages distribution.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: packager
+    action: |
+      Package for publishing: {{content}}
+      
+      Create versions for:
+      - Blog post
+      - Twitter thread
+      - LinkedIn post
+      - Email newsletter
+    expected_output: "Multi-platform content package."

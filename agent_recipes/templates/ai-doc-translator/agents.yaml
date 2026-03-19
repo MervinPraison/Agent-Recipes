@@ -1,0 +1,30 @@
+metadata:
+  name: ai-doc-translator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - doc_path
+      - target_language
+
+agents:
+  translator:
+    role: Document Translator
+    goal: Translate documents while preserving formatting.
+    backstory: Professional translator with expertise in technical documents.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: translator
+    action: |
+      Translate document at {{doc_path}} to {{target_language}}.
+      
+      Preserve:
+      - Original formatting
+      - Technical terms
+      - Context and tone
+      
+      Provide translated content.
+    expected_output: "Translated document preserving format."

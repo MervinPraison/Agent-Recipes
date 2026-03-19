@@ -1,0 +1,66 @@
+metadata:
+  name: ai-invoice-processor
+  requires:
+    env:
+      - OPENAI_API_KEY
+      - MISTRAL_API_KEY
+    variables:
+      - invoice_path
+
+# =============================================================================
+# AI INVOICE PROCESSOR - Extract and validate invoice data using OCRAgent
+# =============================================================================
+# Uses OCRAgent for scanned/PDF invoice extraction
+# =============================================================================
+
+agents:
+  extractor:
+    role: Invoice Extractor
+    goal: Extract all data fields from invoices using OCR.
+    backstory: Accounting specialist who processes thousands of invoices with OCR.
+    tools:
+      - extract_invoice_text
+      - extract_amounts
+    llm: gpt-4o-mini
+
+  validator:
+    role: Data Validator
+    goal: Validate extracted data and flag discrepancies.
+    backstory: Finance auditor who ensures data accuracy.
+    tools:
+      - parse_invoice_data
+      - validate_invoice
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      1. Use extract_invoice_text to extract text from {{invoice_path}}
+      2. Use extract_amounts to identify all monetary values
+      
+      Identify:
+      - Invoice number
+      - Date
+      - Vendor name and address
+      - Customer name and address
+      - Line items (description, quantity, unit price, total)
+      - Subtotal, tax, total
+      - Payment terms
+      - Due date
+    expected_output: "Extracted invoice data fields."
+
+  - agent: validator
+    action: |
+      Validate this invoice data: {{extractor_output}}
+      
+      1. Use parse_invoice_data to structure the data
+      2. Use validate_invoice to check completeness
+      
+      Check:
+      1. Math validation (line items sum to subtotal, tax calculation, total)
+      2. Required fields present
+      3. Date formats consistent
+      4. Currency consistent
+      
+      Output structured JSON with validation status.
+    expected_output: "Validated invoice data with any discrepancies flagged."

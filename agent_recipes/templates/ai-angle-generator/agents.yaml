@@ -1,0 +1,29 @@
+metadata:
+  name: ai-angle-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+
+agents:
+  strategist:
+    role: Content Strategist
+    goal: Generate unique content angles for topics.
+    backstory: Creative director who finds fresh perspectives.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: strategist
+    action: |
+      Generate angles for {{topic}}.
+      
+      Create 10 unique angles:
+      - Contrarian takes
+      - Untold stories
+      - Trend connections
+      - Personal angles
+      - Data-driven angles
+    expected_output: "10 content angles with brief explanations."

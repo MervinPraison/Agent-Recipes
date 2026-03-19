@@ -1,0 +1,28 @@
+metadata:
+  name: ai-duplicate-finder
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - directory_path
+
+agents:
+  finder:
+    role: Duplicate Detector
+    goal: Find and report duplicate files.
+    backstory: Storage optimization expert who identifies redundant files.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: finder
+    action: |
+      Find duplicates in {{directory_path}}.
+      
+      Check:
+      1. File hash comparison
+      2. Similar file names
+      3. Same content different names
+      4. Report space savings potential
+    expected_output: "Duplicate report with removal recommendations."

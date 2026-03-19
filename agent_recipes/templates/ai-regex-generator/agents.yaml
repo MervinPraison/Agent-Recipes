@@ -1,0 +1,35 @@
+metadata:
+  name: ai-regex-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - description
+      - examples
+
+# =============================================================================
+# AI REGEX GENERATOR - Generate regex patterns from descriptions
+# =============================================================================
+
+agents:
+  generator:
+    role: Regex Expert
+    goal: Generate accurate regex patterns from natural language.
+    backstory: Developer who crafts precise regular expressions.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate regex for: {{description}}
+      
+      Examples to match: {{examples}}
+      
+      Provide:
+      1. **Regex Pattern**: The regular expression
+      2. **Explanation**: What each part matches
+      3. **Test Cases**: Examples that match and don't match
+      4. **Common Pitfalls**: Edge cases to watch for
+      5. **Variations**: Alternative patterns if applicable
+    expected_output: "Regex pattern with explanation and test cases."

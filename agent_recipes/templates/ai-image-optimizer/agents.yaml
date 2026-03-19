@@ -1,0 +1,29 @@
+metadata:
+  name: ai-image-optimizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+      - target_size
+
+agents:
+  optimizer:
+    role: Image Optimizer
+    goal: Compress images while maintaining quality.
+    backstory: Web performance expert who balances quality and file size.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: optimizer
+    action: |
+      Optimize image at {{image_path}} to ~{{target_size}}.
+      
+      Apply:
+      - Smart compression
+      - Format conversion if beneficial
+      - Metadata stripping
+      - Progressive encoding
+    expected_output: "Optimized image with size report."

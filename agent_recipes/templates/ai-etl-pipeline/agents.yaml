@@ -1,0 +1,29 @@
+metadata:
+  name: ai-etl-pipeline
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - source
+      - destination
+
+agents:
+  architect:
+    role: Data Engineer
+    goal: Design and generate ETL pipeline code.
+    backstory: Data engineer who builds robust data pipelines.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: architect
+    action: |
+      Design ETL from {{source}} to {{destination}}.
+      
+      Generate:
+      - Extract logic
+      - Transform rules
+      - Load procedure
+      - Error handling
+      - Scheduling recommendations
+    expected_output: "ETL pipeline design and code."

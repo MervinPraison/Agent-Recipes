@@ -1,0 +1,72 @@
+metadata:
+  name: ai-blog-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+
+# =============================================================================
+# AI BLOG GENERATOR - Generate SEO-optimized blog posts
+# =============================================================================
+# 
+# Stage 1: researcher - Research the topic
+# Stage 2: writer - Write the blog post
+# Stage 3: editor - Review and optimize for SEO
+# =============================================================================
+
+agents:
+  researcher:
+    role: Research Specialist
+    goal: Gather comprehensive information about the topic.
+    backstory: Expert at finding accurate, current information from various sources.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: Blog Writer
+    goal: Create an engaging, well-structured blog post.
+    backstory: Skilled content writer who creates compelling articles that captivate readers.
+    tools: []
+    llm: gpt-4o-mini
+
+  editor:
+    role: SEO Editor
+    goal: Optimize the blog post for search engines and readability.
+    backstory: Expert copyeditor and SEO specialist who ensures content ranks well.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: researcher
+    action: "Research the topic '{{topic}}' thoroughly. Use search_web to find current information, statistics, and expert insights. Compile at least 5 key points with sources."
+    expected_output: "Research summary with 5+ key findings, each with title, description, and source."
+
+  - agent: writer
+    action: |
+      Using the research: {{researcher_output}}
+      
+      Write an engaging blog post about {{topic}}. Include:
+      - An attention-grabbing introduction
+      - 3-5 well-developed sections with subheadings
+      - Key statistics and insights from the research
+      - A compelling conclusion with call-to-action
+      
+      Format with markdown headings and proper structure.
+    expected_output: "Complete blog post in markdown format with headings, paragraphs, and structured content."
+
+  - agent: editor
+    action: |
+      Review and optimize this blog post: {{writer_output}}
+      
+      Ensure:
+      - SEO-friendly title (6-10 words)
+      - Meta description (150-160 characters)
+      - Proper heading hierarchy (H1, H2, H3)
+      - Keywords naturally integrated
+      - Readable paragraphs (3-4 sentences each)
+      - Strong opening and closing
+      
+      Output the final optimized version.
+    expected_output: "SEO-optimized blog post with title, meta description, and properly formatted content."

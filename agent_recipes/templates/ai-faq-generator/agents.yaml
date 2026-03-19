@@ -1,0 +1,67 @@
+metadata:
+  name: ai-faq-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - context
+
+# =============================================================================
+# AI FAQ GENERATOR - Generate comprehensive FAQ sections
+# =============================================================================
+# 
+# Stage 1: researcher - Research common questions
+# Stage 2: writer - Write clear, helpful answers
+# =============================================================================
+
+agents:
+  researcher:
+    role: Question Researcher
+    goal: Identify the most common and important questions about the topic.
+    backstory: Customer support expert who knows what users frequently ask.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: FAQ Writer
+    goal: Write clear, concise, and helpful answers to each question.
+    backstory: Technical writer who excels at making complex topics accessible.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: researcher
+    action: |
+      Research common questions about {{topic}}.
+      
+      Context: {{context}}
+      
+      Identify:
+      - 10-15 frequently asked questions
+      - Categorize by topic area
+      - Prioritize by importance/frequency
+      
+      Include a mix of:
+      - Basic/getting started questions
+      - How-to questions
+      - Troubleshooting questions
+      - Advanced usage questions
+    expected_output: "Categorized list of 10-15 common questions."
+
+  - agent: writer
+    action: |
+      Write answers for these FAQs: {{researcher_output}}
+      
+      For each answer:
+      - Be clear and concise (2-4 sentences)
+      - Use simple language
+      - Include examples where helpful
+      - Add links to detailed resources if applicable
+      
+      Format as structured FAQ with:
+      ## Category Name
+      ### Question?
+      Answer text.
+    expected_output: "Complete FAQ section with categorized Q&A pairs."

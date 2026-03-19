@@ -1,0 +1,28 @@
+metadata:
+  name: ai-image-resizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+      - dimensions
+
+agents:
+  resizer:
+    role: Image Processor
+    goal: Resize images while maintaining aspect ratio.
+    backstory: Graphics specialist who creates properly sized images.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: resizer
+    action: |
+      Resize image at {{image_path}} to {{dimensions}}.
+      
+      Options:
+      - Maintain aspect ratio
+      - Crop to fit if needed
+      - High-quality scaling
+    expected_output: "Resized image file."

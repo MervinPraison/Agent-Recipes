@@ -1,0 +1,54 @@
+metadata:
+  name: ai-audio-enhancer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - audio_path
+
+# =============================================================================
+# AI AUDIO ENHANCER - Enhance audio quality
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Audio Analyzer
+    goal: Analyze audio quality and identify issues.
+    backstory: Audio engineer who diagnoses sound quality problems.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+  enhancer:
+    role: Audio Engineer
+    goal: Apply enhancements to improve audio quality.
+    backstory: Professional mastering engineer with ffmpeg expertise.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze audio file at {{audio_path}}.
+      
+      Use ffprobe to check:
+      - Sample rate and bit depth
+      - Loudness levels (LUFS)
+      - Dynamic range
+      - Clipping detection
+      - Background noise level
+    expected_output: "Audio analysis report with detected issues."
+
+  - agent: enhancer
+    action: |
+      Based on analysis: {{analyzer_output}}
+      
+      Apply appropriate enhancements using ffmpeg:
+      1. Normalize to -16 LUFS (broadcast standard)
+      2. Apply noise reduction if needed
+      3. Add light compression for consistent levels
+      4. High-pass filter at 80Hz to remove rumble
+      
+      Output enhanced audio file.
+    expected_output: "Enhanced audio file with processing applied."

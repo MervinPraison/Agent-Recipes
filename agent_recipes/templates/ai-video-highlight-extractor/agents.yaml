@@ -1,0 +1,29 @@
+metadata:
+  name: ai-video-highlight-extractor
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+
+agents:
+  analyzer:
+    role: Video Analyst
+    goal: Identify and extract highlight moments.
+    backstory: Sports editor who finds the best moments in footage.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Find highlights in {{video_path}}.
+      
+      Detect:
+      - High-energy moments
+      - Key scenes
+      - Audio peaks
+      
+      Export highlight clips.
+    expected_output: "Highlight clips extracted."

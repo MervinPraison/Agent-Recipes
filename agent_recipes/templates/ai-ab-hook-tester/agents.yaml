@@ -1,0 +1,29 @@
+metadata:
+  name: ai-ab-hook-tester
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - variations
+
+agents:
+  tester:
+    role: A/B Analyst
+    goal: Evaluate hook variations for potential impact.
+    backstory: Growth marketer who optimizes content performance.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: tester
+    action: |
+      Analyze hook variations: {{variations}}
+      
+      Evaluate:
+      - Clarity and conciseness
+      - Emotional impact
+      - Curiosity gap
+      - Platform fit
+      
+      Rank and recommend best option.
+    expected_output: "Ranked hook analysis with recommendations."

@@ -1,0 +1,29 @@
+metadata:
+  name: ai-audio-splitter
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - audio_path
+
+agents:
+  splitter:
+    role: Audio Editor
+    goal: Split audio files into segments.
+    backstory: Audio engineer who segments audio by silence or chapters.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: splitter
+    action: |
+      Split audio at {{audio_path}} into segments.
+      
+      Detect natural breaks by:
+      - Silence detection
+      - Topic changes
+      - Speaker changes
+      
+      Export segments as separate files.
+    expected_output: "Audio split into logical segments."

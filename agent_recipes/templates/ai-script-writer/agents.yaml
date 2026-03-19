@@ -1,0 +1,29 @@
+metadata:
+  name: ai-script-writer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - format
+
+agents:
+  writer:
+    role: Script Writer
+    goal: Write engaging scripts for video content.
+    backstory: YouTube scriptwriter who creates binge-worthy content.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: writer
+    action: |
+      Write {{format}} script about {{topic}}.
+      
+      Include:
+      - Hook (first 5 seconds)
+      - Introduction
+      - Main content with sections
+      - Call to action
+      - Outro
+    expected_output: "Complete video script with timing notes."

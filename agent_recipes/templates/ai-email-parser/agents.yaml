@@ -1,0 +1,35 @@
+metadata:
+  name: ai-email-parser
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - email_content
+
+# =============================================================================
+# AI EMAIL PARSER - Extract structured data from emails
+# =============================================================================
+
+agents:
+  parser:
+    role: Email Parser
+    goal: Extract key information and action items from emails.
+    backstory: Executive assistant who processes hundreds of emails daily.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: parser
+    action: |
+      Parse this email: {{email_content}}
+      
+      Extract:
+      1. **From/To/CC**: Sender and recipients
+      2. **Subject**: Email subject line
+      3. **Summary**: 1-2 sentence summary
+      4. **Action Items**: Tasks or requests
+      5. **Deadlines**: Any mentioned dates
+      6. **Priority**: High/Medium/Low urgency
+      7. **Category**: Meeting, request, FYI, question
+      8. **Sentiment**: Positive/neutral/negative
+    expected_output: "Structured email data with action items and metadata."

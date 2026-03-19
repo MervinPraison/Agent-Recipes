@@ -1,0 +1,29 @@
+metadata:
+  name: ai-contract-analyzer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - contract_path
+
+agents:
+  analyzer:
+    role: Legal Analyst
+    goal: Analyze contracts for key terms and risks.
+    backstory: Paralegal who reviews contracts for important clauses.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze contract at {{contract_path}}.
+      
+      Identify:
+      - Key parties and dates
+      - Main obligations
+      - Payment terms
+      - Termination clauses
+      - Risk areas and red flags
+    expected_output: "Contract summary with key terms and risks."

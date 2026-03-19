@@ -1,0 +1,27 @@
+metadata:
+  name: ai-screen-recorder
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - duration
+
+agents:
+  recorder:
+    role: Screen Capture Specialist
+    goal: Record and process screen captures.
+    backstory: Tutorial creator who makes polished screencasts.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: recorder
+    action: |
+      Record screen for {{duration}} seconds.
+      
+      Output:
+      - Screen recording file
+      - Optimized for web
+      - Multiple quality options
+    expected_output: "Screen recording file."

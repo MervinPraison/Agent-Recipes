@@ -1,0 +1,30 @@
+metadata:
+  name: ai-image-cataloger
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - directory_path
+
+agents:
+  cataloger:
+    role: Image Cataloger
+    goal: Create organized catalog of images with metadata.
+    backstory: Digital asset manager who organizes media libraries.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: cataloger
+    action: |
+      Catalog images in {{directory_path}}.
+      
+      For each image extract:
+      - Filename, size, dimensions
+      - EXIF metadata
+      - AI-generated tags/description
+      - Suggested categories
+      
+      Output as JSON catalog.
+    expected_output: "Complete image catalog with metadata."

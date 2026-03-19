@@ -1,0 +1,28 @@
+metadata:
+  name: ai-cta-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - context
+      - goal
+
+agents:
+  copywriter:
+    role: CTA Specialist
+    goal: Create compelling calls-to-action.
+    backstory: Conversion copywriter who drives action.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: copywriter
+    action: |
+      Create CTAs for {{goal}} with context: {{context}}
+      
+      Generate:
+      - Button text variations
+      - Surrounding copy
+      - Urgency versions
+      - Benefit-focused versions
+    expected_output: "10 CTA variations with context."

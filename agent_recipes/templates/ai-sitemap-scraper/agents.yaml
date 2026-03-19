@@ -1,0 +1,29 @@
+metadata:
+  name: ai-sitemap-scraper
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - sitemap_url
+
+agents:
+  scraper:
+    role: Sitemap Parser
+    goal: Parse sitemaps and extract all URLs.
+    backstory: Data engineer who processes large sitemaps efficiently.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: scraper
+    action: |
+      Parse sitemap at {{sitemap_url}}.
+      
+      Extract:
+      - All URLs listed
+      - Last modified dates
+      - Nested sitemaps
+      
+      Output structured list of pages.
+    expected_output: "Complete list of URLs from sitemap."

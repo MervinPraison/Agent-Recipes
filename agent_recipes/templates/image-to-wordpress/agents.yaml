@@ -1,0 +1,84 @@
+metadata:
+  name: image-to-wordpress
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+# =============================================================================
+# IMAGE TO WORDPRESS - Analyze image, research, write blog, publish to WordPress
+# =============================================================================
+# 
+# Stage 1: analyst - Analyze the image using vision capabilities
+# Stage 2: researcher - Research related topics  
+# Stage 3: writer - Create blog post in Gutenberg format
+# Stage 4: includes: wordpress-publisher (MODULAR - reuses standalone recipe)
+# =============================================================================
+
+agents:
+  analyst:
+    role: Image Analyst
+    goal: Analyze the provided image using vision capabilities.
+    backstory: Skilled in interpreting visual data and extracting meaningful insights from images.
+    tools: []
+    llm: gpt-4o-mini
+
+  researcher:
+    role: Research Specialist
+    goal: Gather relevant information related to the analyzed image.
+    backstory: Expert at finding current, accurate information from web sources.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  writer:
+    role: Blog Writer
+    goal: Create a comprehensive blog post in Gutenberg block format.
+    backstory: Expert at transforming complex information into engaging blog content formatted for WordPress.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyst
+    action: "Analyze the provided image at {{image_path}} using vision capabilities. Describe the main subject, key visual elements, colors, text visible, and overall composition. Extract meaningful insights from what you observe."
+    expected_output: "Detailed analysis with key features, insights, and descriptions of the image."
+
+  - agent: researcher
+    action: "Based on the image analysis: {{analyst_output}}, you MUST call the search_web tool to research related topics. Do NOT respond without calling search_web first. Return at least 5 relevant findings with titles, descriptions, and source URLs."
+    expected_output: "Raw research data with 5+ findings, each containing: title, description, source URL."
+
+  - agent: writer
+    action: |
+      Using the image analysis: {{analyst_output}} and the research findings: {{researcher_output}}, create an engaging blog post.
+      
+      You MUST format your output EXACTLY like this:
+      
+      ARTICLE_TITLE: [Your catchy, SEO-optimized title, 6-10 words]
+      ARTICLE_CONTENT:
+      <!-- wp:heading {"level":1} -->
+      <h1>Your Main Title</h1>
+      <!-- /wp:heading -->
+      
+      <!-- wp:paragraph -->
+      <p>Your introduction paragraph here.</p>
+      <!-- /wp:paragraph -->
+      
+      <!-- wp:heading {"level":2} -->
+      <h2>Section Heading</h2>
+      <!-- /wp:heading -->
+      
+      <!-- wp:paragraph -->
+      <p>Content paragraph here.</p>
+      <!-- /wp:paragraph -->
+      
+      Use proper Gutenberg blocks for headings, paragraphs, and lists.
+      Include at least 3 sections with h2 headings.
+      End with a conclusion section.
+    expected_output: |
+      ARTICLE_TITLE: concise catchy title
+      ARTICLE_CONTENT: Gutenberg blocks with content inside HTML tags
+
+# Include the modular wordpress-publisher recipe
+includes:
+  - wordpress-publisher

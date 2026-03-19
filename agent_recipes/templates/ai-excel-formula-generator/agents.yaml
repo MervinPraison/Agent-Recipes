@@ -1,0 +1,29 @@
+metadata:
+  name: ai-excel-formula-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - description
+      - context
+
+agents:
+  generator:
+    role: Excel Expert
+    goal: Generate accurate Excel formulas from descriptions.
+    backstory: Spreadsheet guru who creates complex formulas efficiently.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate Excel formula for: {{description}}
+      Context: {{context}}
+      
+      Provide:
+      1. The formula
+      2. Explanation of how it works
+      3. Example usage
+      4. Common errors to avoid
+    expected_output: "Excel formula with explanation and examples."

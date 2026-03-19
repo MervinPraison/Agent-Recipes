@@ -1,0 +1,54 @@
+metadata:
+  name: ai-sql-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - query_description
+      - schema
+
+# =============================================================================
+# AI SQL GENERATOR - Generate SQL queries from natural language
+# =============================================================================
+
+agents:
+  generator:
+    role: SQL Expert
+    goal: Generate accurate SQL queries from natural language descriptions.
+    backstory: Database architect who writes optimized, safe SQL.
+    tools: []
+    llm: gpt-4o-mini
+
+  validator:
+    role: Query Validator
+    goal: Validate and optimize SQL queries.
+    backstory: DBA who ensures queries are safe and performant.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate SQL query for: {{query_description}}
+      
+      Schema: {{schema}}
+      
+      Create:
+      1. The SQL query
+      2. Explanation of what it does
+      3. Expected results description
+    expected_output: "SQL query with explanation."
+
+  - agent: validator
+    action: |
+      Validate this SQL: {{generator_output}}
+      
+      Check:
+      1. Syntax correctness
+      2. Table/column references
+      3. SQL injection safety
+      4. Performance optimizations
+      5. Index recommendations
+      
+      Provide final optimized query.
+    expected_output: "Validated, optimized SQL query."

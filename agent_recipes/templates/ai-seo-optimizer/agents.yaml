@@ -1,0 +1,59 @@
+metadata:
+  name: ai-seo-optimizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - url
+      - target_keywords
+
+# =============================================================================
+# AI SEO OPTIMIZER - Analyze and optimize content for search engines
+# =============================================================================
+
+agents:
+  analyzer:
+    role: SEO Analyst
+    goal: Analyze current SEO performance and identify issues.
+    backstory: Technical SEO expert who spots optimization opportunities.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+  optimizer:
+    role: Content Optimizer
+    goal: Provide actionable SEO improvements for the content.
+    backstory: Content strategist who knows Google's ranking factors.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze SEO for: {{url}}
+      Target keywords: {{target_keywords}}
+      
+      Evaluate:
+      - Title tag and meta description
+      - Heading structure (H1, H2, H3)
+      - Keyword placement and density
+      - Content length and quality
+      - Internal/external links
+      - Image alt text
+    expected_output: "SEO audit with current performance and identified issues."
+
+  - agent: optimizer
+    action: |
+      Based on this SEO analysis: {{analyzer_output}}
+      
+      Provide optimization recommendations:
+      
+      1. **Title Tag**: Optimized version (50-60 chars)
+      2. **Meta Description**: Compelling version (150-160 chars)
+      3. **Heading Improvements**: Restructured headings with keywords
+      4. **Content Gaps**: Missing topics to cover
+      5. **Quick Wins**: Easy fixes for immediate impact
+      6. **Long-term Strategy**: Bigger improvements to prioritize
+      
+      Prioritize by impact and effort.
+    expected_output: "Actionable SEO recommendations prioritized by impact."

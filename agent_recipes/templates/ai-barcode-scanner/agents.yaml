@@ -1,0 +1,26 @@
+metadata:
+  name: ai-barcode-scanner
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  scanner:
+    role: Barcode Reader
+    goal: Decode barcodes and QR codes from images.
+    backstory: Inventory specialist who reads all barcode formats.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: scanner
+    action: |
+      Scan and decode barcode/QR from {{image_path}}.
+      
+      Detect:
+      - Barcode type (UPC, EAN, QR, etc.)
+      - Decoded content
+      - Multiple codes if present
+    expected_output: "Decoded barcode data with type."

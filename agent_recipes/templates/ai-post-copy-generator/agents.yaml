@@ -1,0 +1,28 @@
+metadata:
+  name: ai-post-copy-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+      - platform
+
+agents:
+  copywriter:
+    role: Social Copywriter
+    goal: Write engaging social media post copy.
+    backstory: Social media manager who writes viral posts.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: copywriter
+    action: |
+      Write copy for {{platform}} about: {{content}}
+      
+      Generate 5 variations with:
+      - Different hooks
+      - Varying lengths
+      - Emoji usage
+      - Hashtag integration
+    expected_output: "5 post copy variations."

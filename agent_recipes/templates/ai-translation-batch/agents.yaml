@@ -1,0 +1,28 @@
+metadata:
+  name: ai-translation-batch
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+      - target_languages
+
+agents:
+  translator:
+    role: Multilingual Translator
+    goal: Translate content accurately to multiple languages.
+    backstory: Professional translator fluent in many languages.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: translator
+    action: |
+      Translate this content to {{target_languages}}: {{content}}
+      
+      For each language:
+      1. Accurate translation
+      2. Cultural adaptation
+      3. Preserve formatting
+      4. Note any untranslatable terms
+    expected_output: "Translations for all target languages."

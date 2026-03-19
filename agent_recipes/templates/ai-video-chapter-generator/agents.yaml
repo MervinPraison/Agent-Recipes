@@ -1,0 +1,29 @@
+metadata:
+  name: ai-video-chapter-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+
+agents:
+  analyzer:
+    role: Video Analyst
+    goal: Identify chapter points and generate timestamps.
+    backstory: Content strategist who structures videos for engagement.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze {{video_path}} for chapter markers.
+      
+      Identify:
+      - Topic transitions
+      - Natural break points
+      - Key moments
+      
+      Generate YouTube-compatible chapters format.
+    expected_output: "Chapter list with timestamps and titles."

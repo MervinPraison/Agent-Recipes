@@ -1,0 +1,58 @@
+metadata:
+  name: ai-pdf-summarizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+      - MISTRAL_API_KEY
+    variables:
+      - pdf_path
+
+# =============================================================================
+# AI PDF SUMMARIZER - Summarize PDF documents using OCRAgent
+# =============================================================================
+# Uses OCRAgent for advanced PDF text extraction (including scanned PDFs)
+# =============================================================================
+
+agents:
+  reader:
+    role: Document Reader
+    goal: Extract and parse text content from PDF documents using OCR.
+    backstory: Expert at processing various document formats with OCR technology.
+    tools:
+      - extract_pdf_text
+      - read_pdf
+      - read_text_file
+    llm: gpt-4o-mini
+
+  summarizer:
+    role: Content Summarizer
+    goal: Create clear, comprehensive summaries of document content.
+    backstory: Skilled at distilling complex documents into key takeaways.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: reader
+    action: |
+      Read and extract text from the PDF at {{pdf_path}} using OCRAgent tools.
+      
+      1. Use read_pdf for quick extraction
+      2. Use extract_pdf_text for detailed OCR if needed
+      
+      Identify:
+      - Document structure (sections, chapters)
+      - Key topics covered
+      - Important figures, tables, or data
+    expected_output: "Extracted text content with document structure identified."
+
+  - agent: summarizer
+    action: |
+      Summarize this document content: {{reader_output}}
+      
+      Create:
+      1. **Executive Summary**: 2-3 sentences overview
+      2. **Key Points**: 5-7 bullet points of main findings
+      3. **Section Summaries**: Brief summary of each major section
+      4. **Action Items**: Any recommended next steps
+      5. **Notable Quotes/Data**: Important statistics or quotes
+    expected_output: "Comprehensive summary with executive summary, key points, and section breakdowns."

@@ -1,0 +1,34 @@
+metadata:
+  name: ai-image-upscaler
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+      - scale_factor
+
+# =============================================================================
+# AI IMAGE UPSCALER - Upscale images with AI enhancement
+# =============================================================================
+
+agents:
+  upscaler:
+    role: Image Enhancement Specialist
+    goal: Upscale images while preserving and enhancing quality.
+    backstory: AI image processing expert using advanced upscaling techniques.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: upscaler
+    action: |
+      Upscale image at {{image_path}} by {{scale_factor}}x.
+      
+      Steps:
+      1. Analyze original image dimensions
+      2. Apply AI-enhanced upscaling
+      3. Sharpen details appropriately
+      4. Reduce artifacts from upscaling
+      5. Save in high-quality format
+    expected_output: "Upscaled image with enhanced quality."

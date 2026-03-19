@@ -1,0 +1,30 @@
+metadata:
+  name: ai-slide-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - topic
+      - num_slides
+
+agents:
+  creator:
+    role: Presentation Designer
+    goal: Create compelling slide presentations.
+    backstory: Presentation consultant who designs impactful decks.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: creator
+    action: |
+      Create {{num_slides}} slides about {{topic}}.
+      
+      Include:
+      - Title slide
+      - Content slides with bullet points
+      - Visual suggestions for each slide
+      - Speaker notes
+      
+      Format as markdown slides.
+    expected_output: "Complete slide deck in markdown."

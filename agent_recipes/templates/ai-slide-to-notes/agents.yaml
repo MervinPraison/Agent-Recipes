@@ -1,0 +1,28 @@
+metadata:
+  name: ai-slide-to-notes
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - slide_path
+
+agents:
+  extractor:
+    role: Note Taker
+    goal: Convert presentation slides to study notes.
+    backstory: Student who creates comprehensive notes from lectures.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      Extract notes from slides at {{slide_path}}.
+      
+      Create:
+      - Main points per slide
+      - Expanded explanations
+      - Key takeaways
+      - Summary at end
+    expected_output: "Comprehensive notes from presentation."

@@ -1,0 +1,28 @@
+metadata:
+  name: ai-screenshot-ocr
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  extractor:
+    role: OCR Specialist
+    goal: Extract text from screenshots accurately.
+    backstory: Data entry specialist who digitizes visual text.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      Extract text from screenshot {{image_path}}.
+      
+      Preserve:
+      - Text structure
+      - Formatting hints
+      - Tables if present
+      
+      Output clean text.
+    expected_output: "Extracted text from image."

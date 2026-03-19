@@ -1,0 +1,32 @@
+metadata:
+  name: ai-repo-readme
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - repo_path
+
+agents:
+  writer:
+    role: Documentation Writer
+    goal: Generate comprehensive README for repositories.
+    backstory: Open source contributor who creates inviting READMEs.
+    tools:
+      - file_read_tool
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: writer
+    action: |
+      Generate README for repo at {{repo_path}}.
+      
+      Include:
+      - Project title and badges
+      - Description and features
+      - Installation instructions
+      - Usage examples
+      - Configuration options
+      - Contributing guidelines
+      - License
+    expected_output: "Complete README.md file."

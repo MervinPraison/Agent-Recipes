@@ -1,0 +1,27 @@
+metadata:
+  name: ai-schema-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - data_sample
+
+agents:
+  generator:
+    role: Schema Designer
+    goal: Generate JSON/database schemas from data samples.
+    backstory: Data architect who designs efficient schemas.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate schema from: {{data_sample}}
+      
+      Provide:
+      - JSON Schema
+      - TypeScript interface
+      - SQL CREATE TABLE
+      - Field descriptions
+    expected_output: "Schemas in multiple formats."

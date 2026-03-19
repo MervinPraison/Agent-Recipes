@@ -1,0 +1,28 @@
+metadata:
+  name: ai-face-blur
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  processor:
+    role: Privacy Specialist
+    goal: Detect and blur faces in images.
+    backstory: Media processor who protects privacy in visual content.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: processor
+    action: |
+      Blur faces in {{image_path}}.
+      
+      Steps:
+      - Detect all faces
+      - Apply blur effect
+      - Preserve image quality
+      - Output processed image
+    expected_output: "Image with blurred faces."

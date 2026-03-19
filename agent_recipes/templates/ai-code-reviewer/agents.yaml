@@ -1,0 +1,90 @@
+metadata:
+  name: ai-code-reviewer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - code_path
+
+# =============================================================================
+# AI CODE REVIEWER - Automated code review using CodeAgent
+# =============================================================================
+# 
+# Stage 1: analyzer - Analyze code structure using CodeAgent tools
+# Stage 2: reviewer - Review for bugs, security, and best practices  
+# Stage 3: suggester - Provide actionable improvement suggestions
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Code Analyzer
+    goal: Analyze code structure, patterns, and dependencies using CodeAgent.
+    backstory: Senior software architect skilled at understanding codebases quickly.
+    tools:
+      - read_file
+      - explain_code
+    llm: gpt-4o-mini
+
+  reviewer:
+    role: Code Reviewer
+    goal: Identify bugs, security issues, and best practice violations.
+    backstory: Expert code reviewer with 15+ years experience in multiple languages.
+    tools:
+      - review_code
+      - check_security
+      - lint_python
+    llm: gpt-4o-mini
+
+  suggester:
+    role: Improvement Advisor
+    goal: Provide actionable, prioritized code improvement suggestions.
+    backstory: Tech lead who excels at providing constructive, practical feedback.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Read the code at {{code_path}} using read_file.
+      Use explain_code to understand what it does.
+      
+      Identify:
+      - Programming language and framework
+      - Code structure and organization
+      - Key functions/classes and their purposes
+      - Dependencies and imports
+      - Design patterns used
+      
+      Provide a structural overview.
+    expected_output: "Code analysis with language, structure, key components, and patterns identified."
+
+  - agent: reviewer
+    action: |
+      Based on the code analysis: {{analyzer_output}}
+      
+      Use review_code to check for issues.
+      Use lint_python for Python linting.
+      Use check_security for security analysis.
+      
+      Review for:
+      1. **Bugs**: Logic errors, edge cases, null handling
+      2. **Security**: SQL injection, XSS, hardcoded secrets, input validation
+      3. **Performance**: N+1 queries, memory leaks, inefficient algorithms
+      4. **Best Practices**: Naming conventions, DRY principle, error handling
+      5. **Code Quality**: Readability, complexity, documentation
+      
+      Rate each issue by severity: Critical, High, Medium, Low
+    expected_output: "Detailed code review with categorized issues and severity ratings."
+
+  - agent: suggester
+    action: |
+      Based on the review findings: {{reviewer_output}}
+      
+      Create an actionable improvement plan:
+      1. Prioritize issues by impact and effort
+      2. Provide specific code fixes or refactoring suggestions
+      3. Include code examples where helpful
+      4. Group related improvements together
+      
+      Format as a clear, actionable checklist.
+    expected_output: "Prioritized improvement checklist with specific suggestions and code examples."

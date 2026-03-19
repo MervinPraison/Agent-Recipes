@@ -1,0 +1,28 @@
+metadata:
+  name: ai-qr-code-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - content
+
+agents:
+  generator:
+    role: QR Code Creator
+    goal: Generate QR codes for various content types.
+    backstory: Developer who creates scannable QR codes for any data.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Generate QR code for: {{content}}
+      
+      Create:
+      - High-resolution PNG
+      - SVG for scalability
+      - Various sizes (S/M/L)
+      - Error correction level H
+    expected_output: "QR code images in multiple formats."

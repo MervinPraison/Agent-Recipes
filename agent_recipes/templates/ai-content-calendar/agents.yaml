@@ -1,0 +1,29 @@
+metadata:
+  name: ai-content-calendar
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - niche
+      - duration
+
+agents:
+  planner:
+    role: Content Planner
+    goal: Create strategic content calendars.
+    backstory: Social media manager who plans months ahead.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: planner
+    action: |
+      Create {{duration}} content calendar for {{niche}}.
+      
+      Include:
+      - Daily/weekly themes
+      - Content types rotation
+      - Key dates and holidays
+      - Trending topic slots
+    expected_output: "Content calendar with topics and schedules."

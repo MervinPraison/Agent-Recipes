@@ -1,0 +1,27 @@
+metadata:
+  name: ai-watermark-remover
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - image_path
+
+agents:
+  processor:
+    role: Image Restorer
+    goal: Remove watermarks from images.
+    backstory: Photo retoucher who cleans visual content.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: processor
+    action: |
+      Remove watermark from {{image_path}}.
+      
+      Use AI-powered inpainting to:
+      - Detect watermark areas
+      - Reconstruct underlying content
+      - Maintain image quality
+    expected_output: "Clean image with watermark removed."

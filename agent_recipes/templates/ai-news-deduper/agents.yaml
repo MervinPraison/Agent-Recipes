@@ -1,0 +1,27 @@
+metadata:
+  name: ai-news-deduper
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - articles
+
+agents:
+  deduper:
+    role: Content Curator
+    goal: Identify and remove duplicate news stories.
+    backstory: Editor who curates unique content.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: deduper
+    action: |
+      Deduplicate articles: {{articles}}
+      
+      Identify:
+      - Duplicate stories
+      - Same story, different sources
+      - Best version to keep
+      - Unique angles
+    expected_output: "Deduplicated article list."

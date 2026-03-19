@@ -1,0 +1,28 @@
+metadata:
+  name: ai-video-merger
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_paths
+
+agents:
+  editor:
+    role: Video Editor
+    goal: Merge multiple video clips seamlessly.
+    backstory: Editor who creates smooth video compilations.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: editor
+    action: |
+      Merge videos: {{video_paths}}
+      
+      Apply:
+      - Smooth transitions
+      - Consistent audio levels
+      - Format normalization
+      - Output optimization
+    expected_output: "Merged video file."

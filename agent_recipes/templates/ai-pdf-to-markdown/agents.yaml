@@ -1,0 +1,28 @@
+metadata:
+  name: ai-pdf-to-markdown
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - pdf_path
+
+agents:
+  converter:
+    role: PDF Parser
+    goal: Extract and convert PDF content to markdown.
+    backstory: Document specialist who preserves formatting in conversions.
+    tools:
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: converter
+    action: |
+      Convert PDF at {{pdf_path}} to markdown.
+      
+      Preserve:
+      - Heading structure
+      - Lists and tables
+      - Image references
+      - Code blocks
+    expected_output: "Clean markdown file."

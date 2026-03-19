@@ -1,0 +1,80 @@
+metadata:
+  name: ai-video-thumbnails
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - video_path
+
+# =============================================================================
+# AI VIDEO THUMBNAILS - Generate thumbnails using VisionAgent + ImageAgent
+# =============================================================================
+# Uses VisionAgent for frame analysis and ImageAgent for custom generation
+# =============================================================================
+
+agents:
+  extractor:
+    role: Frame Extractor
+    goal: Extract and analyze key frames from video for thumbnail candidates.
+    backstory: Video editor who identifies visually compelling moments.
+    tools:
+      - extract_video_frames
+      - analyze_frame
+    llm: gpt-4o-mini
+
+  selector:
+    role: Thumbnail Selector
+    goal: Select the best thumbnail from candidates.
+    backstory: YouTube specialist who understands what makes thumbnails click-worthy.
+    tools:
+      - find_best_thumbnail
+      - analyze_frame
+    llm: gpt-4o-mini
+
+  generator:
+    role: Thumbnail Creator
+    goal: Generate or enhance thumbnails with overlays.
+    backstory: Graphic designer who creates engaging video thumbnails.
+    tools:
+      - generate_custom_thumbnail
+      - add_text_overlay
+    llm: gpt-4o-mini
+
+steps:
+  - agent: extractor
+    action: |
+      1. Use extract_video_frames to extract 10 frames from {{video_path}}
+      2. Use analyze_frame on each to evaluate thumbnail potential
+      
+      Identify key frames with:
+      - High visual appeal
+      - Clear subjects
+      - Good composition
+      - Emotional impact
+    expected_output: "List of candidate frames with analysis scores."
+
+  - agent: selector
+    action: |
+      Based on frame analysis: {{extractor_output}}
+      
+      Use find_best_thumbnail to compare top candidates.
+      
+      Select the best 3 thumbnails considering:
+      - CTR (click-through rate) potential
+      - Visual distinctiveness
+      - Content representation
+    expected_output: "Top 3 thumbnail selections with reasoning."
+
+  - agent: generator
+    action: |
+      Based on selections: {{selector_output}}
+      
+      For each selected thumbnail:
+      1. Use add_text_overlay if title text would help
+      2. Optionally use generate_custom_thumbnail for a custom design
+      
+      Create:
+      - Final thumbnails at 1280x720 (YouTube standard)
+      - Optimized file sizes
+      - Engaging compositions
+    expected_output: "Final thumbnail files ready for upload."

@@ -1,0 +1,33 @@
+metadata:
+  name: ai-meeting-summarizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - transcript
+
+# =============================================================================
+# AI MEETING SUMMARIZER - Summarize meeting transcripts
+# =============================================================================
+
+agents:
+  summarizer:
+    role: Meeting Analyst
+    goal: Extract key decisions, action items, and insights from meetings.
+    backstory: Executive assistant who captures meeting outcomes effectively.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: summarizer
+    action: |
+      Summarize this meeting: {{transcript}}
+      
+      Create:
+      1. **Meeting Overview**: Purpose and attendees
+      2. **Key Discussion Points**: Main topics covered
+      3. **Decisions Made**: Clear decisions with context
+      4. **Action Items**: Who, what, by when
+      5. **Follow-up Items**: Open questions or future discussions
+      6. **Next Steps**: Immediate actions needed
+    expected_output: "Structured meeting summary with decisions and action items."

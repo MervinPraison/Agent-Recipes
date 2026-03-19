@@ -1,0 +1,28 @@
+metadata:
+  name: ai-chart-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - data
+      - chart_type
+
+agents:
+  generator:
+    role: Data Visualization Expert
+    goal: Create clear, informative charts from data.
+    backstory: Analyst who communicates data through visuals.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: generator
+    action: |
+      Create {{chart_type}} chart from: {{data}}
+      
+      Generate:
+      - Chart configuration (Chart.js/D3 format)
+      - Proper axis labels
+      - Legend if needed
+      - Color scheme
+    expected_output: "Chart configuration ready to render."

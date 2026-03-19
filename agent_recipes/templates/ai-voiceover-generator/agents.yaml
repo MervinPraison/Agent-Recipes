@@ -1,0 +1,30 @@
+metadata:
+  name: ai-voiceover-generator
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - script
+      - voice_style
+
+agents:
+  narrator:
+    role: Voice Artist
+    goal: Generate professional voiceovers.
+    backstory: Voice actor who brings scripts to life.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: narrator
+    action: |
+      Generate voiceover for: {{script}}
+      Style: {{voice_style}}
+      
+      Create:
+      - Audio file
+      - Multiple takes if needed
+      - Proper pacing
+      - Clear pronunciation
+    expected_output: "Voiceover audio file."

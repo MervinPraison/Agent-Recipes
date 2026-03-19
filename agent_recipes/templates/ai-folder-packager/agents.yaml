@@ -1,0 +1,28 @@
+metadata:
+  name: ai-folder-packager
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - folder_path
+
+agents:
+  packager:
+    role: File Packager
+    goal: Package folders into archives with documentation.
+    backstory: Systems admin who creates clean distribution packages.
+    tools:
+      - shell_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: packager
+    action: |
+      Package {{folder_path}}.
+      
+      Create:
+      - Compressed archive (zip/tar.gz)
+      - Manifest of contents
+      - README if missing
+      - Checksums for verification
+    expected_output: "Archive package with manifest."

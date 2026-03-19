@@ -1,0 +1,28 @@
+metadata:
+  name: ai-fact-checker
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - claims
+
+agents:
+  checker:
+    role: Fact Checker
+    goal: Verify claims and statements for accuracy.
+    backstory: Investigative journalist who verifies facts.
+    tools:
+      - search_web
+    llm: gpt-4o-mini
+
+steps:
+  - agent: checker
+    action: |
+      Verify claims: {{claims}}
+      
+      For each claim:
+      - Verdict (True/False/Misleading/Unverified)
+      - Evidence
+      - Sources
+      - Context needed
+    expected_output: "Fact-check report with verdicts."

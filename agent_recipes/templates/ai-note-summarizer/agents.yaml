@@ -1,0 +1,27 @@
+metadata:
+  name: ai-note-summarizer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - notes
+
+agents:
+  summarizer:
+    role: Note Synthesizer
+    goal: Summarize and organize notes effectively.
+    backstory: Executive assistant who creates actionable summaries from scattered notes.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: summarizer
+    action: |
+      Summarize these notes: {{notes}}
+      
+      Create:
+      1. **Key Points**: Main takeaways
+      2. **Action Items**: Tasks to complete
+      3. **Questions**: Unresolved items
+      4. **Organized Notes**: Categorized and structured version
+    expected_output: "Organized summary with key points and action items."

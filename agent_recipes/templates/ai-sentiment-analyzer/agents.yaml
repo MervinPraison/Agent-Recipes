@@ -1,0 +1,32 @@
+metadata:
+  name: ai-sentiment-analyzer
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - text
+
+# =============================================================================
+# AI SENTIMENT ANALYZER - Analyze sentiment and emotions in text
+# =============================================================================
+
+agents:
+  analyzer:
+    role: Sentiment Analyst
+    goal: Analyze text for sentiment, emotions, and tone.
+    backstory: NLP specialist who extracts emotional insights from text.
+    tools: []
+    llm: gpt-4o-mini
+
+steps:
+  - agent: analyzer
+    action: |
+      Analyze the sentiment of this text: {{text}}
+      
+      Provide:
+      1. **Overall Sentiment**: Positive/Negative/Neutral with confidence %
+      2. **Emotion Detection**: Joy, anger, sadness, fear, surprise
+      3. **Tone Analysis**: Formal/informal, serious/humorous
+      4. **Key Phrases**: Words driving the sentiment
+      5. **Recommendations**: How to respond or adjust messaging
+    expected_output: "Sentiment analysis with emotions, tone, and recommendations."

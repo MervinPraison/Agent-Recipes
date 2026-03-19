@@ -1,0 +1,29 @@
+metadata:
+  name: ai-markdown-to-pdf
+  requires:
+    env:
+      - OPENAI_API_KEY
+    variables:
+      - md_path
+
+agents:
+  converter:
+    role: Document Converter
+    goal: Convert markdown to professionally formatted PDF.
+    backstory: Publisher who creates polished PDF documents.
+    tools:
+      - shell_tool
+      - file_read_tool
+    llm: gpt-4o-mini
+
+steps:
+  - agent: converter
+    action: |
+      Convert markdown at {{md_path}} to PDF.
+      
+      Apply:
+      - Professional styling
+      - Proper headers/footers
+      - Table of contents
+      - Code syntax highlighting
+    expected_output: "PDF file with professional formatting."
