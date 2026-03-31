@@ -113,6 +113,10 @@ agents:
       - Include ALL information from BOTH extracted content AND research
       - SEO title: 6-10 words, specific product name + version
       - NEVER use generic titles like "Overview" or "Guide"
+      - MINIMUM 2000 WORDS - this is non-negotiable. Count your words.
+        If you are under 2000 words, expand EVERY section with more depth:
+        add more context, more examples, more analysis, more quotes.
+        Do not stop writing until you have at least 2000 words of real content.
       
       STYLE ADAPTATION (current: {{style}}):
       
@@ -129,6 +133,30 @@ agents:
         - Include code, tables, lists, quotes
 
   # ═══════════════════════════════════════════════════════════════════════════
+  # WORD COUNT VALIDATOR - Ensures 2000+ words, expands if needed
+  # ═══════════════════════════════════════════════════════════════════════════
+  word_count_validator:
+    role: Content Quality Validator
+    goal: Count words in the blog post draft and expand it if under 2000 words
+    backstory: |
+      You are a strict content quality checker.
+      Your only job is to count words and ensure minimum length is met.
+
+      PROCESS:
+      1. Strip HTML/Gutenberg block tags from the content
+      2. Count the remaining words accurately
+      3. If word count >= 2000: PASS — return the content as-is
+      4. If word count < 2000: EXPAND — rewrite the full article adding:
+         - Deeper explanations for every section
+         - More real-world use cases and examples
+         - Additional context, background, and implications
+         - More detailed technical breakdowns
+         - Extra conclusions and forward-looking analysis
+         Keep ALL existing Gutenberg block formatting.
+         Do NOT stop until the content has 2000+ words.
+    llm: gpt-4o
+
+  # ═══════════════════════════════════════════════════════════════════════════
   # PUBLISHER - Publishes to WordPress with validation
   # ═══════════════════════════════════════════════════════════════════════════
   publisher:
@@ -136,7 +164,7 @@ agents:
     goal: Validate and publish blog post to WordPress
     backstory: |
       You publish validated content to WordPress.
-      
+
       VALIDATION REQUIREMENTS:
       - Content MUST contain Gutenberg blocks (<!-- wp: -->)
       - Title must be specific (product name + version)
@@ -376,31 +404,84 @@ steps:
       INCLUDE ALL INFORMATION - NOTHING SHOULD BE LOST!
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # STEP 5: Publish to WordPress
+  # STEP 5: Validate word count — expand if under 2000 words
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: validate_word_count
+    agent: word_count_validator
+    output_variable: validated_article
+    output_json:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The blog post title (unchanged)
+        content:
+          type: string
+          description: The full blog post content in Gutenberg format, 2000+ words
+        word_count:
+          type: integer
+          description: Final word count of the content
+        status:
+          type: string
+          description: PASS (>=2000 words) or EXPANDED (was expanded to meet minimum)
+    action: |
+      ═══════════════════════════════════════════════════════════════════════════
+      VALIDATE AND ENSURE 2000+ WORD COUNT
+      ═══════════════════════════════════════════════════════════════════════════
+
+      TITLE: {{article.title}}
+
+      DRAFT CONTENT:
+      {{article.content}}
+
+      STEP 1 — COUNT WORDS:
+        Strip all HTML tags and Gutenberg block comments from the content.
+        Count the remaining words (split by whitespace).
+
+      STEP 2 — DECISION:
+        If word count >= 2000:
+          Return status=PASS, word_count=<count>, title and content unchanged.
+
+        If word count < 2000:
+          You MUST expand the article to reach 2000+ words.
+          Keep ALL existing sections and Gutenberg block format.
+          Expand by adding:
+            - Deeper explanations in every section
+            - Real-world examples and use cases
+            - Background context and history
+            - Expert commentary and analysis
+            - Forward-looking implications
+          Return status=EXPANDED, word_count=<new count>, full expanded content.
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # STEP 6: Publish to WordPress
   # ─────────────────────────────────────────────────────────────────────────────
   - name: publish
     agent: publisher
     action: |
       ═══════════════════════════════════════════════════════════════════════════
-      PUBLISH ARTICLE TO WORDPRESS
+      PUBLISH VALIDATED ARTICLE TO WORDPRESS
       ═══════════════════════════════════════════════════════════════════════════
-      
-      Title: {{article.title}}
-      Content: {{article.content}}
-      
+
+      VALIDATION STATUS: {{validated_article.status}}
+      WORD COUNT: {{validated_article.word_count}}
+      Title: {{validated_article.title}}
+      Content: {{validated_article.content}}
+
       VALIDATION BEFORE PUBLISHING:
-      1. Content contains Gutenberg blocks (<!-- wp: -->)?
-      2. Title is specific (product name)?
-      3. Content is not empty?
-      
+      1. Word count >= 2000? (see above — reject if FAIL)
+      2. Content contains Gutenberg blocks (<!-- wp: -->)?
+      3. Title is specific (product name)?
+      4. Content is not empty?
+
       If validation passes, call create_wp_post with:
       - title: the title above
       - content: the content above
       - status: publish
       - category: {{wp_category}}
       - author: {{wp_author}}
-      
-      Report the post ID on success.
+
+      Report the post ID and final word count on success.
 
 # Enable smart context management with LLM summarization
 context:

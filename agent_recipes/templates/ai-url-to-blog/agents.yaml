@@ -1,0 +1,209 @@
+framework: praisonai
+topic: "URL to Blog Post"
+
+# =============================================================================
+# URL → BLOG (No Search)
+# =============================================================================
+#
+# Crawls a single URL, extracts EVERY piece of information, then rewrites it
+# as a clear, beginner-friendly blog post. Nothing from the source is lost.
+#
+# USAGE:
+#   praisonai recipe run ai-url-to-blog --var url="https://example.com/article"
+#
+# FLOW:
+#   1. Crawl the full page content
+#   2. Write a 2000+ word blog post explaining everything in simple terms
+#   3. Validate word count (expand if under 2000)
+#
+# =============================================================================
+
+metadata:
+  name: ai-url-to-blog
+  version: "1.0.0"
+  description: Crawl a URL and rewrite all its content as a simple, comprehensive blog post
+  author: praison
+  license: Apache-2.0
+  tags:
+    - blog
+    - url
+    - content
+  requires:
+    env:
+      - OPENAI_API_KEY
+
+variables:
+  url: ""
+
+agents:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # CRAWLER — Extracts the FULL page content, loses nothing
+  # ═══════════════════════════════════════════════════════════════════════════
+  crawler:
+    role: Web Content Extractor
+    goal: Extract the COMPLETE content from a URL — every heading, paragraph, code block, list, quote, statistic, link, and image caption
+    backstory: |
+      You are an expert web scraper. Your job is to extract EVERYTHING from
+      the given URL and return it as structured text.
+
+      RULES:
+      - Call web_crawl with the URL. It returns the full page content.
+      - Preserve ALL text — headings, paragraphs, lists, code, tables, quotes.
+      - Preserve numbers, statistics, dates, names, and links.
+      - Do NOT summarise. Do NOT skip sections. Do NOT shorten anything.
+      - Return the raw extracted content exactly as found.
+    tools:
+      - web_crawl
+    llm: gpt-4o-mini
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # WRITER — Rewrites everything in simple, readable language
+  # ═══════════════════════════════════════════════════════════════════════════
+  writer:
+    role: Technical Blog Writer
+    goal: Rewrite ALL extracted content as a clear, engaging, comprehensive blog post of 2500+ words
+    backstory: |
+      You are a skilled technical writer who makes complex topics accessible.
+      You write for a smart audience that is NOT an expert in the topic.
+
+      YOUR MANDATE:
+      - Include EVERY piece of information from the source — nothing is optional.
+      - Explain jargon and technical terms in simple language.
+      - Use analogies and examples to make abstract ideas concrete.
+      - Keep the original structure (sections, sub-sections) but improve clarity.
+      - If the source has code, keep the code blocks and explain what they do.
+      - If the source has data/tables/statistics, include them with context.
+      - If the source has quotes, include them with attribution.
+
+      FORMAT:
+      - Use Markdown with clear headings (##, ###).
+      - Use bullet points for lists.
+      - Use code blocks (```) for any code.
+      - Use > for quotes.
+      - Write in short, punchy paragraphs (3-4 sentences max).
+
+      LENGTH — THIS IS CRITICAL:
+      - You MUST write 2500+ words. Aim for 3000.
+      - For EACH section from the source, write AT LEAST 3-4 paragraphs.
+      - For each key concept, explain: what it is, how it works, why it
+        matters, and give an example or analogy.
+      - Add a "Why This Matters" paragraph after each major section.
+      - Add a detailed "Background" section near the top.
+      - Add a thorough "Conclusion and Key Takeaways" with 5+ bullet points.
+      - DO NOT stop writing until you have covered every single detail.
+    llm: gpt-4o
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # VALIDATOR — Ensures 2000+ words, expands if needed
+  # ═══════════════════════════════════════════════════════════════════════════
+  validator:
+    role: Word Count Validator
+    goal: Verify the blog post has 2000+ words and expand it if not
+    backstory: |
+      You are a strict quality gate for content length.
+
+      PROCESS:
+      1. Strip all Markdown formatting (headings, bold, links, code fences).
+      2. Count the remaining words (split by whitespace).
+      3. If word count >= 2000 → return the post unchanged with status PASS.
+      4. If word count < 2000 → rewrite the FULL post, expanding every section:
+         - Add deeper explanations and background context.
+         - Add real-world examples and use cases.
+         - Add "why it matters" paragraphs.
+         - Add forward-looking analysis.
+         Keep ALL existing information and Markdown formatting.
+         Do NOT stop until you have 2000+ words.
+         Return the expanded post with status EXPANDED.
+    llm: gpt-4o
+
+steps:
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 1: Crawl the URL — get everything
+  # ─────────────────────────────────────────────────────────────────────────
+  - agent: crawler
+    action: |
+      Crawl this URL and extract ALL content:
+      {{url}}
+
+      You MUST call the web_crawl tool with this exact URL.
+      Return the COMPLETE extracted text — every heading, paragraph, code
+      block, list item, table, quote, statistic, link, and caption.
+      Do NOT summarise. Do NOT skip anything. Preserve everything.
+    expected_output: |
+      The full, unabridged text content of the web page — all sections,
+      headings, paragraphs, code blocks, lists, tables, quotes, and data.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 2: Write the blog post — simple language, nothing lost
+  # ─────────────────────────────────────────────────────────────────────────
+  - agent: writer
+    action: |
+      Using ALL of the following extracted content from {{url}}, write a
+      detailed, comprehensive blog post that explains everything in simple terms.
+
+      === SOURCE CONTENT (you MUST include ALL of this) ===
+      {{crawler_output}}
+      === END SOURCE CONTENT ===
+
+      REQUIREMENTS:
+      1. Include EVERY fact, feature, code example, statistic, and quote
+         from the source. Nothing should be lost.
+      2. Explain technical terms and jargon in plain language.
+      3. Use analogies and examples to make complex ideas accessible.
+      4. Use Markdown: ## headings, ### sub-headings, bullet lists, code
+         blocks, > quotes.
+      5. Start with a compelling title (# Title) and a 2-paragraph introduction.
+      6. Add a ## Background section explaining the broader context.
+      7. For EACH topic/feature in the source, write a dedicated ## section
+         with 3-4 paragraphs: what it is, how it works, why it matters.
+      8. Include a ## Conclusion with 5+ key takeaways as bullet points.
+      9. Write in a friendly, conversational but authoritative tone.
+
+      CRITICAL LENGTH REQUIREMENT:
+      - You MUST write at least 2500 words. Aim for 3000.
+      - Go section by section through the source material.
+      - For each section, write 3-4 substantial paragraphs (not one-liners).
+      - If you find yourself being brief, EXPAND with why-it-matters context.
+      - Do NOT stop writing until every piece of source content is covered.
+    expected_output: |
+      A Markdown blog post of 2500+ words that covers EVERY piece of
+      information from the source, explained in simple, accessible language.
+      Must have: title, introduction, background, detailed sections for each
+      topic, and a conclusion with key takeaways.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # STEP 3: Validate word count — expand if needed
+  # ─────────────────────────────────────────────────────────────────────────
+  - agent: validator
+    action: |
+      Here is the blog post draft. Count the words and validate it meets
+      the 2000-word minimum.
+
+      TITLE AND CONTENT:
+      {{writer_output}}
+
+      INSTRUCTIONS:
+      1. Remove all Markdown formatting characters (##, **, ```, >, -, etc.)
+      2. Count the remaining words by splitting on whitespace.
+      3. Report the count.
+
+      IF word count >= 2000:
+        Add this line at the very top of the post:
+        "WORD COUNT: <number> | STATUS: PASS"
+        Then return the FULL post unchanged below that line.
+
+      IF word count < 2000:
+        You MUST expand the post to reach 2000+ words. Do this by:
+        - Adding 2-3 extra paragraphs to EVERY major section.
+        - Adding a new "## Broader Context" section with 3+ paragraphs.
+        - Adding a new "## Practical Implications" section with 3+ paragraphs.
+        - Expanding the conclusion with more detailed takeaways.
+        - Adding transition paragraphs between sections.
+        Keep ALL existing content. Only ADD to it.
+        After expanding, count again. If STILL under 2000, add more.
+        Add this line at the very top:
+        "WORD COUNT: <number> | STATUS: EXPANDED"
+        Then return the FULL expanded post below that line.
+    expected_output: |
+      The complete blog post with "WORD COUNT: N | STATUS: PASS/EXPANDED"
+      on the first line, followed by the full content. Must be 2000+ words.
